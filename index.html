@@ -2,50 +2,120 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Tải Game Tốc Độ Cao</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Game Tốc Độ Cao</title>
     <style>
-        body { background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { border: 1px solid #333; padding: 40px; text-align: center; width: 350px; }
-        .thumb { width: 100%; height: 200px; background: #222; border: 1px solid #555; margin-bottom: 20px; object-fit: cover; }
-        h1 { font-size: 22px; margin: 0 0 10px; }
-        p { color: #888; margin-bottom: 30px; }
-        .btn { display: block; background: #fff; color: #000; padding: 15px; text-decoration: none; font-weight: bold; font-size: 16px; border: 1px solid #fff; transition: 0.3s; }
+        body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 24px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 30px; }
+        
+        /* Grid hiển thị tất cả game */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .game-card { border: 1px solid #333; background: #0a0a0a; padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .game-card img { width: 100%; height: 140px; object-fit: cover; border: 1px solid #222; margin-bottom: 10px; }
+        .game-card h3 { font-size: 16px; margin: 5px 0; color: #fff; }
+        .game-card p { color: #888; font-size: 13px; margin-bottom: 15px; }
+        
+        /* Nút bấm */
+        .btn { display: block; background: #fff; color: #000; text-decoration: none; padding: 10px; font-weight: bold; font-size: 14px; border: 1px solid #fff; transition: 0.2s; text-align: center; }
         .btn:hover { background: #000; color: #fff; }
+        .btn-back { display: inline-block; margin-bottom: 20px; background: #222; color: #fff; border-color: #444; width: auto; padding: 8px 15px; }
+
+        /* Màn hình chi tiết 1 game */
+        .detail-box { border: 1px solid #333; padding: 30px; text-align: center; max-width: 400px; margin: 0 auto; background: #0a0a0a; }
+        .detail-box img { width: 100%; height: 220px; object-fit: cover; border: 1px solid #333; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <img id="gThumb" class="thumb" src="" alt="Game Image" style="display:none;">
-        <h1 id="gName">Đang tải dữ liệu...</h1>
-        <p id="gSize">Dung lượng: --</p>
-        <a href="#" id="gLink" class="btn" style="display:none;">TẢI GAME NGAY</a>
+    <div class="container">
+        
+        <!-- MÀN HÌNH 1: DANH SÁCH TOÀN BỘ GAME -->
+        <div id="listView" style="display: none;">
+            <h1>KHO GAME MIỄN PHÍ</h1>
+            <div class="game-grid" id="gameGrid">
+                <p style="grid-column: 1/-1; text-align: center;">Đang tải danh sách game...</p>
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH 2: CHI TIẾT GAME ĐƯỢC CHỌN -->
+        <div id="detailView" style="display: none;">
+            <a href="/" class="btn btn-back">← QUAY LẠI DANH SÁCH</a>
+            <div class="detail-box">
+                <img id="gThumb" src="" alt="Thumbnail">
+                <h2 id="gName">Đang tải...</h2>
+                <p id="gSize">Dung lượng: --</p>
+                <a href="#" id="gLink" class="btn">TẢI GAME NGAY</a>
+            </div>
+        </div>
+
     </div>
 
     <script>
         const dbUrl = "https://sf2g-bf285-default-rtdb.firebaseio.com";
+        
+        // BẮT BUỘC PHẢI CÓ https:// Ở ĐẦU ĐỂ KHÔNG BỊ LỖI VERCEL 404
+        const urlWebNhiemVu = "https://nhap-code.vercel.app";
+
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
 
+        const listView = document.getElementById('listView');
+        const detailView = document.getElementById('detailView');
+
         if (id) {
+            // HIỆN CHI TIẾT 1 GAME
+            detailView.style.display = 'block';
+            
             fetch(`${dbUrl}/games/${id}.json`)
                 .then(res => res.json())
                 .then(data => {
                     if (data) {
                         document.getElementById('gName').innerText = data.name;
-                        document.getElementById('gSize').innerText = "Dung lượng: " + data.size;
-                        document.getElementById('gThumb').src = data.img;
-                        document.getElementById('gThumb').style.display = 'block';
+                        document.getElementById('gSize').innerText = "Dung lượng: " + (data.size || 'Không xác định');
+                        document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/300x180?text=No+Image';
                         
                         const linkBtn = document.getElementById('gLink');
-                        
-                        // MÀY ĐỔI ĐƯỜNG LINK NÀY THÀNH LINK VERCEL CỦA BƯỚC 1
-                        const urlWebNhiemVu = "https://nhap-code.vercel.app";
-                        
+                        // Gán link chính xác kèm ID sang web nhập code
                         linkBtn.href = `${urlWebNhiemVu}/?id=${id}`;
-                        linkBtn.style.display = 'block';
                     } else {
-                        document.getElementById('gName').innerText = "Không tìm thấy Game!";
+                        document.getElementById('gName').innerText = "Không tìm thấy game!";
                     }
+                })
+                .catch(() => {
+                    document.getElementById('gName').innerText = "Lỗi tải dữ liệu!";
+                });
+        } else {
+            // HIỆN TẤT CẢ GAME CÓ TRONG DATABASE
+            listView.style.display = 'block';
+            
+            fetch(`${dbUrl}/games.json`)
+                .then(res => res.json())
+                .then(data => {
+                    const grid = document.getElementById('gameGrid');
+                    grid.innerHTML = '';
+
+                    if (!data) {
+                        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Chưa có game nào trong kho.</p>';
+                        return;
+                    }
+
+                    for (const gameId in data) {
+                        const game = data[gameId];
+                        const card = document.createElement('div');
+                        card.className = 'game-card';
+                        card.innerHTML = `
+                            <div>
+                                <img src="${game.img || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${game.name}">
+                                <h3>${game.name}</h3>
+                                <p>Dung lượng: ${game.size || 'N/A'}</p>
+                            </div>
+                            <a href="?id=${gameId}" class="btn">CHỌN GAME NÀY</a>
+                        `;
+                        grid.appendChild(card);
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('gameGrid').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Lỗi kết nối Firebase!</p>';
                 });
         }
     </script>
