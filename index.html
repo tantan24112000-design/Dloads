@@ -3,80 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dloads - High Speed Games</title>
+    <title>Dloads</title>
     <style>
-        /* Hiệu ứng nền chuyển động */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* Animation hiện dần khi load trang */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         body { 
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e); 
-            background-size: 400% 400%; 
-            animation: gradientBG 15s ease infinite; 
-            color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box; 
+            background: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            box-sizing: border-box; 
         }
         
-        .container { max-width: 900px; margin: 0 auto; animation: fadeIn 0.8s ease-out; }
+        .container { 
+            max-width: 850px; 
+            margin: 0 auto; 
+            animation: fadeIn 0.4s ease-out; 
+        }
         
-        h1 { text-align: center; font-size: 32px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 40px; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        h1 { 
+            text-align: center; 
+            font-size: 24px; 
+            letter-spacing: 2px; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 15px; 
+            margin-bottom: 30px; 
+        }
         
-        /* Hiệu ứng thẻ Game */
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+        /* Grid danh sách game */
+        .game-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 20px; 
+        }
+
+        /* Thẻ game đen trắng có animation hover */
         .game-card { 
-            background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(5px); 
-            border: 1px solid rgba(255,255,255,0.1); padding: 15px; 
-            border-radius: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #0a0a0a; 
+            border: 1px solid #333; 
+            padding: 15px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            transition: transform 0.25s ease, border-color 0.25s ease;
         }
+
         .game-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-6px);
+            border-color: #fff;
         }
-        .game-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; transition: transform 0.3s ease; }
-        .game-card:hover img { transform: scale(1.05); }
-        .game-card h3 { font-size: 18px; margin: 5px 0; color: #fff; }
-        .game-card p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+
+        .game-card img { 
+            width: 100%; 
+            height: 140px; 
+            object-fit: cover; 
+            border: 1px solid #222; 
+            margin-bottom: 12px; 
+            transition: opacity 0.25s ease; 
+        }
+
+        .game-card:hover img { 
+            opacity: 0.85; 
+        }
+
+        .game-card h3 { 
+            font-size: 16px; 
+            margin: 5px 0; 
+            color: #fff; 
+        }
+
+        .game-card p { 
+            color: #888; 
+            font-size: 13px; 
+            margin-bottom: 15px; 
+        }
         
-        /* Hiệu ứng Nút bấm */
+        /* Nút bấm đen trắng tương phản */
         .btn { 
-            display: block; background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%); 
-            color: #000; text-decoration: none; padding: 12px; font-weight: bold; font-size: 14px; 
-            border-radius: 6px; transition: 0.3s; text-align: center; text-transform: uppercase;
+            display: block; 
+            background: #fff; 
+            color: #000; 
+            text-decoration: none; 
+            padding: 10px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            border: 1px solid #fff; 
+            transition: background 0.2s ease, color 0.2s ease; 
+            text-align: center; 
+            letter-spacing: 1px;
         }
-        .btn:hover { box-shadow: 0 0 15px rgba(0, 201, 255, 0.6); transform: scale(1.02); }
-        .btn-back { display: inline-block; margin-bottom: 20px; background: rgba(255,255,255,0.1); color: #fff; width: auto; padding: 10px 20px; border-radius: 6px; }
-        .btn-back:hover { background: rgba(255,255,255,0.2); }
+
+        .btn:hover { 
+            background: #000; 
+            color: #fff; 
+        }
+
+        .btn-back { 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            background: #111; 
+            color: #fff; 
+            border: 1px solid #333; 
+            padding: 8px 16px; 
+            text-decoration: none; 
+            font-size: 13px;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-back:hover { 
+            border-color: #fff; 
+            background: #222; 
+        }
 
         .detail-box { 
-            background: rgba(10, 10, 10, 0.7); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 15px;
-            text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            background: #0a0a0a; 
+            border: 1px solid #333; 
+            padding: 30px; 
+            text-align: center; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            animation: fadeIn 0.3s ease-out;
         }
-        .detail-box img { width: 100%; height: 250px; object-fit: cover; border-radius: 10px; margin-bottom: 25px; }
+
+        .detail-box img { 
+            width: 100%; 
+            height: 220px; 
+            object-fit: cover; 
+            border: 1px solid #333; 
+            margin-bottom: 20px; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- DANH SÁCH GAME -->
         <div id="listView" style="display: none;">
-            <h1 id="t_mainTitle">DLOADS - FREE GAMES</h1>
+            <h1 id="t_mainTitle">DLOADS</h1>
             <div class="game-grid" id="gameGrid">
-                <p id="t_loading" style="grid-column: 1/-1; text-align: center;">Loading game list...</p>
+                <p id="t_loading" style="grid-column: 1/-1; text-align: center;">Loading...</p>
             </div>
         </div>
 
         <!-- CHI TIẾT GAME -->
         <div id="detailView" style="display: none;">
-            <a href="/" class="btn-back" id="t_backBtn">← BACK TO LIST</a>
+            <a href="/" class="btn-back" id="t_backBtn">← BACK</a>
             <div class="detail-box">
                 <img id="gThumb" src="" alt="Thumbnail">
                 <h2 id="gName">Loading...</h2>
@@ -88,31 +165,31 @@
 
     <script>
         const dbUrl = "https://sf2g-bf285-default-rtdb.firebaseio.com";
-        const urlWebNhiemVu = "https://LINK-WEB-NHAP-CODE-CUA-MAY.vercel.app"; // NHỚ THAY LINK NÀY
+        const urlWebNhiemVu = "https://LINK-WEB-NHAP-CODE-CUA-MAY.vercel.app"; // BẮT BUỘC CÓ https://
 
-        // Tự động nhận diện ngôn ngữ
+        // Nhận diện ngôn ngữ
         const userLang = navigator.language || navigator.userLanguage;
         const isVi = userLang.toLowerCase().includes('vi');
 
         const i18n = {
             vi: {
-                title: "DLOADS - KHO GAME MIỄN PHÍ",
-                loading: "Đang tải danh sách game...",
+                title: "DLOADS - KHO GAME",
+                loading: "Đang tải danh sách...",
                 empty: "Chưa có game nào trong kho.",
                 size: "Dung lượng:",
-                select: "CHỌN GAME NÀY",
-                back: "← QUAY LẠI DANH SÁCH",
+                select: "CHỌN GAME",
+                back: "← QUAY LẠI",
                 download: "TẢI GAME NGAY",
                 notFound: "Không tìm thấy game!",
                 error: "Lỗi tải dữ liệu!"
             },
             en: {
-                title: "DLOADS - FREE GAMES",
-                loading: "Loading game list...",
+                title: "DLOADS",
+                loading: "Loading games...",
                 empty: "No games available.",
                 size: "Size:",
-                select: "SELECT THIS GAME",
-                back: "← BACK TO LIST",
+                select: "SELECT GAME",
+                back: "← BACK",
                 download: "DOWNLOAD NOW",
                 notFound: "Game not found!",
                 error: "Data load error!"
@@ -121,7 +198,6 @@
 
         const lang = isVi ? i18n.vi : i18n.en;
 
-        // Cập nhật text tĩnh trên giao diện
         document.getElementById('t_mainTitle').innerText = lang.title;
         document.getElementById('t_loading').innerText = lang.loading;
         document.getElementById('t_backBtn').innerText = lang.back;
@@ -138,7 +214,7 @@
                     if (data) {
                         document.getElementById('gName').innerText = data.name;
                         document.getElementById('gSize').innerText = `${lang.size} ${data.size || 'N/A'}`;
-                        document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/500x250?text=No+Image';
+                        document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/400x220?text=No+Image';
                         document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
                     } else {
                         document.getElementById('gName').innerText = lang.notFound;
