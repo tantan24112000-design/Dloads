@@ -19,6 +19,30 @@ function formatPrice(price) {
 }
 
 // ---------------------------------------------------
+// [HỆ THỐNG QUẢN LÝ LƯỢT CLICK THỂ LOẠI]
+// ---------------------------------------------------
+
+// 1. Hàm lưu lại sở thích khi user xem 1 game
+function trackUserPreference(category) {
+    if (!category) return;
+    
+    // Lấy dữ liệu cũ từ trình duyệt, nếu chưa có thì tạo object trống {}
+    let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
+    
+    // Cộng 1 điểm cho thể loại vừa click
+    userPrefs[category] = (userPrefs[category] || 0) + 1;
+    
+    // Lưu ngược lại vào trình duyệt
+    localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
+}
+
+// 2. Hàm lấy điểm sở thích của user để dùng lúc sắp xếp
+function getUserPreferences() {
+    return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
+}
+
+
+// ---------------------------------------------------
 // LOGIC TRANG CHI TIẾT (KHI CÓ ID)
 // ---------------------------------------------------
 if (id) {
@@ -26,7 +50,7 @@ if (id) {
     fetch(`${dbUrl}/games.json`).then(r => r.json()).then(allGames => {
         const data = allGames ? allGames[id] : null;
         if (data) {
-            // Gọi hàm tracking từ file tracker.js để ghi nhận lượt click
+            // --> TRACKING: Theo dõi sở thích người dùng khi họ vào xem game này
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
@@ -99,6 +123,7 @@ function updateGrid() {
     const sortMethod = document.getElementById('sortSelect').value;
     const grid = document.getElementById('gameGrid');
     
+    // Xóa rỗng HTML nội dung cũ
     let htmlContent = '';
 
     let filteredArray = [];
@@ -114,11 +139,20 @@ function updateGrid() {
         filteredArray.sort((a, b) => a.name.localeCompare(b.name));
     } 
     else if (sortMethod === 'new') {
-        filteredArray.reverse(); 
+        filteredArray.reverse(); // Mặc định Firebase bốc từ cũ đến mới, reverse để ra mới nhất
     } 
     else if (sortMethod === 'recommended') {
-        // Gọi hàm sắp xếp thông minh từ file tracker.js
-        sortGamesByPreference(filteredArray);
+        // SẮP XẾP THEO SỞ THÍCH NGƯỜI DÙNG (Thuật toán For You)
+        const userPrefs = getUserPreferences();
+        
+        filteredArray.sort((a, b) => {
+            // Lấy điểm của game A và game B, nếu không có điểm thì mặc định là 0
+            let scoreA = userPrefs[a.category] || 0;
+            let scoreB = userPrefs[b.category] || 0;
+            
+            // Xếp giảm dần (đưa điểm cao lên đầu)
+            return scoreB - scoreA; 
+        });
     }
 
     if (filteredArray.length === 0) {
@@ -136,6 +170,7 @@ function updateGrid() {
                          </div>`;
         }
 
+        // Hiện thể loại nếu game có dữ liệu thể loại
         let categoryHtml = game.category ? `<span class="category-tag">${game.category}</span>` : '';
 
         htmlContent += `
@@ -152,12 +187,12 @@ function updateGrid() {
             </div>
         `;
 
+        // CHÈN GẠCH NGANG SAU MỖI 3 GAME (Chỉ chèn nếu chưa phải game cuối cùng)
         if ((index + 1) % 3 === 0 && index !== filteredArray.length - 1) {
             htmlContent += `<div class="row-divider"></div>`;
         }
     });
 
-    grid.innerHTML = htmlContent;
-}
+    // Gán 1 lần vào lưới (Chạy mượt hơn)
     grid.innerHTML = htmlContent;
 }
