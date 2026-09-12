@@ -3,54 +3,55 @@ const urlWebNhiemVu = "https://nhap-code.vercel.app";
 const isVi = (navigator.language || '').toLowerCase().includes('vi');
 
 let allGamesData = {};
-
 const id = new URLSearchParams(window.location.search).get('id');
 
-// Hàm xử lý hiển thị giá tiền tệ
 function formatPrice(price) {
     if (!price) return '';
     let formattedNumber = Number(price).toLocaleString('en-US');
-    
-    if (isVi) {
-        return formattedNumber + ' VNĐ';
-    } else {
-        return '$' + formattedNumber;
-    }
+    return isVi ? formattedNumber + ' VNĐ' : '$' + formattedNumber;
 }
 
-// ---------------------------------------------------
-// [HỆ THỐNG QUẢN LÝ LƯỢT CLICK THỂ LOẠI]
-// ---------------------------------------------------
-
-// 1. Hàm lưu lại sở thích khi user xem 1 game
 function trackUserPreference(category) {
     if (!category) return;
-    
-    // Lấy dữ liệu cũ từ trình duyệt, nếu chưa có thì tạo object trống {}
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
-    
-    // Cộng 1 điểm cho thể loại vừa click
     userPrefs[category] = (userPrefs[category] || 0) + 1;
-    
-    // Lưu ngược lại vào trình duyệt
     localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
 }
 
-// 2. Hàm lấy điểm sở thích của user để dùng lúc sắp xếp
 function getUserPreferences() {
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
+// Hàm fetch data có cơ chế cache qua sessionStorage để không bị gọi lại liên tục
+async function fetchAllGames() {
+    if (Object.keys(allGamesData).length > 0) return allGamesData;
+    
+    let cached = sessionStorage.getItem('cachedGames');
+    if (cached) {
+        allGamesData = JSON.parse(cached);
+        return allGamesData;
+    }
 
-// ---------------------------------------------------
-// LOGIC TRANG CHI TIẾT (KHI CÓ ID)
-// ---------------------------------------------------
-if (id) {
-    document.getElementById('detailView').style.display = 'block';
-    fetch(`${dbUrl}/games.json`).then(r => r.json()).then(allGames => {
+    try {
+        const res = await fetch(`${dbUrl}/games.json`);
+        allGamesData = await res.json() || {};
+        sessionStorage.setItem('cachedGames', JSON.stringify(allGamesData));
+    } catch (e) {
+        console.error("Lỗi tải data:", e);
+        allGamesData = {};
+    }
+    return allGamesData;
+}
+
+// Khởi chạy chính
+async function init() {
+    const allGames = await fetchAllGames();
+
+    if (id) {
+        document.getElementById('detailView').style.display = 'block';
         const data = allGames ? allGames[id] : null;
+        
         if (data) {
-            // --> TRACKING: Theo dõi sở thích người dùng khi họ vào xem game này
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
@@ -58,7 +59,6 @@ if (id) {
             document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/400x220?text=No+Image';
             document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
 
-            // Hiện thể loại ở trang chi tiết nếu có
             if (data.category) {
                 const catEl = document.getElementById('gCategoryDetail');
                 catEl.innerText = data.category;
@@ -75,10 +75,10 @@ if (id) {
                 alert(isVi ? "Đã copy link!" : "Link copied!");
             };
 
-            if(data.reviewText || data.reviewImg) {
+            if (data.reviewText || data.reviewImg) {
                 document.getElementById('reviewSec').style.display = 'block';
                 document.getElementById('rText').innerText = data.reviewText || '';
-                if(data.reviewImg) {
+                if (data.reviewImg) {
                     const rImg = document.getElementById('rImg');
                     rImg.src = data.reviewImg;
                     rImg.style.display = 'block';
@@ -87,9 +87,10 @@ if (id) {
 
             const recGrid = document.getElementById('recGrid');
             let count = 0;
+            let recHtml = '';
             for (let gId in allGames) {
                 if (gId !== id && count < 3) {
-                    recGrid.innerHTML += `
+                    recHtml += `
                         <a href="?id=${gId}" class="rec-card">
                             <img src="${allGames[gId].img || 'https://via.placeholder.com/150x80'}">
                             <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGames[gId].name}</div>
@@ -98,60 +99,43 @@ if (id) {
                     count++;
                 }
             }
+            recGrid.innerHTML = recHtml;
+        } else {
+            document.getElementById('detailView').innerHTML = `<div style="text-align:center; padding:50px;">GAME NOT FOUND</div>`;
         }
-    });
-} 
-// ---------------------------------------------------
-// LOGIC TRANG CHỦ (DANH SÁCH GAME)
-// ---------------------------------------------------
-else {
-    document.getElementById('listView').style.display = 'block';
-    
-    fetch(`${dbUrl}/games.json`).then(r => r.json()).then(data => {
+    } else {
+        document.getElementById('listView').style.display = 'block';
         document.getElementById('loader').style.display = 'none';
-        allGamesData = data;
         updateGrid();
-    });
 
-    document.getElementById('searchInput').addEventListener('input', updateGrid);
-    document.getElementById('sortSelect').addEventListener('change', updateGrid);
+        document.getElementById('searchInput').addEventListener('input', updateGrid);
+        document.getElementById('sortSelect').addEventListener('change', updateGrid);
+    }
 }
 
-// Hàm cập nhật danh sách game (Tìm kiếm & Sắp xếp)
 function updateGrid() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const sortMethod = document.getElementById('sortSelect').value;
     const grid = document.getElementById('gameGrid');
     
-    // Xóa rỗng HTML nội dung cũ
-    let htmlContent = '';
-
     let filteredArray = [];
     for (let gameId in allGamesData) {
         const game = allGamesData[gameId];
-        if (game.name.toLowerCase().includes(query)) {
+        if (game && game.name && game.name.toLowerCase().includes(query)) {
             filteredArray.push({ id: gameId, ...game });
         }
     }
 
-    // XỬ LÝ CÁC KIỂU SẮP XẾP
     if (sortMethod === 'az') {
         filteredArray.sort((a, b) => a.name.localeCompare(b.name));
-    } 
-    else if (sortMethod === 'new') {
-        filteredArray.reverse(); // Mặc định Firebase bốc từ cũ đến mới, reverse để ra mới nhất
-    } 
-    else if (sortMethod === 'recommended') {
-        // SẮP XẾP THEO SỞ THÍCH NGƯỜI DÙNG (Thuật toán For You)
+    } else if (sortMethod === 'new') {
+        filteredArray.reverse();
+    } else if (sortMethod === 'recommended') {
         const userPrefs = getUserPreferences();
-        
         filteredArray.sort((a, b) => {
-            // Lấy điểm của game A và game B, nếu không có điểm thì mặc định là 0
             let scoreA = userPrefs[a.category] || 0;
             let scoreB = userPrefs[b.category] || 0;
-            
-            // Xếp giảm dần (đưa điểm cao lên đầu)
-            return scoreB - scoreA; 
+            return scoreB - scoreA;
         });
     }
 
@@ -160,7 +144,7 @@ function updateGrid() {
         return;
     }
 
-    // Vòng lặp render Game ra màn hình
+    let htmlContent = '';
     filteredArray.forEach((game, index) => {
         let priceHtml = '';
         if (game.price) {
@@ -170,7 +154,6 @@ function updateGrid() {
                          </div>`;
         }
 
-        // Hiện thể loại nếu game có dữ liệu thể loại
         let categoryHtml = game.category ? `<span class="category-tag">${game.category}</span>` : '';
 
         htmlContent += `
@@ -187,12 +170,12 @@ function updateGrid() {
             </div>
         `;
 
-        // CHÈN GẠCH NGANG SAU MỖI 3 GAME (Chỉ chèn nếu chưa phải game cuối cùng)
         if ((index + 1) % 3 === 0 && index !== filteredArray.length - 1) {
             htmlContent += `<div class="row-divider"></div>`;
         }
     });
 
-    // Gán 1 lần vào lưới (Chạy mượt hơn)
     grid.innerHTML = htmlContent;
 }
+
+init();
