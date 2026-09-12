@@ -29,14 +29,8 @@
         .sort-select:focus { border-color: #fff; color: #fff; }
 
         /* GRID & CARDS */
-        .game-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-            gap: 20px; 
-        }
-        @media (min-width: 768px) {
-            .game-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        @media (min-width: 768px) { .game-grid { grid-template-columns: repeat(3, 1fr); } }
 
         .game-card { background: #0a0a0a; border: 1px solid #222; padding: 15px; text-align: center; display: flex; flex-direction: column; transition: all 0.25s ease; position: relative; overflow: hidden; }
         .game-card:hover { transform: translateY(-5px); border-color: #fff; box-shadow: 0 8px 25px rgba(255,255,255,0.05); }
@@ -44,17 +38,11 @@
         .game-card:hover img { opacity: 0.9; }
 
         .card-badge { position: absolute; top: 20px; right: 20px; background: #fff; color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* HIỂN THỊ THỂ LOẠI */
+        .category-tag { background: #222; color: #aaa; font-size: 10px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #333; }
 
-        /* ĐƯỜNG GẠCH NGANG */
-        .row-divider {
-            grid-column: 1 / -1; 
-            height: 1px;
-            background: #2a2a2a; 
-            width: 85%; 
-            margin: 15px auto; 
-        }
-
-        /* GIÁ TIỀN */
+        .row-divider { grid-column: 1 / -1; height: 1px; background: #2a2a2a; width: 85%; margin: 15px auto; }
         .fake-price { text-decoration: line-through; color: #ff4444; font-size: 13px; margin-right: 8px; opacity: 0.8; }
         .free-badge { color: #00e676; font-weight: bold; font-size: 14px; letter-spacing: 1px; }
 
@@ -110,6 +98,7 @@
                 <div class="controls-bar">
                     <input type="text" id="searchInput" class="search-input" placeholder="Search...">
                     <select id="sortSelect" class="sort-select">
+                        <option value="recommended">For You</option> <!-- Tùy chọn gợi ý theo click -->
                         <option value="new">Newest</option>
                         <option value="az">A-Z</option>
                     </select>
@@ -127,6 +116,9 @@
                 <img id="gThumb" src="">
                 <h2 id="gName" style="margin: 8px 0; font-size: 20px; letter-spacing: 1px;">--</h2>
                 
+                <!-- Gắn tag thể loại ở trang chi tiết -->
+                <div id="gCategoryDetail" class="category-tag" style="display: none;"></div>
+
                 <div id="gPriceContainer" style="margin-bottom: 8px; display: none;">
                     <span id="gFakePrice" class="fake-price"></span>
                     <span class="free-badge">FREE</span>
