@@ -18,16 +18,28 @@ function formatPrice(price) {
     }
 }
 
-// Logic Trang Chi Tiết
+// ---------------------------------------------------
+// LOGIC TRANG CHI TIẾT (KHI CÓ ID)
+// ---------------------------------------------------
 if (id) {
     document.getElementById('detailView').style.display = 'block';
     fetch(`${dbUrl}/games.json`).then(r => r.json()).then(allGames => {
         const data = allGames ? allGames[id] : null;
         if (data) {
+            // Gọi hàm tracking từ file tracker.js để ghi nhận lượt click
+            trackUserPreference(data.category);
+
             document.getElementById('gName').innerText = data.name;
             document.getElementById('gSize').innerText = `SIZE: ${data.size || 'N/A'}`;
             document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/400x220?text=No+Image';
             document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
+
+            // Hiện thể loại ở trang chi tiết nếu có
+            if (data.category) {
+                const catEl = document.getElementById('gCategoryDetail');
+                catEl.innerText = data.category;
+                catEl.style.display = 'inline-block';
+            }
 
             if (data.price) {
                 document.getElementById('gPriceContainer').style.display = 'block';
@@ -65,7 +77,9 @@ if (id) {
         }
     });
 } 
-// Logic Trang Chủ
+// ---------------------------------------------------
+// LOGIC TRANG CHỦ (DANH SÁCH GAME)
+// ---------------------------------------------------
 else {
     document.getElementById('listView').style.display = 'block';
     
@@ -79,13 +93,12 @@ else {
     document.getElementById('sortSelect').addEventListener('change', updateGrid);
 }
 
-// Hàm cập nhật danh sách game (Tìm kiếm & sắp xếp)
+// Hàm cập nhật danh sách game (Tìm kiếm & Sắp xếp)
 function updateGrid() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const sortMethod = document.getElementById('sortSelect').value;
     const grid = document.getElementById('gameGrid');
     
-    // Xóa rỗng HTML nội dung cũ
     let htmlContent = '';
 
     let filteredArray = [];
@@ -96,10 +109,16 @@ function updateGrid() {
         }
     }
 
+    // XỬ LÝ CÁC KIỂU SẮP XẾP
     if (sortMethod === 'az') {
         filteredArray.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortMethod === 'new') {
-        filteredArray.reverse();
+    } 
+    else if (sortMethod === 'new') {
+        filteredArray.reverse(); 
+    } 
+    else if (sortMethod === 'recommended') {
+        // Gọi hàm sắp xếp thông minh từ file tracker.js
+        sortGamesByPreference(filteredArray);
     }
 
     if (filteredArray.length === 0) {
@@ -107,7 +126,7 @@ function updateGrid() {
         return;
     }
 
-    // Vòng lặp render Game
+    // Vòng lặp render Game ra màn hình
     filteredArray.forEach((game, index) => {
         let priceHtml = '';
         if (game.price) {
@@ -117,11 +136,14 @@ function updateGrid() {
                          </div>`;
         }
 
+        let categoryHtml = game.category ? `<span class="category-tag">${game.category}</span>` : '';
+
         htmlContent += `
             <div class="game-card">
                 <span class="card-badge">VERIFIED</span>
                 <div>
                     <img src="${game.img || 'https://via.placeholder.com/300x180'}">
+                    ${categoryHtml}
                     <h3 style="font-size:15px; margin:5px 0; letter-spacing:0.5px;">${game.name}</h3>
                     ${priceHtml}
                     <p style="color:#888; font-size:12px; margin-bottom:12px;">${game.size||'N/A'}</p>
@@ -130,12 +152,12 @@ function updateGrid() {
             </div>
         `;
 
-        // CHÈN GẠCH NGANG SAU MỖI 3 GAME (Chỉ chèn nếu chưa phải game cuối cùng)
         if ((index + 1) % 3 === 0 && index !== filteredArray.length - 1) {
             htmlContent += `<div class="row-divider"></div>`;
         }
     });
 
-    // Gán 1 lần vào lưới (Chạy mượt hơn)
+    grid.innerHTML = htmlContent;
+}
     grid.innerHTML = htmlContent;
 }
