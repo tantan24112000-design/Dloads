@@ -180,17 +180,24 @@
 
         const id = new URLSearchParams(window.location.search).get('id');
 
-        // Hàm xử lý hiển thị giá tiền tệ
-        function formatPrice(price) {
-            if (!price) return '';
-            let formattedNumber = Number(price).toLocaleString('en-US');
-            
-            if (isVi) {
-                return formattedNumber + ' VNĐ';
-            } else {
-                return '$' + formattedNumber;
-            }
-        }
+// Hàm xử lý hiển thị giá tiền tệ và tự động quy đổi
+function formatPrice(price) {
+    if (!price) return '';
+    let numPrice = Number(price);
+    
+    if (isVi) {
+        // Tiếng Việt: Giữ nguyên giá trị, thêm dấu chấm ngăn cách (VD: 25.000 VNĐ)
+        return numPrice.toLocaleString('vi-VN') + ' VNĐ';
+    } else {
+        // Tiếng Anh: Chia 25.000 để ra USD
+        let usdPrice = numPrice / 25000;
+        
+        // Nếu số lẻ thì lấy 2 chữ số thập phân (VD: 1.50), chẵn thì thôi (VD: 1)
+        let formattedUsd = Number.isInteger(usdPrice) ? usdPrice : usdPrice.toFixed(2);
+        
+        return '$' + formattedUsd;
+    }
+}
 
         // Logic Trang Chi Tiết
         if (id) {
