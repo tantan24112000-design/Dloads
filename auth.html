@@ -16,13 +16,13 @@
 
 <div class="auth-box">
     <h2 id="form-title">ĐĂNG NHẬP DEV</h2>
+    <input type="text" id="username" placeholder="Tên hiển thị (Username)" style="display: none;">
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Mật khẩu">
     <button id="actionBtn" onclick="handleAuth()">ĐĂNG NHẬP</button>
     <div class="switch" onclick="toggleMode()">Chưa có tài khoản? Đăng ký ngay</div>
 </div>
 
-<!-- Thư viện Firebase v8 tương thích -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
@@ -45,20 +45,28 @@
         isLogin = !isLogin;
         document.getElementById('form-title').innerText = isLogin ? "ĐĂNG NHẬP DEV" : "ĐĂNG KÝ DEV";
         document.getElementById('actionBtn').innerText = isLogin ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
+        document.getElementById('username').style.display = isLogin ? "none" : "block";
         document.querySelector('.switch').innerText = isLogin ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập";
     }
 
     function handleAuth() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
+        const username = document.getElementById('username').value;
 
         if (isLogin) {
             firebase.auth().signInWithEmailAndPassword(email, pass)
                 .then(user => { alert("Đăng nhập thành công!"); window.location.href = "upload.html"; })
                 .catch(err => alert("Lỗi: " + err.message));
         } else {
+            if(!username) return alert("Mày phải nhập Username!");
             firebase.auth().createUserWithEmailAndPassword(email, pass)
-                .then(user => { alert("Đăng ký thành công!"); window.location.href = "upload.html"; })
+                .then(cred => {
+                    return cred.user.updateProfile({ displayName: username }).then(() => {
+                        alert("Đăng ký thành công!"); 
+                        window.location.href = "upload.html";
+                    });
+                })
                 .catch(err => alert("Lỗi: " + err.message));
         }
     }
