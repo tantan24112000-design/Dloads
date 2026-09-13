@@ -13,53 +13,34 @@
         button:hover { background: #ccc; }
         iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 400px; }
     </style>
-    <script>
-        window.isVN = true; 
-        window.applyLanguage = function() {
-            document.querySelectorAll('[data-vi]').forEach(el => {
-                const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    el.placeholder = text;
-                } else {
-                    el.innerHTML = text;
-                }
-            });
-        };
-        fetch('https://ipapi.co/json/')
-            .then(res => res.json())
-            .then(data => {
-                window.isVN = (data.country_code === 'VN');
-                window.applyLanguage();
-            }).catch(() => window.applyLanguage());
-    </script>
 </head>
 <body>
 
 <div class="container">
-    <h2 data-vi="UPLOAD GAME CỦA MÀY" data-en="UPLOAD YOUR GAME">UPLOAD GAME CỦA MÀY</h2>
+    <h2>UPLOAD GAME CỦA MÀY</h2>
     
-    <label data-vi="ID Game (vd: my-game-123)" data-en="Game ID (ex: my-game-123)">ID Game (vd: my-game-123)</label>
+    <label>ID Game (vd: my-game-123)</label>
     <input type="text" id="gId">
 
-    <label data-vi="Tên Game" data-en="Game Name">Tên Game</label>
+    <label>Tên Game</label>
     <input type="text" id="gName" oninput="updatePreview()">
 
-    <label data-vi="Link Tải" data-en="Download Link">Link Tải</label>
+    <label>Link Tải</label>
     <input type="text" id="gLink">
     
-    <label data-vi="Custom CSS (Tự custom giao diện)" data-en="Custom CSS (Customize UI)">Custom CSS (Tự custom giao diện)</label>
+    <label>Custom CSS (Tự custom giao diện)</label>
     <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>
 
-    <label data-vi="Custom HTML (Mô tả, nhúng ảnh...)" data-en="Custom HTML (Description, images...)">Custom HTML (Mô tả, nhúng ảnh...)</label>
+    <label>Custom HTML (Mô tả, nhúng ảnh...)</label>
     <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>
 
-    <button id="uploadBtn" onclick="submitToPending()" data-vi="GỬI YÊU CẦU DUYỆT" data-en="SUBMIT FOR APPROVAL">GỬI YÊU CẦU DUYỆT</button>
+    <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
 </div>
 
 <!-- Bảng Iframe xem trước -->
 <div class="preview-container">
-    <h2 data-vi="XEM TRƯỚC GIAO DIỆN" data-en="LIVE PREVIEW">XEM TRƯỚC GIAO DIỆN</h2>
-    <p style="font-size: 12px; color: #888;" data-vi="Giao diện sẽ hiển thị trên trang chủ như thế này:" data-en="This is how it will look on the homepage:">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>
+    <h2>XEM TRƯỚC GIAO DIỆN</h2>
+    <p style="font-size: 12px; color: #888;">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>
     <iframe id="previewFrame"></iframe>
 </div>
 
@@ -76,20 +57,20 @@
         appId: "1:982578480996:web:609acf09d1d5b951299c71",
         measurementId: "G-VD58ECNEPQ"
     };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);[cite: 3]
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
     let currentUser = null;
     firebase.auth().onAuthStateChanged(user => {
         if (user) { currentUser = user; } 
-        else { alert(window.isVN ? "Đăng nhập để upload!" : "Login to upload!"); window.location.href = "auth.html"; }
+        else { alert("Đăng nhập để upload!"); window.location.href = "auth.html"; }
     });
 
     // Cập nhật Iframe Live Preview
     function updatePreview() {
-        const name = document.getElementById('gName').value || (window.isVN ? 'Tên Game' : 'Game Name');
+        const name = document.getElementById('gName').value || 'Tên Game';
         const css = document.getElementById('gCss').value;
         const html = document.getElementById('gHtml').value;
-        const frame = document.getElementById('previewFrame');[cite: 3]
+        const frame = document.getElementById('previewFrame');
         
         frame.srcdoc = `
             <html>
@@ -108,13 +89,13 @@
                 </div>
             </body>
             </html>
-        `;[cite: 3]
+        `;
     }
 
     // Đẩy vào database Chờ Duyệt (pending_games)
     async function submitToPending() {
         const id = document.getElementById('gId').value;
-        if(!id || !document.getElementById('gName').value) return alert(window.isVN ? "Điền thiếu ID hoặc Tên!" : "Missing ID or Name!");
+        if(!id || !document.getElementById('gName').value) return alert("Điền thiếu ID hoặc Tên!");
 
         const pendingData = {
             name: document.getElementById('gName').value,
@@ -122,19 +103,20 @@
             customCss: document.getElementById('gCss').value,
             customHtml: document.getElementById('gHtml').value,
             developer: currentUser ? currentUser.displayName : "Unknown Dev"
-        };[cite: 3]
+        };
 
         try {
             await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
                 method: 'PUT',
                 body: JSON.stringify(pendingData)
-            });[cite: 3]
-            alert(window.isVN ? "Đã gửi game thành công! Vui lòng chờ Admin phê duyệt." : "Game submitted! Please wait for Admin approval.");
+            });
+            alert("Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.");
             window.location.href = "/";
         } catch (e) {
-            alert(window.isVN ? "Lỗi khi gửi duyệt!" : "Error submitting!");
+            alert("Lỗi khi gửi duyệt!");
         }
     }
 </script>
 </body>
 </html>
+
