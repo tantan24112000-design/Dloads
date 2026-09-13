@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <title>Upload Game - Dloads</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #0a0a0a; border: 1px solid #333; padding: 20px; }
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; }
+        .container { flex: 1; background: #0a0a0a; border: 1px solid #333; padding: 20px; }
+        .preview-container { flex: 1; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; }
         label { display: block; margin-top: 15px; font-size: 12px; color: #aaa; }
         input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-top: 5px; box-sizing: border-box; }
         button { background: #fff; color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; margin-top: 20px; }
         button:hover { background: #ccc; }
-        
-        #confirmBox { display: none; margin-top: 20px; border: 1px solid #00e676; padding: 15px; text-align: center; background: #051a05; }
-        #confirmBox button { background: #00e676; color: #000; }
+        iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 400px; }
     </style>
 </head>
 <body>
@@ -24,23 +23,25 @@
     <input type="text" id="gId">
 
     <label>Tên Game</label>
-    <input type="text" id="gName">
+    <input type="text" id="gName" oninput="updatePreview()">
 
     <label>Link Tải</label>
     <input type="text" id="gLink">
     
     <label>Custom CSS (Tự custom giao diện)</label>
-    <textarea id="gCss" rows="4" placeholder="body { background: red; }"></textarea>
+    <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>
 
     <label>Custom HTML (Mô tả, nhúng ảnh...)</label>
-    <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..."></textarea>
+    <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>
 
-    <button id="uploadBtn" onclick="sendToDiscord()">UPLOAD LÊN HỆ THỐNG</button>
+    <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
+</div>
 
-    <div id="confirmBox">
-        <p>Đã gửi thông báo lên Server Discord! Bấm OK để chính thức xuất bản Game lên Web.</p>
-        <button onclick="publishGame()">OK - XUẤT BẢN GAME</button>
-    </div>
+<!-- Bảng Iframe xem trước -->
+<div class="preview-container">
+    <h2>XEM TRƯỚC GIAO DIỆN</h2>
+    <p style="font-size: 12px; color: #888;">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>
+    <iframe id="previewFrame"></iframe>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -59,67 +60,60 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
     let currentUser = null;
-    
     firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            currentUser = user;
-        } else {
-            alert("Mày phải đăng nhập mới được upload game!");
-            window.location.href = "auth.html";
-        }
+        if (user) { currentUser = user; } 
+        else { alert("Đăng nhập để upload!"); window.location.href = "auth.html"; }
     });
 
-    const webhookUrl = "https://discord.com/api/webhooks/1535225145415831672/w4Tv5LsdHIliNrE76xAeALA1_2FcZXcw4eH4r02e-v5EnuYIYMTSVEonHOYMSlfQr5JY";
-    const dbUrl = "https://sf2g-bf285-default-rtdb.firebaseio.com/games";
-    
-    let gameDataDraft = {};
+    // Cập nhật Iframe Live Preview
+    function updatePreview() {
+        const name = document.getElementById('gName').value || 'Tên Game';
+        const css = document.getElementById('gCss').value;
+        const html = document.getElementById('gHtml').value;
+        const frame = document.getElementById('previewFrame');
+        
+        frame.srcdoc = `
+            <html>
+            <head>
+                <style>
+                    body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
+                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+                    #customDevContent { padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333; margin-top: 20px; }
+                    ${css}
+                </style>
+            </head>
+            <body>
+                <div class="detail-box">
+                    <h2>${name}</h2>
+                    <div id="customDevContent">${html}</div>
+                </div>
+            </body>
+            </html>
+        `;
+    }
 
-    async function sendToDiscord() {
+    // Đẩy vào database Chờ Duyệt (pending_games)
+    async function submitToPending() {
         const id = document.getElementById('gId').value;
-        const name = document.getElementById('gName').value;
-        if(!id || !name) return alert("Điền thiếu thông tin kìa!");
+        if(!id || !document.getElementById('gName').value) return alert("Điền thiếu ID hoặc Tên!");
 
-        gameDataDraft = {
-            name: name,
+        const pendingData = {
+            name: document.getElementById('gName').value,
             link: document.getElementById('gLink').value,
             customCss: document.getElementById('gCss').value,
             customHtml: document.getElementById('gHtml').value,
             developer: currentUser ? currentUser.displayName : "Unknown Dev"
         };
 
-        const payload = {
-            content: `🚀 **Một game mới vừa được Upload!**`,
-            embeds: [{
-                title: name,
-                description: `ID: ${id}\nĐang chờ xác nhận xuất bản.\nDev: ${gameDataDraft.developer}`,
-                color: 5814783
-            }]
-        };
-
         try {
-            await fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            document.getElementById('uploadBtn').style.display = 'none';
-            document.getElementById('confirmBox').style.display = 'block';
-        } catch (e) {
-            alert("Lỗi gửi Webhook!");
-        }
-    }
-
-    async function publishGame() {
-        const id = document.getElementById('gId').value;
-        try {
-            await fetch(`${dbUrl}/${id}.json`, {
+            await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
                 method: 'PUT',
-                body: JSON.stringify(gameDataDraft)
+                body: JSON.stringify(pendingData)
             });
-            alert("Game đã lên sóng thành công!");
-            window.location.href = "index.html";
+            alert("Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.");
+            window.location.href = "/";
         } catch (e) {
-            alert("Lỗi lưu DB!");
+            alert("Lỗi khi gửi duyệt!");
         }
     }
 </script>
