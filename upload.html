@@ -27,6 +27,26 @@
 
     <label>Link Tải</label>
     <input type="text" id="gLink">
+
+    <div style="background: #111; border: 1px dashed #00e676; padding: 15px; margin-top: 15px;">
+    <label style="color: #00e676; font-size: 14px;">
+        <input type="checkbox" id="gIsPaid" onchange="togglePayMode()"> 💰 BẬT CHẾ ĐỘ BÁN GAME (100% TIỀN VỀ DEV)
+    </label>
+    
+    <div id="payFields" style="display: none; margin-top: 10px;">
+        <label>Giá bán (Hiển thị trên web)</label>
+        <input type="text" id="gPrice" placeholder="vd: 50.000 VNĐ hoặc 5 USD">
+        
+        <label>Số điện thoại MoMo nhận tiền</label>
+        <input type="text" id="gMomo" placeholder="vd: 0912345678">
+        
+        <label>Link PayPal.Me nhận tiền</label>
+        <input type="text" id="gPaypal" placeholder="vd: https://paypal.me/username">
+
+        <label>Link Contact (Nhóm Discord / FB cá nhân để check bill & gửi game)</label>
+        <input type="text" id="gContact" placeholder="Bắt buộc phải có để gửi link cho khách">
+    </div>
+</div>
     
     <label>Custom CSS (Tự custom giao diện)</label>
     <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>
