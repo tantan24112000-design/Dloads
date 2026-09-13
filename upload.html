@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <title>Upload Game - Dloads</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; }
-        .container { flex: 1; min-width: 350px; background: #0a0a0a; border: 1px solid #333; padding: 20px; }
-        .preview-container { flex: 1; min-width: 350px; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; }
-        label { display: block; margin-top: 15px; font-size: 12px; color: #aaa; font-weight: bold; }
-        input[type="text"], textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-top: 5px; box-sizing: border-box; }
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; }
+        .container { flex: 1; background: #0a0a0a; border: 1px solid #333; padding: 20px; }
+        .preview-container { flex: 1; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; }
+        label { display: block; margin-top: 15px; font-size: 12px; color: #aaa; }
+        input, textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-top: 5px; box-sizing: border-box; }
         button { background: #fff; color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; margin-top: 20px; }
         button:hover { background: #ccc; }
         iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 400px; }
-        .pay-box { background: #111; border: 1px dashed #00e676; padding: 15px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -26,47 +25,25 @@
     <label>Tên Game</label>
     <input type="text" id="gName" oninput="updatePreview()">
 
-    <label>Link Tải Gốc (Nếu game free)</label>
-    <input type="text" id="gLink" placeholder="Link Mediafire/Drive...">
+    <label>Link Tải</label>
+    <input type="text" id="gLink">
     
     <label>Custom CSS (Tự custom giao diện)</label>
-    <textarea id="gCss" rows="3" placeholder="body { background: #111; }" oninput="updatePreview()"></textarea>
+    <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>
 
     <label>Custom HTML (Mô tả, nhúng ảnh...)</label>
-    <textarea id="gHtml" rows="5" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>
-
-    <!-- CẤU HÌNH BÁN GAME P2P -->
-    <div class="pay-box">
-        <label style="color: #00e676; font-size: 14px; margin-top: 0; cursor: pointer;">
-            <input type="checkbox" id="gIsPaid" onchange="togglePayMode()"> 💰 BẬT CHẾ ĐỘ BÁN GAME (100% TIỀN VỀ DEV)
-        </label>
-        
-        <div id="payFields" style="display: none; margin-top: 15px;">
-            <label>Giá bán (Hiển thị trên web)</label>
-            <input type="text" id="gPrice" placeholder="vd: 50.000 VNĐ hoặc 5 USD">
-            
-            <label>Số điện thoại MoMo nhận tiền</label>
-            <input type="text" id="gMomo" placeholder="vd: 0912345678">
-            
-            <label>Link PayPal.Me (Tùy chọn)</label>
-            <input type="text" id="gPaypal" placeholder="vd: https://paypal.me/username">
-
-            <label>Link Contact (Zalo/Discord/FB) - Bắt buộc</label>
-            <input type="text" id="gContact" placeholder="Nơi khách gửi Bill để mày check và đưa link tải">
-        </div>
-    </div>
+    <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>
 
     <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
 </div>
 
-<!-- Iframe xem trước -->
+<!-- Bảng Iframe xem trước -->
 <div class="preview-container">
     <h2>XEM TRƯỚC GIAO DIỆN</h2>
     <p style="font-size: 12px; color: #888;">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>
     <iframe id="previewFrame"></iframe>
 </div>
 
-<!-- Script Firebase & Xử lý -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script>
@@ -77,7 +54,8 @@
         databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
         storageBucket: "sf2g-bf285.firebasestorage.app",
         messagingSenderId: "982578480996",
-        appId: "1:982578480996:web:609acf09d1d5b951299c71"
+        appId: "1:982578480996:web:609acf09d1d5b951299c71",
+        measurementId: "G-VD58ECNEPQ"
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
@@ -87,11 +65,7 @@
         else { alert("Đăng nhập để upload!"); window.location.href = "auth.html"; }
     });
 
-    function togglePayMode() {
-        const isPaid = document.getElementById('gIsPaid').checked;
-        document.getElementById('payFields').style.display = isPaid ? 'block' : 'none';
-    }
-
+    // Cập nhật Iframe Live Preview
     function updatePreview() {
         const name = document.getElementById('gName').value || 'Tên Game';
         const css = document.getElementById('gCss').value;
@@ -103,8 +77,8 @@
             <head>
                 <style>
                     body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
-                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
-                    #customDevContent { padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333; margin-top: 15px; }
+                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+                    #customDevContent { padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333; margin-top: 20px; }
                     ${css}
                 </style>
             </head>
@@ -118,43 +92,28 @@
         `;
     }
 
+    // Đẩy vào database Chờ Duyệt (pending_games)
     async function submitToPending() {
-        const id = document.getElementById('gId').value.trim();
-        const name = document.getElementById('gName').value.trim();
-        const isPaid = document.getElementById('gIsPaid').checked;
-        
-        if(!id || !name) return alert("Điền thiếu ID hoặc Tên!");
-        if(isPaid && !document.getElementById('gContact').value) return alert("Bật chế độ bán thì bắt buộc phải nhập Link Contact để khách nhận game!");
+        const id = document.getElementById('gId').value;
+        if(!id || !document.getElementById('gName').value) return alert("Điền thiếu ID hoặc Tên!");
 
         const pendingData = {
-            name: name,
+            name: document.getElementById('gName').value,
             link: document.getElementById('gLink').value,
             customCss: document.getElementById('gCss').value,
             customHtml: document.getElementById('gHtml').value,
-            developer: currentUser ? currentUser.displayName : "Unknown Dev",
-            
-            // Thông tin thanh toán
-            isPaid: isPaid,
-            price: document.getElementById('gPrice').value,
-            momo: document.getElementById('gMomo').value,
-            paypal: document.getElementById('gPaypal').value,
-            contact: document.getElementById('gContact').value
+            developer: currentUser ? currentUser.displayName : "Unknown Dev"
         };
-
-        document.getElementById('uploadBtn').innerText = "ĐANG GỬI...";
-        document.getElementById('uploadBtn').disabled = true;
 
         try {
             await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
                 method: 'PUT',
                 body: JSON.stringify(pendingData)
             });
-            alert("Đã gửi game vào HÀNG CHỜ thành công! Vui lòng đợi Admin duyệt.");
-            window.location.reload();
+            alert("Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.");
+            window.location.href = "/";
         } catch (e) {
             alert("Lỗi khi gửi duyệt!");
-            document.getElementById('uploadBtn').innerText = "GỬI YÊU CẦU DUYỆT";
-            document.getElementById('uploadBtn').disabled = false;
         }
     }
 </script>
