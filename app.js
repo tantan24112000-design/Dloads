@@ -14,7 +14,6 @@ function formatPrice(price) {
 function trackUserPreference(category) {
     if (!category) return;
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
-    // Parse tags if multiple (e.g. "Horror, 2D")
     let tags = category.split(',').map(t => t.trim());
     tags.forEach(t => {
         userPrefs[t] = (userPrefs[t] || 0) + 1;
@@ -55,29 +54,46 @@ async function init() {
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
-            // Render Developer
             document.getElementById('gDevDetail').innerHTML = `A game by <span style="color:#fff; font-weight:bold;">${data.developer || 'Unknown Studio'}</span>`;
-            
             document.getElementById('gSize').innerText = `SIZE: ${data.size || 'N/A'}`;
             document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/600x280?text=No+Image';
             document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
 
-            // Render Platforms in Detail
             if (data.platforms) {
                 let platHtml = data.platforms.split(',').map(p => `<span class="plat-badge">${p.trim()}</span>`).join('');
                 document.getElementById('gPlatformsDetail').innerHTML = platHtml;
             }
 
-            // Render Categories
             if (data.category) {
                 const catEl = document.getElementById('gCategoryDetail');
-                catEl.innerText = data.category.split(',')[0]; // Hiện tag chính thôi
+                catEl.innerText = data.category.split(',')[0];
                 catEl.style.display = 'inline-block';
             }
 
             if (data.price) {
                 document.getElementById('gPriceContainer').style.display = 'block';
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
+            }
+
+            // XỬ LÝ NHÚNG CUSTOM HTML AN TOÀN QUA DOMPURIFY
+            const devContentEl = document.getElementById('customDevContent');
+            if (data.customHtml) {
+                devContentEl.innerHTML = DOMPurify.sanitize(data.customHtml);
+                devContentEl.style.display = 'block';
+            } else {
+                devContentEl.style.display = 'none';
+            }
+
+            // XỬ LÝ NHÚNG CUSTOM CSS CỦA DEV
+            const existingStyle = document.getElementById('devCustomCss');
+            if (existingStyle) existingStyle.remove(); // Xóa style cũ nếu có
+            
+            if (data.customCss) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'devCustomCss';
+                // Áp dụng CSS thẳng vào div .detail-box để không làm hỏng toàn bộ nền web gốc
+                styleEl.innerHTML = `.detail-box { ${data.customCss} }`; 
+                document.head.appendChild(styleEl);
             }
 
             document.getElementById('shareBtn').onclick = () => {
@@ -131,7 +147,6 @@ function updateGrid() {
     let filteredArray = [];
     for (let gameId in allGamesData) {
         const game = allGamesData[gameId];
-        // Tìm theo tên game HOẶC tên dev
         let devName = game.developer ? game.developer.toLowerCase() : '';
         if (game && game.name && (game.name.toLowerCase().includes(query) || devName.includes(query))) {
             filteredArray.push({ id: gameId, ...game });
@@ -141,7 +156,7 @@ function updateGrid() {
     if (sortMethod === 'az') {
         filteredArray.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortMethod === 'new') {
-        filteredArray.reverse(); // Đảo mảng để cái mới nhất lên đầu
+        filteredArray.reverse();
     } else if (sortMethod === 'recommended') {
         const userPrefs = getUserPreferences();
         filteredArray.sort((a, b) => {
