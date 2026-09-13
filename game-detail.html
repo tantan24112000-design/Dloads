@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi Tiết Game</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; justify-content: center; }
+        .game-container { background: #0a0a0a; border: 1px solid #333; padding: 30px; width: 100%; max-width: 800px; }
+        .action-btn { font-weight: bold; padding: 15px; width: 100%; border: none; cursor: pointer; text-align: center; text-decoration: none; display: block; margin-top: 20px; box-sizing: border-box; }
+        #downloadBtn { background: #fff; color: #000; display: none; }
+        #downloadBtn:hover { background: #ccc; }
+        #buyBtn { background: #00e676; color: #000; display: none; }
+        #buyBtn:hover { background: #00c853; }
+        
+        /* Modal Style */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
+        .modal-content { background: #0a0a0a; border: 1px solid #333; padding: 30px; width: 400px; max-width: 90%; text-align: center; }
+        .payment-method { margin: 20px 0; padding: 15px; background: #111; border: 1px dashed #555; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1 id="gameTitle">Đang tải...</h1>
+    <p><b>Developer:</b> <span id="gameDev">...</span></p>
+    
+    <!-- Render Custom HTML/CSS của Dev ở đây -->
+    <div id="devContent" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333;"></div>
+
+    <!-- Nút Hành Động (Sẽ tự động ẩn/hiện bằng JS) -->
+    <a id="downloadBtn" class="action-btn" href="#" target="_blank">TẢI GAME MIỄN PHÍ</a>
+    <button id="buyBtn" class="action-btn" onclick="openCheckout()">MUA GAME NÀY</button>
+</div>
+
+<!-- Modal Checkout (Chỉ hiện khi bấm Mua) -->
+<div id="checkoutModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: #00e676; margin-top: 0;">THANH TOÁN ỦNG HỘ DEV</h2>
+        <p>Số tiền cần thanh toán: <b id="showPrice" style="color: yellow; font-size: 20px;"></b></p>
+        <p style="font-size: 13px; color: #aaa;">Nền tảng không thu phí. 100% số tiền sẽ được chuyển thẳng cho Dev.</p>
+        
+        <div class="payment-method">
+            <p style="margin: 0; font-weight: bold; color: #ff66b2;">Chuyển khoản MoMo</p>
+            <p style="font-size: 22px; font-weight: bold; margin: 10px 0;" id="showMomo"></p>
+            <p style="font-size: 12px; color: #888;" id="momoContent">Nội dung: Mua game ...</p>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <a id="showPaypal" href="#" target="_blank" style="display: none; background: #003087; color: #fff; padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 4px;">Thanh toán qua PayPal</a>
+        </div>
+
+        <hr style="border-color: #333;">
+        <p style="font-size: 13px; color: #ff4444; font-weight: bold;">Sau khi chuyển khoản, hãy chụp Bill và liên hệ Dev để nhận game.</p>
+        <a id="showContact" href="#" target="_blank" class="action-btn" style="background: #7289da; color: #fff; margin-top: 10px; padding: 12px;">GỬI BILL CHO DEV (NHẬN LINK TẢI)</a>
+        
+        <button onclick="closeCheckout()" style="background: #333; color: #fff; border: none; padding: 12px; width: 100%; margin-top: 15px; cursor: pointer; font-weight: bold;">ĐÓNG</button>
+    </div>
+</div>
+
+<script>
+    // Lấy ID game từ URL (vd: game.html?id=my-game)
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('id') || 'test-game'; // Đổi 'test-game' thành ID cứng để test nếu ko dùng tham số
+
+    async function loadGameData() {
+        try {
+            const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/games/${gameId}.json`);
+            const gameData = await res.json();
+            
+            if(!gameData) {
+                document.getElementById('gameTitle').innerText = "Không tìm thấy Game!";
+                return;
+            }
+
+            // Đổ thông tin cơ bản
+            document.getElementById('gameTitle').innerText = gameData.name;
+            document.getElementById('gameDev').innerText = gameData.developer || "Unknown";
+            
+            // Chèn CSS và HTML custom của Dev
+            const styleElement = document.createElement('style');
+            styleElement.innerHTML = gameData.customCss || '';
+            document.head.appendChild(styleElement);
+            document.getElementById('devContent').innerHTML = gameData.customHtml || '<p>Chưa có mô tả.</p>';
+
+            // Kiểm tra trạng thái kiếm tiền
+            if (gameData.isPaid) {
+                // Game trả phí
+                document.getElementById('buyBtn').style.display = 'block';
+                document.getElementById('buyBtn').innerText = `MUA GAME GIÁ ${gameData.price}`;
+                
+                // Đổ data vào Modal
+                document.getElementById('showPrice').innerText = gameData.price;
+                document.getElementById('showMomo').innerText = gameData.momo || 'Không dùng MoMo';
+                document.getElementById('momoContent').innerText = `Nội dung: Mua game ${gameData.name}`;
+                
+                if (gameData.paypal) {
+                    document.getElementById('showPaypal').href = gameData.paypal;
+                    document.getElementById('showPaypal').style.display = 'inline-block';
+                }
+                document.getElementById('showContact').href = gameData.contact || '#';
+            } else {
+                // Game miễn phí
+                document.getElementById('downloadBtn').style.display = 'block';
+                document.getElementById('downloadBtn').href = gameData.link || '#';
+            }
+        } catch (e) {
+            console.error("Lỗi tải data:", e);
+        }
+    }
+
+    function openCheckout() { document.getElementById('checkoutModal').style.display = 'flex'; }
+    function closeCheckout() { document.getElementById('checkoutModal').style.display = 'none'; }
+
+    // Chạy hàm load data
+    loadGameData();
+</script>
+</body>
+</html>
