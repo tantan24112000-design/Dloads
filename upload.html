@@ -43,13 +43,37 @@
     </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
+        authDomain: "sf2g-bf285.firebaseapp.com",
+        projectId: "sf2g-bf285",
+        databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
+        storageBucket: "sf2g-bf285.firebasestorage.app",
+        messagingSenderId: "982578480996",
+        appId: "1:982578480996:web:609acf09d1d5b951299c71",
+        measurementId: "G-VD58ECNEPQ"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    let currentUser = null;
+    
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+        } else {
+            alert("Mày phải đăng nhập mới được upload game!");
+            window.location.href = "auth.html";
+        }
+    });
+
     const webhookUrl = "https://discord.com/api/webhooks/1535225145415831672/w4Tv5LsdHIliNrE76xAeALA1_2FcZXcw4eH4r02e-v5EnuYIYMTSVEonHOYMSlfQr5JY";
     const dbUrl = "https://sf2g-bf285-default-rtdb.firebaseio.com/games";
     
-    let gameDataDraft = {}; // Lưu tạm dữ liệu
+    let gameDataDraft = {};
 
-    // BƯỚC 1: Bấm Upload -> Gửi Webhook
     async function sendToDiscord() {
         const id = document.getElementById('gId').value;
         const name = document.getElementById('gName').value;
@@ -60,14 +84,14 @@
             link: document.getElementById('gLink').value,
             customCss: document.getElementById('gCss').value,
             customHtml: document.getElementById('gHtml').value,
-            // Có thể thêm developer name lấy từ Firebase Auth ở đây
+            developer: currentUser ? currentUser.displayName : "Unknown Dev"
         };
 
         const payload = {
             content: `🚀 **Một game mới vừa được Upload!**`,
             embeds: [{
                 title: name,
-                description: `ID: ${id}\nĐang chờ xác nhận xuất bản.`,
+                description: `ID: ${id}\nĐang chờ xác nhận xuất bản.\nDev: ${gameDataDraft.developer}`,
                 color: 5814783
             }]
         };
@@ -78,7 +102,6 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            // Ẩn nút Upload, Hiện hộp thoại Confirm
             document.getElementById('uploadBtn').style.display = 'none';
             document.getElementById('confirmBox').style.display = 'block';
         } catch (e) {
@@ -86,16 +109,15 @@
         }
     }
 
-    // BƯỚC 2: Bấm OK -> Đẩy thẳng lên Firebase
     async function publishGame() {
         const id = document.getElementById('gId').value;
         try {
             await fetch(`${dbUrl}/${id}.json`, {
-                method: 'PUT', // Dùng PUT để ghi đè theo ID game
+                method: 'PUT',
                 body: JSON.stringify(gameDataDraft)
             });
             alert("Game đã lên sóng thành công!");
-            window.location.href = "index.html"; // Trở về trang chủ
+            window.location.href = "index.html";
         } catch (e) {
             alert("Lỗi lưu DB!");
         }
