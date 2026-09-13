@@ -4,6 +4,7 @@ const isVi = (navigator.language || '').toLowerCase().includes('vi');
 
 let allGamesData = {};
 const id = new URLSearchParams(window.location.search).get('id');
+const userPage = new URLSearchParams(window.location.search).get('user');
 
 function formatPrice(price) {
     if (!price) return '';
@@ -54,7 +55,8 @@ async function init() {
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
-            document.getElementById('gDevDetail').innerHTML = `A game by <span style="color:#fff; font-weight:bold;">${data.developer || 'Unknown Studio'}</span>`;
+            // Cho phép bấm vào tên tác giả ở chi tiết game để qua thẳng trang cá nhân luôn
+            document.getElementById('gDevDetail').innerHTML = `A game by <span style="color:#fff; font-weight:bold; cursor:pointer; text-decoration:underline;" onclick="window.location.href='/?user=${encodeURIComponent(data.developer || 'Unknown Studio')}'">${data.developer || 'Unknown Studio'}</span>`;
             document.getElementById('gSize').innerText = `SIZE: ${data.size || 'N/A'}`;
             document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/600x280?text=No+Image';
             document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
@@ -75,7 +77,6 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
-            // XỬ LÝ NHÚNG CUSTOM HTML AN TOÀN QUA DOMPURIFY
             const devContentEl = document.getElementById('customDevContent');
             if (data.customHtml) {
                 devContentEl.innerHTML = DOMPurify.sanitize(data.customHtml);
@@ -84,14 +85,12 @@ async function init() {
                 devContentEl.style.display = 'none';
             }
 
-            // XỬ LÝ NHÚNG CUSTOM CSS CỦA DEV
             const existingStyle = document.getElementById('devCustomCss');
-            if (existingStyle) existingStyle.remove(); // Xóa style cũ nếu có
+            if (existingStyle) existingStyle.remove();
             
             if (data.customCss) {
                 const styleEl = document.createElement('style');
                 styleEl.id = 'devCustomCss';
-                // Áp dụng CSS thẳng vào div .detail-box để không làm hỏng toàn bộ nền web gốc
                 styleEl.innerHTML = `.detail-box { ${data.customCss} }`; 
                 document.head.appendChild(styleEl);
             }
@@ -129,27 +128,45 @@ async function init() {
         } else {
             document.getElementById('detailView').innerHTML = `<div style="text-align:center; padding:50px;">GAME NOT FOUND</div>`;
         }
+    } else if (userPage) {
+        document.getElementById('listView').style.display = 'block';
+        document.getElementById('loader').style.display = 'none';
+        
+        const grid = document.getElementById('gameGrid');
+        grid.insertAdjacentHTML('beforebegin', `<h2 style="text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">GAMES BY: <span style="color: #00e676;">${userPage}</span></h2>`);
+        
+        updateGrid(userPage.toLowerCase());
     } else {
         document.getElementById('listView').style.display = 'block';
         document.getElementById('loader').style.display = 'none';
         updateGrid();
 
-        document.getElementById('searchInput').addEventListener('input', updateGrid);
-        document.getElementById('sortSelect').addEventListener('change', updateGrid);
+        document.getElementById('searchInput').addEventListener('input', () => updateGrid());
+        document.getElementById('sortSelect').addEventListener('change', () => updateGrid());
     }
 }
 
-function updateGrid() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    const sortMethod = document.getElementById('sortSelect').value;
+function updateGrid(targetUser = null) {
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    
+    const query = searchInput ? searchInput.value.toLowerCase() : '';
+    const sortMethod = sortSelect ? sortSelect.value : 'new';
     const grid = document.getElementById('gameGrid');
     
     let filteredArray = [];
     for (let gameId in allGamesData) {
         const game = allGamesData[gameId];
         let devName = game.developer ? game.developer.toLowerCase() : '';
-        if (game && game.name && (game.name.toLowerCase().includes(query) || devName.includes(query))) {
-            filteredArray.push({ id: gameId, ...game });
+        
+        if (targetUser) {
+            if (devName === targetUser) {
+                filteredArray.push({ id: gameId, ...game });
+            }
+        } else {
+            if (game && game.name && (game.name.toLowerCase().includes(query) || devName.includes(query))) {
+                filteredArray.push({ id: gameId, ...game });
+            }
         }
     }
 
@@ -199,7 +216,8 @@ function updateGrid() {
                     <img src="${game.img || 'https://via.placeholder.com/300x180'}">
                     ${platformsHtml}
                     <h3 class="game-title">${game.name}</h3>
-                    <p class="dev-name">${game.developer || 'Unknown'}</p>
+                    <!-- Thêm chức năng bấm vào tên tác giả nhảy sang trang riêng -->
+                    <p class="dev-name" style="cursor:pointer; text-decoration:underline;" onclick="window.location.href='/?user=${encodeURIComponent(game.developer || 'Unknown')}'">${game.developer || 'Unknown'}</p>
                     ${categoryHtml}
                     ${priceHtml}
                 </div>
