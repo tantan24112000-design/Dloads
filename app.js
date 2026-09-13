@@ -14,7 +14,11 @@ function formatPrice(price) {
 function trackUserPreference(category) {
     if (!category) return;
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
-    userPrefs[category] = (userPrefs[category] || 0) + 1;
+    // Parse tags if multiple (e.g. "Horror, 2D")
+    let tags = category.split(',').map(t => t.trim());
+    tags.forEach(t => {
+        userPrefs[t] = (userPrefs[t] || 0) + 1;
+    });
     localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
 }
 
@@ -22,16 +26,13 @@ function getUserPreferences() {
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
-// Hàm fetch data có cơ chế cache qua sessionStorage để không bị gọi lại liên tục
 async function fetchAllGames() {
     if (Object.keys(allGamesData).length > 0) return allGamesData;
-    
     let cached = sessionStorage.getItem('cachedGames');
     if (cached) {
         allGamesData = JSON.parse(cached);
         return allGamesData;
     }
-
     try {
         const res = await fetch(`${dbUrl}/games.json`);
         allGamesData = await res.json() || {};
@@ -43,7 +44,6 @@ async function fetchAllGames() {
     return allGamesData;
 }
 
-// Khởi chạy chính
 async function init() {
     const allGames = await fetchAllGames();
 
@@ -55,13 +55,23 @@ async function init() {
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
+            // Render Developer
+            document.getElementById('gDevDetail').innerHTML = `A game by <span style="color:#fff; font-weight:bold;">${data.developer || 'Unknown Studio'}</span>`;
+            
             document.getElementById('gSize').innerText = `SIZE: ${data.size || 'N/A'}`;
-            document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/400x220?text=No+Image';
+            document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/600x280?text=No+Image';
             document.getElementById('gLink').href = `${urlWebNhiemVu}/?id=${id}`;
 
+            // Render Platforms in Detail
+            if (data.platforms) {
+                let platHtml = data.platforms.split(',').map(p => `<span class="plat-badge">${p.trim()}</span>`).join('');
+                document.getElementById('gPlatformsDetail').innerHTML = platHtml;
+            }
+
+            // Render Categories
             if (data.category) {
                 const catEl = document.getElementById('gCategoryDetail');
-                catEl.innerText = data.category;
+                catEl.innerText = data.category.split(',')[0]; // Hiện tag chính thôi
                 catEl.style.display = 'inline-block';
             }
 
@@ -89,7 +99,7 @@ async function init() {
             let count = 0;
             let recHtml = '';
             for (let gId in allGames) {
-                if (gId !== id && count < 3) {
+                if (gId !== id && count < 4) {
                     recHtml += `
                         <a href="?id=${gId}" class="rec-card">
                             <img src="${allGames[gId].img || 'https://via.placeholder.com/150x80'}">
@@ -121,7 +131,9 @@ function updateGrid() {
     let filteredArray = [];
     for (let gameId in allGamesData) {
         const game = allGamesData[gameId];
-        if (game && game.name && game.name.toLowerCase().includes(query)) {
+        // Tìm theo tên game HOẶC tên dev
+        let devName = game.developer ? game.developer.toLowerCase() : '';
+        if (game && game.name && (game.name.toLowerCase().includes(query) || devName.includes(query))) {
             filteredArray.push({ id: gameId, ...game });
         }
     }
@@ -129,12 +141,14 @@ function updateGrid() {
     if (sortMethod === 'az') {
         filteredArray.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortMethod === 'new') {
-        filteredArray.reverse();
+        filteredArray.reverse(); // Đảo mảng để cái mới nhất lên đầu
     } else if (sortMethod === 'recommended') {
         const userPrefs = getUserPreferences();
         filteredArray.sort((a, b) => {
-            let scoreA = userPrefs[a.category] || 0;
-            let scoreB = userPrefs[b.category] || 0;
+            let catA = a.category ? a.category.split(',')[0].trim() : '';
+            let catB = b.category ? b.category.split(',')[0].trim() : '';
+            let scoreA = userPrefs[catA] || 0;
+            let scoreB = userPrefs[catB] || 0;
             return scoreB - scoreA;
         });
     }
@@ -154,19 +168,30 @@ function updateGrid() {
                          </div>`;
         }
 
-        let categoryHtml = game.category ? `<span class="category-tag">${game.category}</span>` : '';
+        let categoryHtml = game.category ? `<span class="category-tag">${game.category.split(',')[0]}</span>` : '';
+        
+        let platformsHtml = '';
+        if (game.platforms) {
+            platformsHtml = `<div class="platforms">` + 
+                game.platforms.split(',').map(p => `<span class="plat-badge">${p.trim()}</span>`).join('') + 
+                `</div>`;
+        }
 
         htmlContent += `
             <div class="game-card">
                 <span class="card-badge">VERIFIED</span>
-                <div>
+                <div style="flex-grow: 1;">
                     <img src="${game.img || 'https://via.placeholder.com/300x180'}">
+                    ${platformsHtml}
+                    <h3 class="game-title">${game.name}</h3>
+                    <p class="dev-name">${game.developer || 'Unknown'}</p>
                     ${categoryHtml}
-                    <h3 style="font-size:15px; margin:5px 0; letter-spacing:0.5px;">${game.name}</h3>
                     ${priceHtml}
-                    <p style="color:#888; font-size:12px; margin-bottom:12px;">${game.size||'N/A'}</p>
                 </div>
-                <a href="?id=${game.id}" class="btn">${isVi ? 'XEM CHI TIẾT' : 'VIEW DETAIL'}</a>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 15px;">
+                    <p style="color:#888; font-size:11px; margin:0;">${game.size||'N/A'}</p>
+                    <a href="?id=${game.id}" class="btn" style="padding: 8px 15px;">VIEW</a>
+                </div>
             </div>
         `;
 
