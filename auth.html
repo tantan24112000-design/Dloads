@@ -12,24 +12,27 @@
         .switch { font-size: 12px; color: #888; cursor: pointer; text-decoration: underline; }
     </style>
     <script>
-        window.isVN = true; 
-        window.applyLanguage = function() {
-            document.querySelectorAll('[data-vi]').forEach(el => {
-                const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    el.placeholder = text;
-                } else {
-                    el.innerHTML = text;
-                }
-            });
-        };
-        fetch('https://ipapi.co/json/')
-            .then(res => res.json())
-            .then(data => {
-                window.isVN = (data.country_code === 'VN');
-                window.applyLanguage();
-            }).catch(() => window.applyLanguage());
-    </script>
+    // Check trực tiếp ngôn ngữ đang dùng của trình duyệt (vi, en, vi-VN,...)
+    window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
+    
+    window.applyLanguage = function() {
+        document.querySelectorAll('[data-vi]').forEach(el => {
+            const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = text;
+            } else if (el.tagName === 'OPTION') {
+                el.innerText = text;
+            } else {
+                el.innerHTML = text;
+            }
+        });
+        const profileDiv = document.getElementById('userProfile');
+        if (profileDiv) profileDiv.title = window.isVN ? "Trang cá nhân của tao" : "My Profile";
+    };
+
+    // Chạy ngay khi DOM sẵn sàng
+    window.addEventListener('DOMContentLoaded', window.applyLanguage);
+</script>
 </head>
 <body>
 
