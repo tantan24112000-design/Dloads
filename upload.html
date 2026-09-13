@@ -13,57 +13,52 @@
         button:hover { background: #ccc; }
         iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 400px; }
     </style>
-<script>
-    // Check trực tiếp ngôn ngữ đang dùng của trình duyệt (vi, en, vi-VN,...)
-    window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
-    
-    window.applyLanguage = function() {
-        document.querySelectorAll('[data-vi]').forEach(el => {
-            const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
-            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                el.placeholder = text;
-            } else if (el.tagName === 'OPTION') {
-                el.innerText = text;
-            } else {
-                el.innerHTML = text;
-            }
-        });
-        const profileDiv = document.getElementById('userProfile');
-        if (profileDiv) profileDiv.title = window.isVN ? "Trang cá nhân của tao" : "My Profile";
-    };
+    <script>
+        // Check ngôn ngữ trình duyệt tự động (vi hoặc en)
+        window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
+        
+        window.applyLanguage = function() {
+            document.querySelectorAll('[data-vi]').forEach(el => {
+                const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = text;
+                } else {
+                    el.innerHTML = text;
+                }
+            });
+        };
 
-    // Chạy ngay khi DOM sẵn sàng
-    window.addEventListener('DOMContentLoaded', window.applyLanguage);
-</script>
+        window.addEventListener('DOMContentLoaded', window.applyLanguage);
+    </script>
 </head>
 <body>
 
 <div class="container">
-    <h2 data-vi="UPLOAD GAME CỦA MÀY" data-en="UPLOAD YOUR GAME">UPLOAD GAME CỦA MÀY</h2>
+    <h2 data-vi="UPLOAD GAME CỦA MÀY" data-en="UPLOAD YOUR GAME">UPLOAD GAME CỦA MÀY</h2>[cite: 3]
     
-    <label data-vi="ID Game (vd: my-game-123)" data-en="Game ID (ex: my-game-123)">ID Game (vd: my-game-123)</label>
-    <input type="text" id="gId">
+    <label data-vi="ID Game (vd: my-game-123)" data-en="Game ID (ex: my-game-123)">ID Game (vd: my-game-123)</label>[cite: 3]
+    <input type="text" id="gId">[cite: 3]
 
-    <label data-vi="Tên Game" data-en="Game Name">Tên Game</label>
-    <input type="text" id="gName" oninput="updatePreview()">
+    <label data-vi="Tên Game" data-en="Game Name">Tên Game</label>[cite: 3]
+    <input type="text" id="gName" oninput="updatePreview()">[cite: 3]
 
-    <label data-vi="Link Tải" data-en="Download Link">Link Tải</label>
-    <input type="text" id="gLink">
+    <label data-vi="Link Tải" data-en="Download Link">Link Tải</label>[cite: 3]
+    <input type="text" id="gLink">[cite: 3]
     
-    <label data-vi="Custom CSS (Tự custom giao diện)" data-en="Custom CSS (Customize UI)">Custom CSS (Tự custom giao diện)</label>
-    <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>
+    <label data-vi="Custom CSS (Tự custom giao diện)" data-en="Custom CSS (Customize UI)">Custom CSS (Tự custom giao diện)</label>[cite: 3]
+    <textarea id="gCss" rows="4" placeholder="body { background: red; }" oninput="updatePreview()"></textarea>[cite: 3]
 
-    <label data-vi="Custom HTML (Mô tả, nhúng ảnh...)" data-en="Custom HTML (Description, images...)">Custom HTML (Mô tả, nhúng ảnh...)</label>
-    <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>
+    <label data-vi="Custom HTML (Mô tả, nhúng ảnh...)" data-en="Custom HTML (Description, images...)">Custom HTML (Mô tả, nhúng ảnh...)</label>[cite: 3]
+    <textarea id="gHtml" rows="6" placeholder="<h1>Game siêu hay</h1>..." oninput="updatePreview()"></textarea>[cite: 3]
 
-    <button id="uploadBtn" onclick="submitToPending()" data-vi="GỬI YÊU CẦU DUYỆT" data-en="SUBMIT FOR APPROVAL">GỬI YÊU CẦU DUYỆT</button>
+    <button id="uploadBtn" onclick="submitToPending()" data-vi="GỬI YÊU CẦU DUYỆT" data-en="SUBMIT FOR APPROVAL">GỬI YÊU CẦU DUYỆT</button>[cite: 3]
 </div>
 
 <!-- Bảng Iframe xem trước -->
 <div class="preview-container">
-    <h2 data-vi="XEM TRƯỚC GIAO DIỆN" data-en="LIVE PREVIEW">XEM TRƯỚC GIAO DIỆN</h2>
-    <p style="font-size: 12px; color: #888;" data-vi="Giao diện sẽ hiển thị trên trang chủ như thế này:" data-en="This is how it will look on the homepage:">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>
-    <iframe id="previewFrame"></iframe>
+    <h2 data-vi="XEM TRƯỚC GIAO DIỆN" data-en="LIVE PREVIEW">XEM TRƯỚC GIAO DIỆN</h2>[cite: 3]
+    <p style="font-size: 12px; color: #888;" data-vi="Giao diện sẽ hiển thị trên trang chủ như thế này:" data-en="This is how it will look on the homepage:">Giao diện sẽ hiển thị trên trang chủ như thế này:</p>[cite: 3]
+    <iframe id="previewFrame"></iframe>[cite: 3]
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -79,12 +74,14 @@
         appId: "1:982578480996:web:609acf09d1d5b951299c71",
         measurementId: "G-VD58ECNEPQ"
     };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);[cite: 3]
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);[cite: 3]
+    }
 
     let currentUser = null;
     firebase.auth().onAuthStateChanged(user => {
         if (user) { currentUser = user; } 
-        else { alert(window.isVN ? "Đăng nhập để upload!" : "Login to upload!"); window.location.href = "auth.html"; }
+        else { alert(window.isVN ? "Đăng nhập để upload!" : "Login to upload!"); window.location.href = "auth.html"; }[cite: 3]
     });
 
     // Cập nhật Iframe Live Preview
@@ -117,7 +114,7 @@
     // Đẩy vào database Chờ Duyệt (pending_games)
     async function submitToPending() {
         const id = document.getElementById('gId').value;
-        if(!id || !document.getElementById('gName').value) return alert(window.isVN ? "Điền thiếu ID hoặc Tên!" : "Missing ID or Name!");
+        if(!id || !document.getElementById('gName').value) return alert(window.isVN ? "Điền thiếu ID hoặc Tên!" : "Missing ID or Name!");[cite: 3]
 
         const pendingData = {
             name: document.getElementById('gName').value,
@@ -133,9 +130,9 @@
                 body: JSON.stringify(pendingData)
             });[cite: 3]
             alert(window.isVN ? "Đã gửi game thành công! Vui lòng chờ Admin phê duyệt." : "Game submitted! Please wait for Admin approval.");
-            window.location.href = "/";
+            window.location.href = "/";[cite: 3]
         } catch (e) {
-            alert(window.isVN ? "Lỗi khi gửi duyệt!" : "Error submitting!");
+            alert(window.isVN ? "Lỗi khi gửi duyệt!" : "Error submitting!");[cite: 3]
         }
     }
 </script>
