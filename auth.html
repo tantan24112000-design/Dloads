@@ -68,11 +68,11 @@
         const userEl = document.getElementById('username');
 
         if (window.isVN) {
-            titleEl.innerText = isLogin ? "ĐĂNG NHẬP DEV" : "ĐĂNG KÝ DEV";
+            titleEl.innerText = isLogin ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
             btnEl.innerText = isLogin ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
             switchEl.innerText = isLogin ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập";
         } else {
-            titleEl.innerText = isLogin ? "DEV LOGIN" : "DEV REGISTER";
+            titleEl.innerText = isLogin ? "LOGIN" : "REGISTER";
             btnEl.innerText = isLogin ? "LOGIN" : "REGISTER";
             switchEl.innerText = isLogin ? "No account? Register now" : "Have an account? Login";
         }
@@ -92,7 +92,7 @@
                 })
                 .catch(err => alert((window.isVN ? "Lỗi: " : "Error: ") + err.message));
         } else {
-            if(!username) return alert(window.isVN ? "Mày phải nhập Username!" : "You must enter a Username!");
+            if(!username) return alert(window.isVN ? "Bạn phải nhập Username!" : "You must enter a Username!");
             firebase.auth().createUserWithEmailAndPassword(email, pass)
                 .then(cred => {
                     return cred.user.updateProfile({ displayName: username }).then(() => {
