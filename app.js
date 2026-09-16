@@ -211,6 +211,14 @@ function updateGrid(targetUser = null) {
 
         htmlContent += `
             <div class="game-card">
+            <!-- CÁI BẢNG REVIEW ẨN (THÊM VÀO ĐÂY) -->
+    <div class="review-panel">
+        <div class="review-panel-title">⭐ Nổi bật / Review</div>
+        <!-- Link ảnh review -->
+        <img class="rev-img" src="link_anh_review_cua_game.jpg" alt="Review">
+        <!-- Chữ review -->
+        <p class="review-panel-text">"Game này đỉnh vãi chưởng, đồ họa pixel cháy máy, cốt truyện dark deep. 10/10 recommend anh em mua!"</p>
+    </div>
                 <span class="card-badge">VERIFIED</span>
                 <div style="flex-grow: 1;">
                     <img src="${game.img || 'https://via.placeholder.com/300x180'}">
