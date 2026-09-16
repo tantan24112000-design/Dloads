@@ -68,26 +68,31 @@
         .loader { text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; padding: 40px; animation: pulse 1s infinite alternate; text-transform: uppercase; }
 
         /* --- BẢNG REVIEW HOVER TỪ TRÊN XUỐNG (ITCH.IO STYLE) --- */
-        .review-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 5, 5, 0.96);
-            z-index: 10;
-            transform: translateY(-101%);
-            transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            padding: 15px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            border-bottom: 2px solid #fff;
-        }
+/* 1. Sửa lại review-panel để không che mất sự kiện click chuột */
+.review-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 5, 0.96);
+    z-index: 10;
+    transform: translateY(-101%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid #fff;
+    pointer-events: none; /* Cho phép click xuyên qua bảng review */
+}
 
-        .game-card:hover .review-panel {
-            transform: translateY(0);
-        }
+/* 2. Đẩy z-index của nút bấm lên cao hơn bảng review */
+.game-card .btn {
+    position: relative;
+    z-index: 20; /* Nổi lên trên layer 10 của review-panel */
+    pointer-events: auto; /* Đảm bảo nút vẫn nhận click bình thường */
+}
 
         .review-panel img.rev-img {
             width: 100%;
