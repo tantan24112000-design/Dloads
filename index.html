@@ -9,6 +9,83 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
+        /* --- THÊM PHẦN NÀY VÀO DƯỚI CÙNG TRONG THẺ <style> --- */
+
+/* Lớp phủ trượt từ trên xuống */
+.game-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.96); /* Nền đen mờ nhìn cho ngầu */
+    display: flex;
+    flex-direction: column;
+    /* Giấu nó lên trên cùng */
+    transform: translateY(-101%); 
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+    border-bottom: 2px solid #fff;
+    box-sizing: border-box;
+
+
+
+
+.review-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 5, 0.96); /* Nền đen mờ 96% để dễ đọc chữ */
+    z-index: 10;
+    transform: translateY(-101%); /* Giấu cái bảng này tít lên trên cùng */
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Hiệu ứng trượt mượt */
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid #fff; /* Đường kẻ trắng nổi bật ở dưới */
+}
+
+/* Khi di chuột vào game-card thì kéo cái bảng xuống */
+.game-card:hover .review-panel {
+    transform: translateY(0);
+}
+
+/* Chỉnh lại ảnh bên trong bảng review */
+.review-panel img.rev-img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border: 1px solid #333;
+    margin: 0 0 10px 0;
+    border-radius: 2px;
+    opacity: 1 !important; /* Không bị dính mờ của hover ảnh gốc */
+}
+
+.review-panel-title {
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #00e676; /* Màu xanh lá cho giống review tích cực */
+}
+
+.review-panel-text {
+    color: #ccc;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 0;
+    /* Hiệu ứng cắt chữ nếu dài quá 4 dòng */
+    display: -webkit-box;
+    -webkit-line-clamp: 4; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-style: italic;
+}
         /* CSS gốc của mày giữ nguyên */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
