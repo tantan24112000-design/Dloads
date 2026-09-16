@@ -9,84 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
-        /* --- THÊM PHẦN NÀY VÀO DƯỚI CÙNG TRONG THẺ <style> --- */
-
-/* Lớp phủ trượt từ trên xuống */
-.game-hover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 10, 10, 0.96); /* Nền đen mờ nhìn cho ngầu */
-    display: flex;
-    flex-direction: column;
-    /* Giấu nó lên trên cùng */
-    transform: translateY(-101%); 
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 10;
-    border-bottom: 2px solid #fff;
-    box-sizing: border-box;
-
-
-
-
-.review-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(5, 5, 5, 0.96); /* Nền đen mờ 96% để dễ đọc chữ */
-    z-index: 10;
-    transform: translateY(-101%); /* Giấu cái bảng này tít lên trên cùng */
-    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Hiệu ứng trượt mượt */
-    padding: 15px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    border-bottom: 2px solid #fff; /* Đường kẻ trắng nổi bật ở dưới */
-}
-
-/* Khi di chuột vào game-card thì kéo cái bảng xuống */
-.game-card:hover .review-panel {
-    transform: translateY(0);
-}
-
-/* Chỉnh lại ảnh bên trong bảng review */
-.review-panel img.rev-img {
-    width: 100%;
-    height: 90px;
-    object-fit: cover;
-    border: 1px solid #333;
-    margin: 0 0 10px 0;
-    border-radius: 2px;
-    opacity: 1 !important; /* Không bị dính mờ của hover ảnh gốc */
-}
-
-.review-panel-title {
-    color: #fff;
-    font-size: 11px;
-    font-weight: bold;
-    margin: 0 0 5px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #00e676; /* Màu xanh lá cho giống review tích cực */
-}
-
-.review-panel-text {
-    color: #ccc;
-    font-size: 12px;
-    line-height: 1.5;
-    margin: 0;
-    /* Hiệu ứng cắt chữ nếu dài quá 4 dòng */
-    display: -webkit-box;
-    -webkit-line-clamp: 4; 
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-style: italic;
-}
-        /* CSS gốc của mày giữ nguyên */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
         body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
@@ -144,29 +66,80 @@
         .rec-card:hover { border-color: #fff; }
         .rec-card img { width: 100%; height: 70px; object-fit: cover; margin-bottom: 5px; }
         .loader { text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; padding: 40px; animation: pulse 1s infinite alternate; text-transform: uppercase; }
-    </style>
-<script>
-    // Check trực tiếp ngôn ngữ đang dùng của trình duyệt (vi, en, vi-VN,...)
-    window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
-    
-    window.applyLanguage = function() {
-        document.querySelectorAll('[data-vi]').forEach(el => {
-            const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
-            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                el.placeholder = text;
-            } else if (el.tagName === 'OPTION') {
-                el.innerText = text;
-            } else {
-                el.innerHTML = text;
-            }
-        });
-        const profileDiv = document.getElementById('userProfile');
-        if (profileDiv) profileDiv.title = window.isVN ? "Trang cá nhân của tao" : "My Profile";
-    };
 
-    // Chạy ngay khi DOM sẵn sàng
-    window.addEventListener('DOMContentLoaded', window.applyLanguage);
-</script>
+        /* --- BẢNG REVIEW HOVER TỪ TRÊN XUỐNG (ITCH.IO STYLE) --- */
+        .review-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.96);
+            z-index: 10;
+            transform: translateY(-101%);
+            transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid #fff;
+        }
+
+        .game-card:hover .review-panel {
+            transform: translateY(0);
+        }
+
+        .review-panel img.rev-img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border: 1px solid #333;
+            margin: 0 0 10px 0;
+            border-radius: 2px;
+            opacity: 1 !important;
+        }
+
+        .review-panel-title {
+            color: #00e676;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .review-panel-text {
+            color: #ccc;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-style: italic;
+        }
+    </style>
+    <script>
+        window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
+        
+        window.applyLanguage = function() {
+            document.querySelectorAll('[data-vi]').forEach(el => {
+                const text = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = text;
+                } else if (el.tagName === 'OPTION') {
+                    el.innerText = text;
+                } else {
+                    el.innerHTML = text;
+                }
+            });
+            const profileDiv = document.getElementById('userProfile');
+            if (profileDiv) profileDiv.title = window.isVN ? "Trang cá nhân của tao" : "My Profile";
+        };
+
+        window.addEventListener('DOMContentLoaded', window.applyLanguage);
+    </script>
 </head>
 <body>
     <div class="container">
@@ -266,7 +239,7 @@
             appId: "1:982578480996:web:609acf09d1d5b951299c71",
             measurementId: "G-VD58ECNEPQ"
         };
-        if (!firebase.apps.length) firebase.initializeApp(fConfig);[cite: 2]
+        if (!firebase.apps.length) firebase.initializeApp(fConfig);
 
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
@@ -278,10 +251,10 @@
                 profileDiv.style.display = 'block';
                 
                 let dName = user.displayName || "Dev";
-                avaImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(dName)}&background=random&rounded=true&color=fff`;[cite: 2]
+                avaImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(dName)}&background=random&rounded=true&color=fff`;
 
                 profileDiv.onclick = () => {
-                    window.location.href = `/?user=${encodeURIComponent(dName)}`;[cite: 2]
+                    window.location.href = `/?user=${encodeURIComponent(dName)}`;
                 };
             }
         });
