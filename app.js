@@ -77,21 +77,30 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
+            // HIỂN THỊ CUSTOM HTML CỦA DEVELOPER
             const devContentEl = document.getElementById('customDevContent');
-            if (data.customHtml) {
-                devContentEl.innerHTML = DOMPurify.sanitize(data.customHtml);
+            if (data.customHtml && data.customHtml.trim() !== '') {
+                if (typeof DOMPurify !== 'undefined') {
+                    devContentEl.innerHTML = DOMPurify.sanitize(data.customHtml, {
+                        ADD_TAGS: ["iframe"],
+                        ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "src", "style"]
+                    });
+                } else {
+                    devContentEl.innerHTML = data.customHtml;
+                }
                 devContentEl.style.display = 'block';
             } else {
                 devContentEl.style.display = 'none';
             }
 
+            // TIÊM CUSTOM CSS CỦA DEVELOPER VÀO TRANG
             const existingStyle = document.getElementById('devCustomCss');
             if (existingStyle) existingStyle.remove();
             
-            if (data.customCss) {
+            if (data.customCss && data.customCss.trim() !== '') {
                 const styleEl = document.createElement('style');
                 styleEl.id = 'devCustomCss';
-                styleEl.innerHTML = `.detail-box { ${data.customCss} }`; 
+                styleEl.innerHTML = data.customCss; 
                 document.head.appendChild(styleEl);
             }
 
