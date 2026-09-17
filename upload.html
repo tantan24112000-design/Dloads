@@ -4,270 +4,202 @@
     <meta charset="UTF-8">
     <title>Upload Game - Dloads</title>
     <style>
-        body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: #0a0a0a; border: 1px solid #333; padding: 20px; }
-        .section-title { font-size: 14px; font-weight: bold; color: #fff; background: #222; padding: 6px 10px; margin: 18px 0 10px 0; border-left: 3px solid #fff; text-transform: uppercase; }
-        h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px; font-size: 22px; text-align: center; letter-spacing: 2px;}
-        label { display: block; margin: 12px 0 4px; font-weight: bold; font-size: 12px; color: #aaa; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 8px; box-sizing: border-box; font-size: 13px; }
-        input:focus, textarea:focus { outline: none; border-color: #fff; }
-        .img-preview { width: 100%; height: auto; max-height: 250px; object-fit: cover; border: 1px dashed #444; margin-top: 5px; display: none; background: #111; }
-        button { background: #fff; color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;}
-        button:hover { background: #ccc; }
-        button:disabled { background: #555; cursor: not-allowed; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>ĐĂNG GAME LÊN DLOADS</h2>
-        
-        <div class="section-title">1. THÔNG TIN CHÍNH</div>
-        <label>ID Game (Bắt buộc, viết liền không dấu, vd: my-game-123)</label>
-        <input type="text" id="gameId" placeholder="nhap-id-game-vao-day">
-        
-        <label>Tên Game</label>
-        <input type="text" id="gameName" placeholder="Tên trò chơi của bạn">
-        
-        <label>Tên Developer</label>
-        <input type="text" id="gameDev" readonly style="color:#888;">
-        
-        <label>Nền tảng hỗ trợ (vd: Windows, MacOS, Linux)</label>
-        <input type="text" id="gamePlatforms">
-        
-        <label>Thể loại / Tags (vd: Action, RPG, Pixel)</label>
-        <input type="text" id="gameCategory">
-        
-        <label>Giá (Để trống hoặc điền 0 nếu miễn phí)</label>
-        <input type="number" id="gamePrice">
-        
-        <label>Dung Lượng (vd: 500 MB)</label>
-        <input type="text" id="gameSize">
-        
-        <label>Link Tải Gốc (Google Drive, Mediafire...)</label>
-        <input type="text" id="gameLink">
-        
-        <label>Ảnh Bìa Game (BẮT BUỘC ĐỂ HIỂN THỊ TRÊN TRANG CHỦ)</label>
-        <input type="file" id="fileMain" accept="image/*"><img id="prevMain" class="img-preview">
-
-        <div class="section-title">2. THUMBNAIL TRANG NHẬP CODE</div>
-        <label>Ảnh Minh Họa BƯỚC LẤY CODE (Tùy chọn)</label>
-        <input type="file" id="fileStep" accept="image/*"><img id="prevStep" class="img-preview">
-
-        <div class="section-title">3. ĐÁNH GIÁ (REVIEW & DEVLOG)</div>
-        <label>Nội dung Review / Devlog</label>
-        <textarea id="reviewText" rows="4" placeholder="Viết vài dòng giới thiệu về game..."></textarea>
-        
-        <label>Ảnh Review / Chụp màn hình in-game (Tùy chọn)</label>
-        <input type="file" id="fileReview" accept="image/*"><img id="prevReview" class="img-preview">
-
-        <button id="uploadBtn">GỬI YÊU CẦU DUYỆT GAME</button>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
-            authDomain: "sf2g-bf285.firebaseapp.com",
-            projectId: "sf2g-bf285",
-            databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
-            storageBucket: "sf2g-bf285.firebasestorage.app",
-            messagingSenderId: "982578480996",
-            appId: "1:982578480996:web:609acf09d1d5b951299c71",
-            measurementId: "G-VD58ECNEPQ"
-        };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-
-        let currentUser = null;
-        
-        // Check Auth & Set Developer Name
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) { 
-                currentUser = user; 
-                document.getElementById('gameDev').value = user.displayName || "Unknown Dev";
-            } else { 
-                alert("Vui lòng đăng nhập để đăng game!"); 
-                window.location.href = "auth.html"; 
-            }
-        });
-
-        // Xử lý chuyển đổi Ảnh sang Base64
-        let store = {};
-        function bindImgInput(inputId, imgId, key) {
-            document.getElementById(inputId).onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const r = new FileReader();
-                r.onload = (ev) => {
-                    store[key] = ev.target.result;
-                    const img = document.getElementById(imgId);
-                    img.src = ev.target.result;
-                    img.style.display = 'block';
-                };
-                r.readAsDataURL(file);
-            };
-        }
-
-        bindImgInput('fileMain', 'prevMain', 'img'); 
-        bindImgInput('fileStep', 'prevStep', 'stepImg');
-        bindImgInput('fileReview', 'prevReview', 'reviewImg');
-
-        // Gửi lên pending_games với data chuẩn form Admin
-        document.getElementById('uploadBtn').onclick = async () => {
-            const id = document.getElementById('gameId').value.trim();
-            const name = document.getElementById('gameName').value.trim();
-            
-            if(!id || !name) return alert("Vui lòng điền ID Game và Tên Game!");
-            if(!store.img) return alert("Bắt buộc phải tải lên Ảnh Bìa Game (nếu không web chính sẽ lỗi đen xì)!");
-
-            const uploadBtn = document.getElementById('uploadBtn');
-            uploadBtn.innerText = "ĐANG GỬI DỮ LIỆU...";
-            uploadBtn.disabled = true;
-
-            const pendingData = {
-                name: name,
-                developer: document.getElementById('gameDev').value,
-                platforms: document.getElementById('gamePlatforms').value,Lỗi game không hiện lên trang chủ sau khi duyệt là do file `upload (2).html` cũ của mày không thu thập đủ các trường dữ liệu mà `index (4).html` yêu cầu (như `img`, `category`, `platforms`, `price`). Khi người dùng gửi game, data đẩy vào hàng chờ bị thiếu. Lúc mày bấm duyệt trong trang admin, code nó bê nguyên cục dữ liệu rách đó ném sang database chính, làm frontend không có ảnh bìa và các thông tin cần thiết nên bị ẩn hoặc lỗi giao diện.
-
-Tao đã viết lại hoàn toàn file `upload (2).html` cho mày. Form nhập liệu và logic chuyển ảnh sang base64 giờ đã đồng bộ giống y hệt trang admin, nhưng tao đã dẹp bỏ hết các phần quản lý table, nút phê duyệt, và mấy cái upload ảnh test virus không liên quan. 
-
-Từ giờ user gửi game bằng form này, dữ liệu lưu vào `pending_games` sẽ chuẩn form 100%. Mày chỉ việc vào admin duyệt là nó tự động hiện đẹp trên trang chủ.
-
-Thay toàn bộ code file `upload (2).html` bằng đoạn này:
-
-```html
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Game - Dloads</title>
-    <style>
-        body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .box { border: 1px solid #333; padding: 20px; background: #0a0a0a; border-top: 3px solid #fff; }
-        .section-title { font-size: 14px; font-weight: bold; color: #fff; background: #222; padding: 8px 12px; margin: 20px 0 10px 0; border-left: 4px solid #fff; text-transform: uppercase; }
-        h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 12px; font-size: 20px; text-align: center; letter-spacing: 2px; }
-        label { display: block; margin: 12px 0 5px; font-weight: bold; font-size: 12px; color: #aaa; text-transform: uppercase; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 8px; box-sizing: border-box; font-size: 13px; transition: 0.2s; }
-        input:focus, textarea:focus { border-color: #fff; outline: none; }
-        .img-preview { width: 100%; height: 250px; object-fit: cover; border: 1px dashed #444; margin-top: 8px; display: none; background: #111; }
-        button { background: #fff; color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 14px; letter-spacing: 1px; transition: 0.2s; }
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; margin: 0; box-sizing: border-box; }
+        .container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; box-sizing: border-box; }
+        .preview-container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; box-sizing: border-box; }
+        .section-title { font-size: 13px; font-weight: bold; color: #fff; background: #222; padding: 6px 10px; margin: 18px 0 10px 0; border-left: 3px solid #fff; text-transform: uppercase; }
+        h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; margin-top: 12px; font-size: 12px; color: #aaa; font-weight: bold; text-transform: uppercase; }
+        input[type="text"], textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-top: 5px; box-sizing: border-box; font-size: 13px; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: #fff; }
+        .img-preview { width: 100%; height: 160px; object-fit: cover; border: 1px dashed #444; margin-top: 5px; display: none; background: #111; }
+        button { background: #fff; color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; cursor: pointer; margin-top: 20px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
         button:hover { background: #ccc; }
         button:disabled { background: #555; cursor: not-allowed; color: #888; }
+        iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 450px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="box">
-            <h2>UPLOAD GAME LÊN DLOADS</h2>
 
-            <div class="section-title">1. THÔNG TIN CHÍNH</div>
-            <label>ID Game (URL hiển thị, vd: my-super-game)</label>
-            <input type="text" id="gId" placeholder="Không dùng dấu cách và ký tự đặc biệt">
-            
-            <label>Tên Game</label>
-            <input type="text" id="gName" placeholder="Tên trò chơi của bạn">
-            
-            <label>Nền tảng hỗ trợ (vd: Windows, Web, Mac)</label>
-            <input type="text" id="gPlatforms" placeholder="Windows, HTML5...">
-            
-            <label>Thể loại / Tags (vd: Horror, Action, 2D)</label>
-            <input type="text" id="gCategory" placeholder="Nhập các thể loại cách nhau bằng dấu phẩy">
-            
-            <label>Giá (Để trống hoặc ghi 0 nếu miễn phí)</label>
-            <input type="number" id="gPrice" placeholder="Mặc định là miễn phí">
-            
-            <label>Dung Lượng (vd: 500MB, 1.2GB)</label>
-            <input type="text" id="gSize" placeholder="Kích thước tệp">
-            
-            <label>Link Tải Gốc</label>
-            <input type="text" id="gLink" placeholder="Google Drive, Mediafire, Itch.io link...">
+<div class="container">
+    <h2>UPLOAD GAME CỦA MÀY</h2>
+    
+    <div class="section-title">1. THÔNG TIN CƠ BẢN</div>
+    <label>ID Game (vd: my-game-123)</label>
+    <input type="text" id="gId" placeholder="my-game-123">
 
-            <div class="section-title">2. HÌNH ẢNH & MÔ TẢ</div>
-            <label>Nội dung Review / Mô tả chi tiết</label>
-            <textarea id="gReviewText" rows="5" placeholder="Giới thiệu về cốt truyện, lối chơi, cách điều khiển..."></textarea>
+    <label>Tên Game</label>
+    <input type="text" id="gName" placeholder="Nhập tên game..." oninput="updatePreview()">
 
-            <label>Ảnh Bìa Game (Bắt buộc)</label>
-            <input type="file" id="fileMain" accept="image/*">
-            <img id="prevMain" class="img-preview">
+    <label>Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)</label>
+    <input type="text" id="gPlatforms" placeholder="Windows, Web..." oninput="updatePreview()">
 
-            <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
-        </div>
-    </div>
+    <label>Dung Lượng (vd: 250 MB)</label>
+    <input type="text" id="gSize" placeholder="250 MB" oninput="updatePreview()">
 
-    <script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js)"></script>
-    <script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js)"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
-            authDomain: "sf2g-bf285.firebaseapp.com",
-            projectId: "sf2g-bf285",
-            databaseURL: "[https://sf2g-bf285-default-rtdb.firebaseio.com](https://sf2g-bf285-default-rtdb.firebaseio.com)",
-            storageBucket: "sf2g-bf285.firebasestorage.app",
-            messagingSenderId: "982578480996",
-            appId: "1:982578480996:web:609acf09d1d5b951299c71"
+    <label>Link Tải Gốc</label>
+    <input type="text" id="gLink" placeholder="https://...">
+
+    <div class="section-title">2. HÌNH ẢNH</div>
+    <label>Thumbnail / Ảnh Bìa Game (Bắt buộc)</label>
+    <input type="file" id="fileMain" accept="image/*">
+    <img id="prevMain" class="img-preview">
+
+    <label>Ảnh Review / Devlog (Tùy chọn)</label>
+    <input type="file" id="fileReview" accept="image/*">
+    <img id="prevReview" class="img-preview">
+
+    <div class="section-title">3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)</div>
+    <label>Custom CSS (Tự viết style cho trang chi tiết)</label>
+    <textarea id="gCss" rows="5" placeholder="body { background: #000; }\n.detail-box { border-color: red; }" oninput="updatePreview()"></textarea>
+
+    <label>Custom HTML (Mô tả game, nhúng video, hình ảnh...)</label>
+    <textarea id="gHtml" rows="6" placeholder="<h1>Giới thiệu game</h1>\n<p>Nội dung mô tả game ở đây...</p>" oninput="updatePreview()"></textarea>
+
+    <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
+</div>
+
+<!-- Bảng Iframe xem trước -->
+<div class="preview-container">
+    <h2>XEM TRƯỚC GIAO DIỆN</h2>
+    <p style="font-size: 12px; color: #888; margin: 0 0 10px 0;">Giao diện chi tiết game sẽ hiển thị trên web như thế này:</p>
+    <iframe id="previewFrame"></iframe>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
+        authDomain: "sf2g-bf285.firebaseapp.com",
+        projectId: "sf2g-bf285",
+        databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
+        storageBucket: "sf2g-bf285.firebasestorage.app",
+        messagingSenderId: "982578480996",
+        appId: "1:982578480996:web:609acf09d1d5b951299c71",
+        measurementId: "G-VD58ECNEPQ"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    let currentUser = null;
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) { currentUser = user; } 
+        else { alert("Đăng nhập để upload!"); window.location.href = "auth.html"; }
+    });
+
+    let mainImgBase64 = "";
+    let reviewImgBase64 = "";
+
+    // Load & Convert Main Image
+    document.getElementById('fileMain').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+            mainImgBase64 = ev.target.result;
+            const img = document.getElementById('prevMain');
+            img.src = ev.target.result;
+            img.style.display = 'block';
+            updatePreview();
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        r.readAsDataURL(file);
+    };
 
-        let currentUser = null;
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) { currentUser = user; } 
-            else { alert("Đăng nhập để upload game!"); window.location.href = "auth.html"; }
-        });
+    // Load & Convert Review Image
+    document.getElementById('fileReview').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+            reviewImgBase64 = ev.target.result;
+            const img = document.getElementById('prevReview');
+            img.src = ev.target.result;
+            img.style.display = 'block';
+            updatePreview();
+        };
+        r.readAsDataURL(file);
+    };
 
-        let coverImageBase64 = "";
+    // Cập nhật Iframe Live Preview
+    function updatePreview() {
+        const name = document.getElementById('gName').value || 'Tên Game';
+        const platforms = document.getElementById('gPlatforms').value || 'Windows';
+        const size = document.getElementById('gSize').value || '--';
+        const css = document.getElementById('gCss').value;
+        const html = document.getElementById('gHtml').value;
+        const frame = document.getElementById('previewFrame');
+        const devName = currentUser ? currentUser.displayName : 'Dev Name';
+        
+        const thumbHtml = mainImgBase64 ? `<img src="${mainImgBase64}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">` : '';
+        const revHtml = reviewImgBase64 ? `<img src="${reviewImgBase64}" style="width:100%;margin-top:15px;border:1px solid #333;">` : '';
 
-        // Tự động load và convert ảnh sang dạng Base64
-        document.getElementById('fileMain').onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (ev) => {
-                coverImageBase64 = ev.target.result;
-                const img = document.getElementById('prevMain');
-                img.src = ev.target.result;
-                img.style.display = 'block';
-            };
-            r.readAsDataURL(file);
+        frame.srcdoc = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { background: #000; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
+                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
+                    .dev-name { color: #888; font-size: 13px; margin-bottom: 10px; }
+                    #customDevContent { padding: 15px; background: rgba(255,255,255,0.03); border: 1px dashed #333; margin-top: 15px; line-height: 1.5; }
+                    #customDevContent img { max-width: 100%; }
+                    ${css}
+                </style>
+            </head>
+            <body>
+                <div class="detail-box">
+                    ${thumbHtml}
+                    <h2 style="margin:0 0 5px 0;">${name}</h2>
+                    <div class="dev-name">A game by <b>${devName}</b> | Nền tảng: ${platforms} | Dung lượng: ${size}</div>
+                    
+                    <div id="customDevContent">
+                        ${html || '<i style="color:#666">Mô tả HTML sẽ hiển thị ở đây...</i>'}
+                    </div>
+
+                    ${revHtml}
+                </div>
+            </body>
+            </html>
+        `;
+    }
+
+    // Đẩy vào database Chờ Duyệt (pending_games)
+    async function submitToPending() {
+        const id = document.getElementById('gId').value.trim();
+        const name = document.getElementById('gName').value.trim();
+        
+        if(!id || !name) return alert("Điền thiếu ID hoặc Tên Game!");
+        if(!mainImgBase64) return alert("Vui lòng chọn Thumbnail / Ảnh Bìa Game!");
+
+        const btn = document.getElementById('uploadBtn');
+        btn.innerText = "ĐANG GỬI CỦA MÀY LÊN...";
+        btn.disabled = true;
+
+        const pendingData = {
+            name: name,
+            developer: currentUser ? currentUser.displayName : "Unknown Dev",
+            platforms: document.getElementById('gPlatforms').value,
+            size: document.getElementById('gSize').value,
+            link: document.getElementById('gLink').value,
+            img: mainImgBase64,
+            reviewImg: reviewImgBase64,
+            customCss: document.getElementById('gCss').value,
+            customHtml: document.getElementById('gHtml').value
         };
 
-        async function submitToPending() {
-            const id = document.getElementById('gId').value.trim();
-            const name = document.getElementById('gName').value.trim();
-
-            if(!id || !name) return alert("Không được bỏ trống ID và Tên Game!");
-            if(!coverImageBase64) return alert("Mày phải tải lên ảnh bìa cho game!");
-
-            const pendingData = {
-                name: name,
-                developer: currentUser ? currentUser.displayName : "Unknown Dev",
-                platforms: document.getElementById('gPlatforms').value,
-                category: document.getElementById('gCategory').value,
-                price: document.getElementById('gPrice').value,
-                size: document.getElementById('gSize').value,
-                link: document.getElementById('gLink').value,
-                reviewText: document.getElementById('gReviewText').value,
-                img: coverImageBase64
-            };
-
-            const btn = document.getElementById('uploadBtn');
-            try {
-                btn.innerText = "ĐANG TẢI DỮ LIỆU LÊN...";
-                btn.disabled = true;
-
-                await fetch(`[https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/$](https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/$){id}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(pendingData)
-                });
-                
-                alert("Đã gửi game thành công! Vui lòng chờ Admin duyệt.");
-                window.location.href = "/";
-            } catch (e) {
-                alert("Đã có lỗi xảy ra khi gửi yêu cầu!");
-                btn.innerText = "GỬI YÊU CẦU DUYỆT";
-                btn.disabled = false;
-            }
+        try {
+            await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(pendingData)
+            });
+            alert("Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.");
+            window.location.href = "/";
+        } catch (e) {
+            alert("Lỗi khi gửi duyệt!");
+            btn.innerText = "GỬI YÊU CẦU DUYỆT";
+            btn.disabled = false;
         }
-    </script>
+    }
+</script>
 </body>
 </html>
