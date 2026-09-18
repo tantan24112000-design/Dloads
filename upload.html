@@ -7,6 +7,13 @@
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; margin: 0; box-sizing: border-box; }
         .container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; box-sizing: border-box; }
         .preview-container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; box-sizing: border-box; }
+        
+        /* Profile Section CSS */
+        .profile-box { display: flex; align-items: center; gap: 15px; background: #111; padding: 15px; border: 1px solid #333; margin-bottom: 20px; border-radius: 5px; }
+        .profile-box img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #555; }
+        .btn-avatar { background: #333; color: #fff; font-size: 11px; padding: 6px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; border-radius: 3px; display: inline-block; margin-top: 5px; }
+        .btn-avatar:hover { background: #555; }
+
         .section-title { font-size: 13px; font-weight: bold; color: #fff; background: #222; padding: 6px 10px; margin: 18px 0 10px 0; border-left: 3px solid #fff; text-transform: uppercase; }
         h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         label { display: block; margin-top: 12px; font-size: 12px; color: #aaa; font-weight: bold; text-transform: uppercase; }
@@ -23,6 +30,16 @@
 
 <div class="container">
     <h2 id="t_title">UPLOAD GAME CỦA MÀY</h2>
+
+    <!-- KHUNG HỒ SƠ NGƯỜI DÙNG -->
+    <div class="profile-box">
+        <img id="userAvatar" src="basicavtr.png" alt="Avatar">
+        <div>
+            <div style="font-size: 14px; color: #aaa;">Hello, <b id="userNameDisplay" style="color:#fff;">Loading...</b></div>
+            <label class="btn-avatar" for="avatarUpload" id="t_change_avt">ĐỔI ẢNH ĐẠI DIỆN</label>
+            <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
+        </div>
+    </div>
     
     <div class="section-title" id="t_sec1">1. THÔNG TIN CƠ BẢN</div>
     <label id="t_id_lbl">ID Game (vd: my-game-123)</label>
@@ -87,6 +104,7 @@
     const isVi = (navigator.language || '').toLowerCase().includes('vi');
     const t = isVi ? {
         title: "UPLOAD GAME CỦA MÀY",
+        change_avt: "ĐỔI ẢNH ĐẠI DIỆN",
         sec1: "1. THÔNG TIN CƠ BẢN",
         id_lbl: "ID Game (vd: my-game-123)",
         name_lbl: "Tên Game",
@@ -111,12 +129,15 @@
         alert_thumb: "Vui lòng chọn Thumbnail / Ảnh Bìa Game!",
         alert_ok: "Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.",
         alert_err: "Lỗi khi gửi duyệt!",
+        avt_ok: "Cập nhật Avatar thành công!",
+        avt_err: "Lỗi khi cập nhật Avatar!",
         if_name: "Tên Game",
         if_plat: "Nền tảng:",
         if_size: "Dung lượng:",
         if_html: "<i style='color:#666'>Mô tả HTML sẽ hiển thị ở đây...</i>"
     } : {
         title: "UPLOAD YOUR GAME",
+        change_avt: "CHANGE AVATAR",
         sec1: "1. BASIC INFO",
         id_lbl: "Game ID (e.g., my-game-123)",
         name_lbl: "Game Name",
@@ -141,14 +162,17 @@
         alert_thumb: "Please select a Thumbnail / Cover Image!",
         alert_ok: "Game submitted successfully! Please wait for Admin approval.",
         alert_err: "Error submitting for review!",
+        avt_ok: "Avatar updated successfully!",
+        avt_err: "Error updating Avatar!",
         if_name: "Game Name",
         if_plat: "Platform:",
         if_size: "Size:",
         if_html: "<i style='color:#666'>HTML description will appear here...</i>"
     };
 
-    // Áp dụng ngôn ngữ vào HTML
+    // Áp dụng ngôn ngữ
     document.getElementById('t_title').innerText = t.title;
+    document.getElementById('t_change_avt').innerText = t.change_avt;
     document.getElementById('t_sec1').innerText = t.sec1;
     document.getElementById('t_id_lbl').innerText = t.id_lbl;
     document.getElementById('t_name_lbl').innerText = t.name_lbl;
@@ -173,9 +197,72 @@
     // ==========================================
     let currentUser = null;
     firebase.auth().onAuthStateChanged(user => {
-        if (user) { currentUser = user; updatePreview(); } 
-        else { alert(t.alert_login); window.location.href = "auth.html"; }
+        if (user) { 
+            currentUser = user; 
+            document.getElementById('userNameDisplay').innerText = user.displayName || "Unknown Dev";
+            document.getElementById('userAvatar').src = user.photoURL || "basicavtr.png";
+            updatePreview(); 
+        } else { 
+            alert(t.alert_login); window.location.href = "auth.html"; 
+        }
     });
+
+    // Hàm thu nhỏ ảnh Avatar để nhẹ Firebase
+    function resizeAvatar(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_SIZE = 150;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                } else {
+                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                // Nén JPEG chất lượng 80%
+                callback(canvas.toDataURL('image/jpeg', 0.8));
+            }
+            img.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    // Xử lý đổi Avatar
+    document.getElementById('avatarUpload').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file || !currentUser) return;
+        
+        document.getElementById('t_change_avt').innerText = "...";
+        
+        resizeAvatar(file, async (base64) => {
+            try {
+                await currentUser.updateProfile({ photoURL: base64 });
+                
+                // Lưu thêm vào Realtime Database để sau này trang chủ load ra dễ dàng
+                await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${currentUser.uid}.json`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ avatar: base64, displayName: currentUser.displayName })
+                });
+
+                document.getElementById('userAvatar').src = base64;
+                document.getElementById('t_change_avt').innerText = t.change_avt;
+                alert(t.avt_ok);
+                updatePreview();
+            } catch (err) {
+                console.error(err);
+                alert(t.avt_err);
+                document.getElementById('t_change_avt').innerText = t.change_avt;
+            }
+        });
+    };
 
     let mainImgBase64 = "";
     let reviewImgBase64 = "";
@@ -215,7 +302,9 @@
         const css = document.getElementById('gCss').value;
         const html = document.getElementById('gHtml').value;
         const frame = document.getElementById('previewFrame');
+        
         const devName = currentUser ? currentUser.displayName : 'Dev Name';
+        const devAvt = (currentUser && currentUser.photoURL) ? currentUser.photoURL : 'basicavtr.png';
         
         const thumbHtml = mainImgBase64 ? `<img src="${mainImgBase64}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">` : '';
         const revHtml = reviewImgBase64 ? `<img src="${reviewImgBase64}" style="width:100%;margin-top:15px;border:1px solid #333;">` : '';
@@ -227,7 +316,8 @@
                 <style>
                     body { background: #000; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
                     .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
-                    .dev-name { color: #888; font-size: 13px; margin-bottom: 10px; }
+                    .dev-info { display: flex; align-items: center; gap: 10px; color: #888; font-size: 13px; margin-bottom: 15px; }
+                    .dev-info img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
                     #customDevContent { padding: 15px; background: rgba(255,255,255,0.03); border: 1px dashed #333; margin-top: 15px; line-height: 1.5; }
                     #customDevContent img { max-width: 100%; }
                     ${css}
@@ -236,8 +326,12 @@
             <body>
                 <div class="detail-box">
                     ${thumbHtml}
-                    <h2 style="margin:0 0 5px 0;">${name}</h2>
-                    <div class="dev-name">A game by <b>${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
+                    <h2 style="margin:0 0 10px 0;">${name}</h2>
+                    
+                    <div class="dev-info">
+                        <img src="${devAvt}">
+                        <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
+                    </div>
                     
                     <div id="customDevContent">
                         ${html || t.if_html}
@@ -264,6 +358,7 @@
         const pendingData = {
             name: name,
             developer: currentUser ? currentUser.displayName : "Unknown Dev",
+            devAvatar: currentUser ? currentUser.photoURL : "basicavtr.png",
             platforms: document.getElementById('gPlatforms').value,
             size: document.getElementById('gSize').value,
             link: document.getElementById('gLink').value,
@@ -287,7 +382,6 @@
         }
     }
 
-    // Load preview mặc định khi vừa mở trang
     window.onload = updatePreview;
 </script>
 </body>
