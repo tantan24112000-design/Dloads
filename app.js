@@ -26,21 +26,37 @@ function getUserPreferences() {
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
+// ĐÃ FIX LỖI "NO GAMES FOUND" Ở HÀM NÀY
 async function fetchAllGames() {
     if (Object.keys(allGamesData).length > 0) return allGamesData;
+    
     let cached = sessionStorage.getItem('cachedGames');
     if (cached) {
-        allGamesData = JSON.parse(cached);
-        return allGamesData;
+        try {
+            allGamesData = JSON.parse(cached);
+            return allGamesData;
+        } catch(e) {
+            console.error("Cache bị lỗi, tải lại từ đầu:", e);
+        }
     }
+    
+    // 1. Chỉ lấy data từ Firebase
     try {
         const res = await fetch(`${dbUrl}/games.json`);
         allGamesData = await res.json() || {};
+    } catch (e) {
+        console.error("Lỗi tải data từ Firebase:", e);
+        allGamesData = {};
+        return allGamesData; // Mất mạng hoặc lỗi Firebase mới chịu thua
+    }
+
+    // 2. Tách riêng phần lưu Cache để lỡ data to quá (Custom HTML/CSS dài) văng lỗi thì cũng KHÔNG bị mất game
+    try {
         sessionStorage.setItem('cachedGames', JSON.stringify(allGamesData));
     } catch (e) {
-        console.error("Lỗi tải data:", e);
-        allGamesData = {};
+        console.warn("Dữ liệu quá lớn để lưu Cache, bỏ qua bước lưu cache (Game vẫn hiển thị bình thường).");
     }
+    
     return allGamesData;
 }
 
@@ -55,7 +71,6 @@ async function init() {
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
-            // Cho phép bấm vào tên tác giả ở chi tiết game để qua thẳng trang cá nhân luôn
             document.getElementById('gDevDetail').innerHTML = `A game by <span style="color:#fff; font-weight:bold; cursor:pointer; text-decoration:underline;" onclick="window.location.href='/?user=${encodeURIComponent(data.developer || 'Unknown Studio')}'">${data.developer || 'Unknown Studio'}</span>`;
             document.getElementById('gSize').innerText = `SIZE: ${data.size || 'N/A'}`;
             document.getElementById('gThumb').src = data.img || 'https://via.placeholder.com/600x280?text=No+Image';
@@ -77,7 +92,7 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
-            // HIỂN THỊ CUSTOM HTML CỦA DEVELOPER
+            // Xử lý Custom HTML
             const devContentEl = document.getElementById('customDevContent');
             if (data.customHtml && data.customHtml.trim() !== '') {
                 if (typeof DOMPurify !== 'undefined') {
@@ -93,7 +108,7 @@ async function init() {
                 devContentEl.style.display = 'none';
             }
 
-            // TIÊM CUSTOM CSS CỦA DEVELOPER VÀO TRANG
+            // Xử lý Custom CSS
             const existingStyle = document.getElementById('devCustomCss');
             if (existingStyle) existingStyle.remove();
             
@@ -218,7 +233,6 @@ function updateGrid(targetUser = null) {
                 `</div>`;
         }
 
-        // TẠO DỮ LIỆU ĐỘNG CHO BẢNG REVIEW
         let reviewPanelHtml = '';
         if (game.reviewText || game.reviewImg) {
             let revTitle = isVi ? '⭐ Nổi bật / Review' : '⭐ Featured / Review';
@@ -242,7 +256,6 @@ function updateGrid(targetUser = null) {
                     <img src="${game.img || 'https://via.placeholder.com/300x180'}">
                     ${platformsHtml}
                     <h3 class="game-title">${game.name}</h3>
-                    <!-- Thêm chức năng bấm vào tên tác giả nhảy sang trang riêng -->
                     <p class="dev-name" style="cursor:pointer; text-decoration:underline;" onclick="window.location.href='/?user=${encodeURIComponent(game.developer || 'Unknown')}'">${game.developer || 'Unknown'}</p>
                     ${categoryHtml}
                     ${priceHtml}
