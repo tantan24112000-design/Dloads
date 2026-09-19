@@ -6,13 +6,13 @@ let allGamesData = {};
 const id = new URLSearchParams(window.location.search).get('id');
 const userPage = new URLSearchParams(window.location.search).get('user');
 
-function formatPrice(price) { /* Giữ nguyên[cite: 3] */
+function formatPrice(price) { 
     if (!price) return '';
     let formattedNumber = Number(price).toLocaleString('en-US');
     return isVi ? formattedNumber + ' VNĐ' : '$' + formattedNumber;
 }
 
-function trackUserPreference(category) { /* Giữ nguyên[cite: 3] */
+function trackUserPreference(category) { 
     if (!category) return;
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
     let tags = category.split(',').map(t => t.trim());
@@ -22,7 +22,7 @@ function trackUserPreference(category) { /* Giữ nguyên[cite: 3] */
     localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
 }
 
-function getUserPreferences() { /* Giữ nguyên[cite: 3] */
+function getUserPreferences() { 
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
@@ -41,7 +41,6 @@ async function fetchGamesMeta() {
     }
     
     try {
-        // TẢI TỪ NHÁNH NHẸ (Bạn cần cập nhật hàm upload để lưu thêm nhánh này)
         const res = await fetch(`${dbUrl}/games.json`); 
         allGamesData = await res.json() || {};
     } catch (e) {
@@ -62,7 +61,6 @@ async function fetchGamesMeta() {
 // 2. HÀM TẢI DỮ LIỆU NẶNG KHI VÀO TRANG CHI TIẾT
 async function fetchGameDetailData(gameId) {
     try {
-        // Chỉ tải cục data khổng lồ của đúng 1 game
         const res = await fetch(`${dbUrl}/games/${gameId}.json`);
         return await res.json();
     } catch (e) {
@@ -72,7 +70,6 @@ async function fetchGameDetailData(gameId) {
 }
 
 async function init() {
-    // Luôn tải list meta (nhẹ) để dùng[cite: 3]
     const allGamesMeta = await fetchGamesMeta();
 
     if (id) {
@@ -80,7 +77,6 @@ async function init() {
         let data = allGamesMeta ? allGamesMeta[id] : null;
         
         if (data) {
-            // GỌI THÊM DATA NẶNG VÀ GỘP VÀO DATA NHẸ
             const heavyData = await fetchGameDetailData(id);
             if (heavyData) {
                 data = { ...data, ...heavyData };
@@ -110,7 +106,6 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
-            // Dữ liệu nặng: HTML
             const devContentEl = document.getElementById('customDevContent');
             if (data.customHtml && data.customHtml.trim() !== '') {
                 if (typeof DOMPurify !== 'undefined') {
@@ -126,7 +121,6 @@ async function init() {
                 devContentEl.style.display = 'none';
             }
 
-            // Dữ liệu nặng: CSS
             const existingStyle = document.getElementById('devCustomCss');
             if (existingStyle) existingStyle.remove();
             
@@ -142,7 +136,6 @@ async function init() {
                 alert(isVi ? "Đã copy link!" : "Link copied!");
             };
 
-            // Dữ liệu nặng: Review Base64
             if (data.reviewText || data.reviewImg) {
                 document.getElementById('reviewSec').style.display = 'block';
                 document.getElementById('rText').innerText = data.reviewText || '';
@@ -153,14 +146,13 @@ async function init() {
                 }
             }
 
-            // Render lại list gợi ý dựa trên bộ Meta nhẹ
             const recGrid = document.getElementById('recGrid');
             let count = 0;
             let recHtml = '';
             for (let gId in allGamesMeta) {
                 if (gId !== id && count < 4) {
                     recHtml += `
-                        <a href="?id=${gId}" class="rec-card">
+                        <a href="?id=${gId}" class="rec-card" onclick="document.getElementById('globalSpinner').style.display='flex'">
                             <img src="${allGamesMeta[gId].img || 'https://via.placeholder.com/150x80'}">
                             <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGamesMeta[gId].name}</div>
                         </a>
@@ -174,7 +166,6 @@ async function init() {
         }
     } else if (userPage) {
         document.getElementById('listView').style.display = 'block';
-        document.getElementById('loader').style.display = 'none';
         
         const grid = document.getElementById('gameGrid');
         grid.insertAdjacentHTML('beforebegin', `<h2 style="text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">GAMES BY: <span style="color: #00e676;">${userPage}</span></h2>`);
@@ -182,15 +173,19 @@ async function init() {
         updateGrid(userPage.toLowerCase());
     } else {
         document.getElementById('listView').style.display = 'block';
-        document.getElementById('loader').style.display = 'none';
         updateGrid();
 
         document.getElementById('searchInput').addEventListener('input', () => updateGrid());
         document.getElementById('sortSelect').addEventListener('change', () => updateGrid());
     }
+
+    // Tắt vòng xoay sau khi tải xong toàn bộ
+    const spinner = document.getElementById('globalSpinner');
+    if (spinner) {
+        spinner.style.display = 'none';
+    }
 }
 
-// ... Giữ nguyên hàm updateGrid ...[cite: 3]
 function updateGrid(targetUser = null) {
     const searchInput = document.getElementById('searchInput');
     const sortSelect = document.getElementById('sortSelect');
@@ -283,7 +278,7 @@ function updateGrid(targetUser = null) {
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 15px;">
                     <p style="color:#888; font-size:11px; margin:0;">${game.size||'N/A'}</p>
-                    <a href="?id=${game.id}" class="btn" style="padding: 8px 15px;">VIEW</a>
+                    <a href="?id=${game.id}" class="btn" style="padding: 8px 15px;" onclick="document.getElementById('globalSpinner').style.display='flex'">VIEW</a>
                 </div>
             </div>
         `;
