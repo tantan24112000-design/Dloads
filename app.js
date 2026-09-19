@@ -2,7 +2,7 @@
 // DLOADS - DATA LAYER: SUPABASE (Firebase chỉ còn lo Auth)
 // =========================================================
 const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
-const SUPABASE_ANON_KEY = 'PASTE_ANON_KEY_HERE';
+const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
 
 const REST = `${SUPABASE_URL}/rest/v1`;
 const SB_HEADERS = {
