@@ -6,13 +6,13 @@ let allGamesData = {};
 const id = new URLSearchParams(window.location.search).get('id');
 const userPage = new URLSearchParams(window.location.search).get('user');
 
-function formatPrice(price) { /* Giữ nguyên[cite: 3] */
+function formatPrice(price) {
     if (!price) return '';
     let formattedNumber = Number(price).toLocaleString('en-US');
     return isVi ? formattedNumber + ' VNĐ' : '$' + formattedNumber;
 }
 
-function trackUserPreference(category) { /* Giữ nguyên[cite: 3] */
+function trackUserPreference(category) {
     if (!category) return;
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
     let tags = category.split(',').map(t => t.trim());
@@ -22,15 +22,15 @@ function trackUserPreference(category) { /* Giữ nguyên[cite: 3] */
     localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
 }
 
-function getUserPreferences() { /* Giữ nguyên[cite: 3] */
+function getUserPreferences() {
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
-// 1. CHỈ TẢI BẢN NHẸ DÀNH CHO TRANG CHỦ (META)
-async function fetchGamesMeta() {
+// ĐÃ FIX LỖI "NO GAMES FOUND" Ở HÀM NÀY
+async function fetchAllGames() {
     if (Object.keys(allGamesData).length > 0) return allGamesData;
     
-    let cached = sessionStorage.getItem('cachedGamesMeta');
+    let cached = sessionStorage.getItem('cachedGames');
     if (cached) {
         try {
             allGamesData = JSON.parse(cached);
@@ -40,52 +40,34 @@ async function fetchGamesMeta() {
         }
     }
     
+    // 1. Chỉ lấy data từ Firebase
     try {
-        // TẢI TỪ NHÁNH NHẸ (Bạn cần cập nhật hàm upload để lưu thêm nhánh này)
-        const res = await fetch(`${dbUrl}/games_meta.json`); 
+        const res = await fetch(`${dbUrl}/games.json`);
         allGamesData = await res.json() || {};
     } catch (e) {
         console.error("Lỗi tải data từ Firebase:", e);
         allGamesData = {};
-        return allGamesData;
+        return allGamesData; // Mất mạng hoặc lỗi Firebase mới chịu thua
     }
 
+    // 2. Tách riêng phần lưu Cache để lỡ data to quá (Custom HTML/CSS dài) văng lỗi thì cũng KHÔNG bị mất game
     try {
-        sessionStorage.setItem('cachedGamesMeta', JSON.stringify(allGamesData));
+        sessionStorage.setItem('cachedGames', JSON.stringify(allGamesData));
     } catch (e) {
-        console.warn("Lỗi lưu cache meta.");
+        console.warn("Dữ liệu quá lớn để lưu Cache, bỏ qua bước lưu cache (Game vẫn hiển thị bình thường).");
     }
     
     return allGamesData;
 }
 
-// 2. HÀM TẢI DỮ LIỆU NẶNG KHI VÀO TRANG CHI TIẾT
-async function fetchGameDetailData(gameId) {
-    try {
-        // Chỉ tải cục data khổng lồ của đúng 1 game
-        const res = await fetch(`${dbUrl}/games/${gameId}.json`);
-        return await res.json();
-    } catch (e) {
-        console.error("Lỗi tải chi tiết game:", e);
-        return null;
-    }
-}
-
 async function init() {
-    // Luôn tải list meta (nhẹ) để dùng[cite: 3]
-    const allGamesMeta = await fetchGamesMeta();
+    const allGames = await fetchAllGames();
 
     if (id) {
         document.getElementById('detailView').style.display = 'block';
-        let data = allGamesMeta ? allGamesMeta[id] : null;
+        const data = allGames ? allGames[id] : null;
         
         if (data) {
-            // GỌI THÊM DATA NẶNG VÀ GỘP VÀO DATA NHẸ
-            const heavyData = await fetchGameDetailData(id);
-            if (heavyData) {
-                data = { ...data, ...heavyData };
-            }
-
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
@@ -110,7 +92,7 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
-            // Dữ liệu nặng: HTML
+            // Xử lý Custom HTML
             const devContentEl = document.getElementById('customDevContent');
             if (data.customHtml && data.customHtml.trim() !== '') {
                 if (typeof DOMPurify !== 'undefined') {
@@ -126,7 +108,7 @@ async function init() {
                 devContentEl.style.display = 'none';
             }
 
-            // Dữ liệu nặng: CSS
+            // Xử lý Custom CSS
             const existingStyle = document.getElementById('devCustomCss');
             if (existingStyle) existingStyle.remove();
             
@@ -142,7 +124,6 @@ async function init() {
                 alert(isVi ? "Đã copy link!" : "Link copied!");
             };
 
-            // Dữ liệu nặng: Review Base64
             if (data.reviewText || data.reviewImg) {
                 document.getElementById('reviewSec').style.display = 'block';
                 document.getElementById('rText').innerText = data.reviewText || '';
@@ -153,16 +134,15 @@ async function init() {
                 }
             }
 
-            // Render lại list gợi ý dựa trên bộ Meta nhẹ
             const recGrid = document.getElementById('recGrid');
             let count = 0;
             let recHtml = '';
-            for (let gId in allGamesMeta) {
+            for (let gId in allGames) {
                 if (gId !== id && count < 4) {
                     recHtml += `
                         <a href="?id=${gId}" class="rec-card">
-                            <img src="${allGamesMeta[gId].img || 'https://via.placeholder.com/150x80'}">
-                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGamesMeta[gId].name}</div>
+                            <img src="${allGames[gId].img || 'https://via.placeholder.com/150x80'}">
+                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGames[gId].name}</div>
                         </a>
                     `;
                     count++;
@@ -190,4 +170,109 @@ async function init() {
     }
 }
 
-// ... Giữ nguyên hàm updateGrid ...[cite: 3]
+function updateGrid(targetUser = null) {
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    
+    const query = searchInput ? searchInput.value.toLowerCase() : '';
+    const sortMethod = sortSelect ? sortSelect.value : 'new';
+    const grid = document.getElementById('gameGrid');
+    
+    let filteredArray = [];
+    for (let gameId in allGamesData) {
+        const game = allGamesData[gameId];
+        let devName = game.developer ? game.developer.toLowerCase() : '';
+        
+        if (targetUser) {
+            if (devName === targetUser) {
+                filteredArray.push({ id: gameId, ...game });
+            }
+        } else {
+            if (game && game.name && (game.name.toLowerCase().includes(query) || devName.includes(query))) {
+                filteredArray.push({ id: gameId, ...game });
+            }
+        }
+    }
+
+    if (sortMethod === 'az') {
+        filteredArray.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortMethod === 'new') {
+        filteredArray.reverse();
+    } else if (sortMethod === 'recommended') {
+        const userPrefs = getUserPreferences();
+        filteredArray.sort((a, b) => {
+            let catA = a.category ? a.category.split(',')[0].trim() : '';
+            let catB = b.category ? b.category.split(',')[0].trim() : '';
+            let scoreA = userPrefs[catA] || 0;
+            let scoreB = userPrefs[catB] || 0;
+            return scoreB - scoreA;
+        });
+    }
+
+    if (filteredArray.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:#555; padding: 20px;">NO GAMES FOUND</div>`;
+        return;
+    }
+
+    let htmlContent = '';
+    filteredArray.forEach((game, index) => {
+        let priceHtml = '';
+        if (game.price) {
+            priceHtml = `<div style="margin-bottom: 8px;">
+                            <span class="fake-price">${formatPrice(game.price)}</span>
+                            <span class="free-badge">FREE</span>
+                         </div>`;
+        }
+
+        let categoryHtml = game.category ? `<span class="category-tag">${game.category.split(',')[0]}</span>` : '';
+        
+        let platformsHtml = '';
+        if (game.platforms) {
+            platformsHtml = `<div class="platforms">` + 
+                game.platforms.split(',').map(p => `<span class="plat-badge">${p.trim()}</span>`).join('') + 
+                `</div>`;
+        }
+
+        let reviewPanelHtml = '';
+        if (game.reviewText || game.reviewImg) {
+            let revTitle = isVi ? '⭐ Nổi bật / Review' : '⭐ Featured / Review';
+            let imgHtml = game.reviewImg ? `<img class="rev-img" src="${game.reviewImg}" alt="Review">` : '';
+            let textHtml = game.reviewText ? `<p class="review-panel-text">${game.reviewText}</p>` : '';
+            
+            reviewPanelHtml = `
+                <div class="review-panel">
+                    <div class="review-panel-title">${revTitle}</div>
+                    ${imgHtml}
+                    ${textHtml}
+                </div>
+            `;
+        }
+
+        htmlContent += `
+            <div class="game-card">
+                ${reviewPanelHtml}
+                <span class="card-badge">VERIFIED</span>
+                <div style="flex-grow: 1;">
+                    <img src="${game.img || 'https://via.placeholder.com/300x180'}">
+                    ${platformsHtml}
+                    <h3 class="game-title">${game.name}</h3>
+                    <p class="dev-name" style="cursor:pointer; text-decoration:underline;" onclick="window.location.href='/?user=${encodeURIComponent(game.developer || 'Unknown')}'">${game.developer || 'Unknown'}</p>
+                    ${categoryHtml}
+                    ${priceHtml}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 15px;">
+                    <p style="color:#888; font-size:11px; margin:0;">${game.size||'N/A'}</p>
+                    <a href="?id=${game.id}" class="btn" style="padding: 8px 15px;">VIEW</a>
+                </div>
+            </div>
+        `;
+
+        if ((index + 1) % 3 === 0 && index !== filteredArray.length - 1) {
+            htmlContent += `<div class="row-divider"></div>`;
+        }
+    });
+
+    grid.innerHTML = htmlContent;
+}
+
+init();
