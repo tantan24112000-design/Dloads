@@ -244,7 +244,7 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(fConfig);
 
-        firebase.auth().onAuthStateChanged(user => {
+     firebase.auth().onAuthStateChanged(async user => {
             if (user) {
                 document.getElementById('navLogin').style.display = 'none';
                 document.getElementById('navUpload').style.display = 'block';
@@ -254,7 +254,20 @@
                 profileDiv.style.display = 'block';
                 
                 let dName = user.displayName || "Dev";
-                avaImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(dName)}&background=random&rounded=true&color=fff`;
+                
+                // Trích xuất avatar từ Realtime Database 
+                try {
+                    const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
+                    const data = await res.json();
+                    
+                    if (data && data.avatar) {
+                        avaImg.src = data.avatar; // Lấy ảnh tải lên
+                    } else {
+                        avaImg.src = "basicavtr.png"; // Trống thì xài ảnh base
+                    }
+                } catch (e) {
+                    avaImg.src = "basicavtr.png"; // Lỗi mạng cũng xài ảnh base
+                }
 
                 profileDiv.onclick = () => {
                     window.location.href = `/?user=${encodeURIComponent(dName)}`;
