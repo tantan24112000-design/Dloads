@@ -9,7 +9,7 @@
 
 const FIREBASE_DB   = 'https://sf2g-bf285-default-rtdb.firebaseio.com';
 const SUPABASE_URL  = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
-const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY;
+const SERVICE_KEY   = 'sb_secret_zhp1nlSfOeXoJlBVVOmuOg_47V3JDLG';
 const BUCKET        = 'game-images';
 
 if (!SERVICE_KEY) {
