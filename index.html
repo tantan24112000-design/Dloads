@@ -122,6 +122,34 @@
             overflow: hidden;
             font-style: italic;
         }
+
+        /* Vòng tròn xoay loading ở giữa màn hình */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .spin-loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #222;
+            border-top: 5px solid #00e676;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
     <script>
         window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
@@ -145,6 +173,10 @@
     </script>
 </head>
 <body>
+    <div id="globalSpinner" class="spinner-overlay">
+        <div class="spin-loader"></div>
+    </div>
+
     <div class="container">
         <div class="header-logo">
             <div class="logo-wrap" onclick="window.location.href='/'">
@@ -177,7 +209,6 @@
                 </div>
             </div>
             
-            <div id="loader" class="loader" data-vi="Đang tải dữ liệu..." data-en="Loading Indie Vault...">Loading Indie Vault...</div>
             <div class="game-grid" id="gameGrid"></div>
         </div>
 
@@ -255,18 +286,17 @@
                 
                 let dName = user.displayName || "Dev";
                 
-                // Trích xuất avatar từ Realtime Database 
                 try {
                     const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
                     const data = await res.json();
                     
                     if (data && data.avatar) {
-                        avaImg.src = data.avatar; // Lấy ảnh tải lên
+                        avaImg.src = data.avatar; 
                     } else {
-                        avaImg.src = "basicavtr.png"; // Trống thì xài ảnh base
+                        avaImg.src = "basicavtr.png"; 
                     }
                 } catch (e) {
-                    avaImg.src = "basicavtr.png"; // Lỗi mạng cũng xài ảnh base
+                    avaImg.src = "basicavtr.png"; 
                 }
 
                 profileDiv.onclick = () => {
