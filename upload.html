@@ -195,19 +195,37 @@
     // ==========================================
     // LOGIC HOẠT ĐỘNG
     // ==========================================
-    let currentUser = null;
-    firebase.auth().onAuthStateChanged(user => {
+let currentUser = null;
+    
+    // 1. Sửa lại lúc check đăng nhập để lấy Avatar từ Database
+    firebase.auth().onAuthStateChanged(async user => {
         if (user) { 
             currentUser = user; 
             document.getElementById('userNameDisplay').innerText = user.displayName || "Unknown Dev";
-            document.getElementById('userAvatar').src = user.photoURL || "basicavtr.png";
+            
+            // Kéo ảnh từ Realtime Database về
+            try {
+                const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
+                const data = await res.json();
+                if (data && data.avatar) {
+                    currentUser.customPhoto = data.avatar; // Lưu tạm vào biến
+                    document.getElementById('userAvatar').src = data.avatar;
+                } else {
+                    document.getElementById('userAvatar').src = "basicavtr.png"; // Dùng ảnh base nếu chưa có
+                    currentUser.customPhoto = "basicavtr.png";
+                }
+            } catch(e) {
+                document.getElementById('userAvatar').src = "basicavtr.png";
+                currentUser.customPhoto = "basicavtr.png";
+            }
+            
             updatePreview(); 
         } else { 
             alert(t.alert_login); window.location.href = "auth.html"; 
         }
     });
 
-    // Hàm thu nhỏ ảnh Avatar để nhẹ Firebase
+    // Hàm thu nhỏ ảnh giữ nguyên
     function resizeAvatar(file, callback) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -227,7 +245,6 @@
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                // Nén JPEG chất lượng 80%
                 callback(canvas.toDataURL('image/jpeg', 0.8));
             }
             img.src = e.target.result;
@@ -235,7 +252,7 @@
         reader.readAsDataURL(file);
     }
 
-    // Xử lý đổi Avatar
+    // 2. Xóa lệnh updateProfile, chỉ lưu lên Realtime Database
     document.getElementById('avatarUpload').onchange = (e) => {
         const file = e.target.files[0];
         if (!file || !currentUser) return;
@@ -244,15 +261,14 @@
         
         resizeAvatar(file, async (base64) => {
             try {
-                await currentUser.updateProfile({ photoURL: base64 });
-                
-                // Lưu thêm vào Realtime Database để sau này trang chủ load ra dễ dàng
+                // CHỈ lưu vào database, KHÔNG dùng currentUser.updateProfile
                 await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${currentUser.uid}.json`, {
                     method: 'PATCH',
                     body: JSON.stringify({ avatar: base64, displayName: currentUser.displayName })
                 });
 
                 document.getElementById('userAvatar').src = base64;
+                currentUser.customPhoto = base64; // Cập nhật ảnh hiển thị tạm
                 document.getElementById('t_change_avt').innerText = t.change_avt;
                 alert(t.avt_ok);
                 updatePreview();
@@ -295,6 +311,99 @@
         r.readAsDataURL(file);
     };
 
+    // 3. Sửa updatePreview để nhận ảnh từ biến customPhoto
+    function updatePreview() {
+        const name = document.getElementById('gName').value || t.if_name;
+        const platforms = document.getElementById('gPlatforms').value || 'Windows';
+        const size = document.getElementById('gSize').value || '--';
+        const css = document.getElementById('gCss').value;
+        const html = document.getElementById('gHtml').value;
+        const frame = document.getElementById('previewFrame');
+        
+        const devName = currentUser ? currentUser.displayName : 'Dev Name';
+        // Thay photoURL thành customPhoto
+        const devAvt = (currentUser && currentUser.customPhoto) ? currentUser.customPhoto : 'basicavtr.png';
+        
+        const thumbHtml = mainImgBase64 ? `<img src="${mainImgBase64}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">` : '';
+        const revHtml = reviewImgBase64 ? `<img src="${reviewImgBase64}" style="width:100%;margin-top:15px;border:1px solid #333;">` : '';
+
+        frame.srcdoc = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { background: #000; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
+                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
+                    .dev-info { display: flex; align-items: center; gap: 10px; color: #888; font-size: 13px; margin-bottom: 15px; }
+                    .dev-info img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
+                    #customDevContent { padding: 15px; background: rgba(255,255,255,0.03); border: 1px dashed #333; margin-top: 15px; line-height: 1.5; }
+                    #customDevContent img { max-width: 100%; }
+                    ${css}
+                </style>
+            </head>
+            <body>
+                <div class="detail-box">
+                    ${thumbHtml}
+                    <h2 style="margin:0 0 10px 0;">${name}</h2>
+                    
+                    <div class="dev-info">
+                        <img src="${devAvt}">
+                        <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
+                    </div>
+                    
+                    <div id="customDevContent">
+                        ${html || t.if_html}
+                    </div>
+
+                    ${revHtml}
+                </div>
+            </body>
+            </html>
+        `;
+    }
+
+    // 4. Sửa hàm gửi duyệt để gắn đúng link ảnh
+    async function submitToPending() {
+        const id = document.getElementById('gId').value.trim();
+        const name = document.getElementById('gName').value.trim();
+        
+        if(!id || !name) return alert(t.alert_missing);
+        if(!mainImgBase64) return alert(t.alert_thumb);
+
+        const btn = document.getElementById('uploadBtn');
+        btn.innerText = t.btn_loading;
+        btn.disabled = true;
+
+        const pendingData = {
+            name: name,
+            developer: currentUser ? currentUser.displayName : "Unknown Dev",
+            // Đổi lấy từ customPhoto
+            devAvatar: currentUser ? (currentUser.customPhoto || "basicavtr.png") : "basicavtr.png", 
+            platforms: document.getElementById('gPlatforms').value,
+            size: document.getElementById('gSize').value,
+            link: document.getElementById('gLink').value,
+            img: mainImgBase64,
+            reviewImg: reviewImgBase64,
+            customCss: document.getElementById('gCss').value,
+            customHtml: document.getElementById('gHtml').value
+        };
+
+        try {
+            await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(pendingData)
+            });
+            alert(t.alert_ok);
+            window.location.href = "/";
+        } catch (e) {
+            alert(t.alert_err);
+            btn.innerText = t.btn;
+            btn.disabled = false;
+        }
+    }
+
+    window.onload = updatePreview;
+    
     function updatePreview() {
         const name = document.getElementById('gName').value || t.if_name;
         const platforms = document.getElementById('gPlatforms').value || 'Windows';
