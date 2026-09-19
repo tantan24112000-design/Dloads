@@ -42,7 +42,7 @@ async function fetchGamesMeta() {
     
     try {
         // TẢI TỪ NHÁNH NHẸ (Bạn cần cập nhật hàm upload để lưu thêm nhánh này)
-        const res = await fetch(`${dbUrl}/games_meta.json`); 
+        const res = await fetch(`${dbUrl}/games.json`); 
         allGamesData = await res.json() || {};
     } catch (e) {
         console.error("Lỗi tải data từ Firebase:", e);
