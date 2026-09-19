@@ -6,6 +6,7 @@
  - customHtml/customCss KHÔNG được copy vào gameMeta.
  - data:image/* (base64) bị bỏ khỏi meta để tránh làm metadata nặng.
 */
+const SERVICE_KEY = 'PASTE_SERVICE_ROLE_KEY_HERE';
 
 const dbUrl =
     'https://sf2g-bf285-default-rtdb.firebaseio.com';
