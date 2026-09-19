@@ -86,412 +86,289 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
-        authDomain: "sf2g-bf285.firebaseapp.com",
-        projectId: "sf2g-bf285",
-        databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
-        storageBucket: "sf2g-bf285.firebasestorage.app",
-        messagingSenderId: "982578480996",
-        appId: "1:982578480996:web:609acf09d1d5b951299c71",
-        measurementId: "G-VD58ECNEPQ"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+// =========================================================
+// upload.html - THAY TOÀN BỘ PHẦN "LOGIC HOẠT ĐỘNG" BẰNG FILE NÀY
+// (giữ nguyên firebaseConfig + dict `t` ở trên)
+//
+// LƯU Ý: file upload.html hiện tại khai báo updatePreview() và
+// submitToPending() HAI LẦN -> bản thứ 2 đè bản thứ 1 nên avatar
+// vẫn lấy photoURL (rỗng). Xóa hết bản cũ, chỉ để file này.
+// =========================================================
+const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
+const SUPABASE_ANON_KEY = 'PASTE_ANON_KEY_HERE';
+const BUCKET = 'game-images';
 
-    // ==========================================
-    // HỆ THỐNG SONG NGỮ (VI / EN)
-    // ==========================================
-    const isVi = (navigator.language || '').toLowerCase().includes('vi');
-    const t = isVi ? {
-        title: "UPLOAD GAME CỦA MÀY",
-        change_avt: "ĐỔI ẢNH ĐẠI DIỆN",
-        sec1: "1. THÔNG TIN CƠ BẢN",
-        id_lbl: "ID Game (vd: my-game-123)",
-        name_lbl: "Tên Game",
-        name_plc: "Nhập tên game...",
-        plat_lbl: "Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)",
-        plat_plc: "Windows, Web...",
-        size_lbl: "Dung Lượng (vd: 250 MB)",
-        link_lbl: "Link Tải Gốc",
-        sec2: "2. HÌNH ẢNH",
-        thumb_lbl: "Thumbnail / Ảnh Bìa Game (Bắt buộc)",
-        rev_lbl: "Ảnh Review / Devlog (Tùy chọn)",
-        sec3: "3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)",
-        css_lbl: "Custom CSS (Tự viết style cho trang chi tiết)",
-        html_lbl: "Custom HTML (Mô tả game, nhúng video, hình ảnh...)",
-        html_plc: "<h1>Giới thiệu game</h1>\n<p>Nội dung mô tả game ở đây...</p>",
-        btn: "GỬI YÊU CẦU DUYỆT",
-        btn_loading: "ĐANG GỬI LÊN...",
-        prev_title: "XEM TRƯỚC GIAO DIỆN",
-        prev_desc: "Giao diện chi tiết game sẽ hiển thị trên web như thế này:",
-        alert_login: "Đăng nhập để upload!",
-        alert_missing: "Điền thiếu ID hoặc Tên Game!",
-        alert_thumb: "Vui lòng chọn Thumbnail / Ảnh Bìa Game!",
-        alert_ok: "Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.",
-        alert_err: "Lỗi khi gửi duyệt!",
-        avt_ok: "Cập nhật Avatar thành công!",
-        avt_err: "Lỗi khi cập nhật Avatar!",
-        if_name: "Tên Game",
-        if_plat: "Nền tảng:",
-        if_size: "Dung lượng:",
-        if_html: "<i style='color:#666'>Mô tả HTML sẽ hiển thị ở đây...</i>"
-    } : {
-        title: "UPLOAD YOUR GAME",
-        change_avt: "CHANGE AVATAR",
-        sec1: "1. BASIC INFO",
-        id_lbl: "Game ID (e.g., my-game-123)",
-        name_lbl: "Game Name",
-        name_plc: "Enter game name...",
-        plat_lbl: "Supported Platforms (e.g., Windows, Mac, Web)",
-        plat_plc: "Windows, Web...",
-        size_lbl: "Size (e.g., 250 MB)",
-        link_lbl: "Original Download Link",
-        sec2: "2. IMAGES",
-        thumb_lbl: "Thumbnail / Cover Image (Required)",
-        rev_lbl: "Review / Devlog Image (Optional)",
-        sec3: "3. CUSTOM INTERFACE (CSS & HTML)",
-        css_lbl: "Custom CSS (Style your detail page)",
-        html_lbl: "Custom HTML (Game description, embed video, images...)",
-        html_plc: "<h1>Game Intro</h1>\n<p>Game description here...</p>",
-        btn: "SUBMIT FOR REVIEW",
-        btn_loading: "SUBMITTING...",
-        prev_title: "LIVE PREVIEW",
-        prev_desc: "The game detail page will look like this on the web:",
-        alert_login: "Please login to upload!",
-        alert_missing: "Missing Game ID or Name!",
-        alert_thumb: "Please select a Thumbnail / Cover Image!",
-        alert_ok: "Game submitted successfully! Please wait for Admin approval.",
-        alert_err: "Error submitting for review!",
-        avt_ok: "Avatar updated successfully!",
-        avt_err: "Error updating Avatar!",
-        if_name: "Game Name",
-        if_plat: "Platform:",
-        if_size: "Size:",
-        if_html: "<i style='color:#666'>HTML description will appear here...</i>"
-    };
+const SB_HEADERS = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+};
 
-    // Áp dụng ngôn ngữ
-    document.getElementById('t_title').innerText = t.title;
-    document.getElementById('t_change_avt').innerText = t.change_avt;
-    document.getElementById('t_sec1').innerText = t.sec1;
-    document.getElementById('t_id_lbl').innerText = t.id_lbl;
-    document.getElementById('t_name_lbl').innerText = t.name_lbl;
-    document.getElementById('gName').placeholder = t.name_plc;
-    document.getElementById('t_plat_lbl').innerText = t.plat_lbl;
-    document.getElementById('gPlatforms').placeholder = t.plat_plc;
-    document.getElementById('t_size_lbl').innerText = t.size_lbl;
-    document.getElementById('t_link_lbl').innerText = t.link_lbl;
-    document.getElementById('t_sec2').innerText = t.sec2;
-    document.getElementById('t_thumb_lbl').innerText = t.thumb_lbl;
-    document.getElementById('t_rev_lbl').innerText = t.rev_lbl;
-    document.getElementById('t_sec3').innerText = t.sec3;
-    document.getElementById('t_css_lbl').innerText = t.css_lbl;
-    document.getElementById('t_html_lbl').innerText = t.html_lbl;
-    document.getElementById('gHtml').placeholder = t.html_plc;
-    document.getElementById('uploadBtn').innerText = t.btn;
-    document.getElementById('t_prev_title').innerText = t.prev_title;
-    document.getElementById('t_prev_desc').innerText = t.prev_desc;
-
-    // ==========================================
-    // LOGIC HOẠT ĐỘNG
-    // ==========================================
 let currentUser = null;
-    
-    // 1. Sửa lại lúc check đăng nhập để lấy Avatar từ Database
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user) { 
-            currentUser = user; 
-            document.getElementById('userNameDisplay').innerText = user.displayName || "Unknown Dev";
-            
-            // Kéo ảnh từ Realtime Database về
-            try {
-                const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
-                const data = await res.json();
-                if (data && data.avatar) {
-                    currentUser.customPhoto = data.avatar; // Lưu tạm vào biến
-                    document.getElementById('userAvatar').src = data.avatar;
-                } else {
-                    document.getElementById('userAvatar').src = "basicavtr.png"; // Dùng ảnh base nếu chưa có
-                    currentUser.customPhoto = "basicavtr.png";
-                }
-            } catch(e) {
-                document.getElementById('userAvatar').src = "basicavtr.png";
-                currentUser.customPhoto = "basicavtr.png";
-            }
-            
-            updatePreview(); 
-        } else { 
-            alert(t.alert_login); window.location.href = "auth.html"; 
-        }
-    });
+let mainImgUrl = "";
+let reviewImgUrl = "";
 
-    // Hàm thu nhỏ ảnh giữ nguyên
-    function resizeAvatar(file, callback) {
+// ---------- nén ảnh trước khi upload ----------
+function compressImage(file, maxSize, quality) {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_SIZE = 150;
-                let width = img.width;
-                let height = img.height;
 
-                if (width > height) {
-                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                } else {
-                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        reader.onload = e => {
+            const img = new Image();
+
+            img.onload = () => {
+                let { width, height } = img;
+
+                if (width > height && width > maxSize) {
+                    height *= maxSize / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width *= maxSize / height;
+                    height = maxSize;
                 }
+
+                const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL('image/jpeg', 0.8));
-            }
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    blob => blob ? resolve(blob) : reject(new Error('compress fail')),
+                    'image/jpeg',
+                    quality
+                );
+            };
+
+            img.onerror = reject;
             img.src = e.target.result;
-        }
+        };
+
+        reader.onerror = reject;
         reader.readAsDataURL(file);
+    });
+}
+
+async function uploadToStorage(blob, path) {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+        body: blob
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+async function uploadImageFile(file, path, maxSize = 1280, quality = 0.82) {
+    const blob = await compressImage(file, maxSize, quality);
+    return uploadToStorage(blob, path);
+}
+
+// ---------- profile ----------
+async function loadProfile(uid) {
+    try {
+        const res = await fetch(
+            `${SUPABASE_URL}/rest/v1/profiles?uid=eq.${encodeURIComponent(uid)}&select=avatar,display_name&limit=1`,
+            { headers: { ...SB_HEADERS, Accept: 'application/json' } }
+        );
+        const rows = await res.json();
+        return rows && rows[0] ? rows[0] : null;
+    } catch {
+        return null;
+    }
+}
+
+async function saveProfile(uid, patch) {
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+        method: 'POST',
+        headers: {
+            ...SB_HEADERS,
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify({ uid, ...patch })
+    });
+}
+
+// ---------- auth (VẪN LÀ FIREBASE) ----------
+firebase.auth().onAuthStateChanged(async user => {
+    if (!user) {
+        alert(t.alert_login);
+        window.location.href = "auth.html";
+        return;
     }
 
-    // 2. Xóa lệnh updateProfile, chỉ lưu lên Realtime Database
-    document.getElementById('avatarUpload').onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file || !currentUser) return;
-        
-        document.getElementById('t_change_avt').innerText = "...";
-        
-        resizeAvatar(file, async (base64) => {
-            try {
-                // CHỈ lưu vào database, KHÔNG dùng currentUser.updateProfile
-                await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${currentUser.uid}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ avatar: base64, displayName: currentUser.displayName })
-                });
+    currentUser = user;
+    document.getElementById('userNameDisplay').innerText = user.displayName || "Unknown Dev";
 
-                document.getElementById('userAvatar').src = base64;
-                currentUser.customPhoto = base64; // Cập nhật ảnh hiển thị tạm
-                document.getElementById('t_change_avt').innerText = t.change_avt;
-                alert(t.avt_ok);
-                updatePreview();
-            } catch (err) {
-                console.error(err);
-                alert(t.avt_err);
-                document.getElementById('t_change_avt').innerText = t.change_avt;
-            }
+    const profile = await loadProfile(user.uid);
+    const avatar = profile?.avatar || "basicavtr.png";
+
+    currentUser.customPhoto = avatar;
+    document.getElementById('userAvatar').src = avatar;
+
+    updatePreview();
+});
+
+document.getElementById('avatarUpload').onchange = async e => {
+    const file = e.target.files[0];
+    if (!file || !currentUser) return;
+
+    const label = document.getElementById('t_change_avt');
+    label.innerText = "...";
+
+    try {
+        const url = await uploadImageFile(
+            file,
+            `avatars/${currentUser.uid}.jpg`,
+            150,
+            0.8
+        );
+
+        // cache-bust vì path cố định
+        const finalUrl = `${url}?v=${Date.now()}`;
+
+        await saveProfile(currentUser.uid, {
+            display_name: currentUser.displayName || null,
+            avatar: finalUrl
         });
-    };
 
-    let mainImgBase64 = "";
-    let reviewImgBase64 = "";
+        currentUser.customPhoto = finalUrl;
+        document.getElementById('userAvatar').src = finalUrl;
+        alert(t.avt_ok);
+        updatePreview();
+    } catch (err) {
+        console.error(err);
+        alert(t.avt_err);
+    } finally {
+        label.innerText = t.change_avt;
+    }
+};
 
-    document.getElementById('fileMain').onchange = (e) => {
+// ---------- chọn ảnh game ----------
+function bindGameImage(inputId, previewId, onDone) {
+    document.getElementById(inputId).onchange = async e => {
         const file = e.target.files[0];
         if (!file) return;
-        const r = new FileReader();
-        r.onload = (ev) => {
-            mainImgBase64 = ev.target.result;
-            const img = document.getElementById('prevMain');
-            img.src = ev.target.result;
-            img.style.display = 'block';
-            updatePreview();
-        };
-        r.readAsDataURL(file);
-    };
 
-    document.getElementById('fileReview').onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const r = new FileReader();
-        r.onload = (ev) => {
-            reviewImgBase64 = ev.target.result;
-            const img = document.getElementById('prevReview');
-            img.src = ev.target.result;
-            img.style.display = 'block';
-            updatePreview();
-        };
-        r.readAsDataURL(file);
-    };
+        const img = document.getElementById(previewId);
+        img.src = URL.createObjectURL(file);
+        img.style.display = 'block';
 
-    // 3. Sửa updatePreview để nhận ảnh từ biến customPhoto
-    function updatePreview() {
-        const name = document.getElementById('gName').value || t.if_name;
-        const platforms = document.getElementById('gPlatforms').value || 'Windows';
-        const size = document.getElementById('gSize').value || '--';
-        const css = document.getElementById('gCss').value;
-        const html = document.getElementById('gHtml').value;
-        const frame = document.getElementById('previewFrame');
-        
-        const devName = currentUser ? currentUser.displayName : 'Dev Name';
-        // Thay photoURL thành customPhoto
-        const devAvt = (currentUser && currentUser.customPhoto) ? currentUser.customPhoto : 'basicavtr.png';
-        
-        const thumbHtml = mainImgBase64 ? `<img src="${mainImgBase64}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">` : '';
-        const revHtml = reviewImgBase64 ? `<img src="${reviewImgBase64}" style="width:100%;margin-top:15px;border:1px solid #333;">` : '';
-
-        frame.srcdoc = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { background: #000; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
-                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
-                    .dev-info { display: flex; align-items: center; gap: 10px; color: #888; font-size: 13px; margin-bottom: 15px; }
-                    .dev-info img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
-                    #customDevContent { padding: 15px; background: rgba(255,255,255,0.03); border: 1px dashed #333; margin-top: 15px; line-height: 1.5; }
-                    #customDevContent img { max-width: 100%; }
-                    ${css}
-                </style>
-            </head>
-            <body>
-                <div class="detail-box">
-                    ${thumbHtml}
-                    <h2 style="margin:0 0 10px 0;">${name}</h2>
-                    
-                    <div class="dev-info">
-                        <img src="${devAvt}">
-                        <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
-                    </div>
-                    
-                    <div id="customDevContent">
-                        ${html || t.if_html}
-                    </div>
-
-                    ${revHtml}
-                </div>
-            </body>
-            </html>
-        `;
-    }
-
-    // 4. Sửa hàm gửi duyệt để gắn đúng link ảnh
-    async function submitToPending() {
-        const id = document.getElementById('gId').value.trim();
-        const name = document.getElementById('gName').value.trim();
-        
-        if(!id || !name) return alert(t.alert_missing);
-        if(!mainImgBase64) return alert(t.alert_thumb);
-
-        const btn = document.getElementById('uploadBtn');
-        btn.innerText = t.btn_loading;
-        btn.disabled = true;
-
-        const pendingData = {
-            name: name,
-            developer: currentUser ? currentUser.displayName : "Unknown Dev",
-            // Đổi lấy từ customPhoto
-            devAvatar: currentUser ? (currentUser.customPhoto || "basicavtr.png") : "basicavtr.png", 
-            platforms: document.getElementById('gPlatforms').value,
-            size: document.getElementById('gSize').value,
-            link: document.getElementById('gLink').value,
-            img: mainImgBase64,
-            reviewImg: reviewImgBase64,
-            customCss: document.getElementById('gCss').value,
-            customHtml: document.getElementById('gHtml').value
-        };
+        const gameId = (document.getElementById('gId').value.trim() || `tmp-${Date.now()}`)
+            .replace(/[^a-zA-Z0-9_-]/g, '_');
 
         try {
-            await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
-                method: 'PUT',
-                body: JSON.stringify(pendingData)
-            });
-            alert(t.alert_ok);
-            window.location.href = "/";
-        } catch (e) {
-            alert(t.alert_err);
-            btn.innerText = t.btn;
-            btn.disabled = false;
+            const url = await uploadImageFile(
+                file,
+                `games/${gameId}-${inputId}-${Date.now()}.jpg`
+            );
+            onDone(url);
+            updatePreview();
+        } catch (err) {
+            console.error(err);
+            alert('Upload ảnh lỗi!');
         }
-    }
+    };
+}
 
-    window.onload = updatePreview;
-    
-    function updatePreview() {
-        const name = document.getElementById('gName').value || t.if_name;
-        const platforms = document.getElementById('gPlatforms').value || 'Windows';
-        const size = document.getElementById('gSize').value || '--';
-        const css = document.getElementById('gCss').value;
-        const html = document.getElementById('gHtml').value;
-        const frame = document.getElementById('previewFrame');
-        
-        const devName = currentUser ? currentUser.displayName : 'Dev Name';
-        const devAvt = (currentUser && currentUser.photoURL) ? currentUser.photoURL : 'basicavtr.png';
-        
-        const thumbHtml = mainImgBase64 ? `<img src="${mainImgBase64}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">` : '';
-        const revHtml = reviewImgBase64 ? `<img src="${reviewImgBase64}" style="width:100%;margin-top:15px;border:1px solid #333;">` : '';
+bindGameImage('fileMain', 'prevMain', url => { mainImgUrl = url; });
+bindGameImage('fileReview', 'prevReview', url => { reviewImgUrl = url; });
 
-        frame.srcdoc = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { background: #000; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
-                    .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; }
-                    .dev-info { display: flex; align-items: center; gap: 10px; color: #888; font-size: 13px; margin-bottom: 15px; }
-                    .dev-info img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
-                    #customDevContent { padding: 15px; background: rgba(255,255,255,0.03); border: 1px dashed #333; margin-top: 15px; line-height: 1.5; }
-                    #customDevContent img { max-width: 100%; }
-                    ${css}
-                </style>
-            </head>
-            <body>
-                <div class="detail-box">
-                    ${thumbHtml}
-                    <h2 style="margin:0 0 10px 0;">${name}</h2>
-                    
-                    <div class="dev-info">
-                        <img src="${devAvt}">
-                        <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
-                    </div>
-                    
-                    <div id="customDevContent">
-                        ${html || t.if_html}
-                    </div>
+// ---------- preview ----------
+function updatePreview() {
+    const name = document.getElementById('gName').value || t.if_name;
+    const platforms = document.getElementById('gPlatforms').value || 'Windows';
+    const size = document.getElementById('gSize').value || '--';
+    const css = document.getElementById('gCss').value;
+    const html = document.getElementById('gHtml').value;
+    const frame = document.getElementById('previewFrame');
 
-                    ${revHtml}
+    const devName = currentUser ? currentUser.displayName : 'Dev Name';
+    const devAvt = (currentUser && currentUser.customPhoto) ? currentUser.customPhoto : 'basicavtr.png';
+
+    const thumbHtml = mainImgUrl
+        ? `<img src="${mainImgUrl}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">`
+        : '';
+
+    const revHtml = reviewImgUrl
+        ? `<img src="${reviewImgUrl}" style="width:100%;margin-top:15px;border:1px solid #333;">`
+        : '';
+
+    frame.srcdoc = `
+        <!DOCTYPE html><html><head><style>
+            body { background:#000; color:#fff; font-family:sans-serif; padding:15px; margin:0; }
+            .detail-box { background:#0a0a0a; border:1px solid #222; padding:20px; }
+            .dev-info { display:flex; align-items:center; gap:10px; color:#888; font-size:13px; margin-bottom:15px; }
+            .dev-info img { width:32px; height:32px; border-radius:50%; object-fit:cover; border:1px solid #555; }
+            #customDevContent { padding:15px; background:rgba(255,255,255,0.03); border:1px dashed #333; margin-top:15px; line-height:1.5; }
+            #customDevContent img { max-width:100%; }
+            ${css}
+        </style></head><body>
+            <div class="detail-box">
+                ${thumbHtml}
+                <h2 style="margin:0 0 10px 0;">${name}</h2>
+                <div class="dev-info">
+                    <img src="${devAvt}">
+                    <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
                 </div>
-            </body>
-            </html>
-        `;
+                <div id="customDevContent">${html || t.if_html}</div>
+                ${revHtml}
+            </div>
+        </body></html>
+    `;
+}
+
+// ---------- gửi duyệt ----------
+async function submitToPending() {
+    const gameId = document.getElementById('gId').value.trim();
+    const name = document.getElementById('gName').value.trim();
+
+    if (!gameId || !name) return alert(t.alert_missing);
+    if (!mainImgUrl) return alert(t.alert_thumb);
+
+    const btn = document.getElementById('uploadBtn');
+    btn.innerText = t.btn_loading;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/pending_games`, {
+            method: 'POST',
+            headers: {
+                ...SB_HEADERS,
+                'Content-Type': 'application/json',
+                Prefer: 'resolution=merge-duplicates,return=minimal'
+            },
+            body: JSON.stringify({
+                id: gameId,
+                name,
+                developer: currentUser ? currentUser.displayName : "Unknown Dev",
+                dev_uid: currentUser ? currentUser.uid : null,
+                dev_avatar: currentUser ? (currentUser.customPhoto || "basicavtr.png") : "basicavtr.png",
+                platforms: document.getElementById('gPlatforms').value,
+                size: document.getElementById('gSize').value,
+                link: document.getElementById('gLink').value,
+                img: mainImgUrl,
+                review_img: reviewImgUrl || null,
+                custom_css: document.getElementById('gCss').value,
+                custom_html: document.getElementById('gHtml').value,
+                status: 'pending'
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        alert(t.alert_ok);
+        window.location.href = "/";
+    } catch (err) {
+        console.error(err);
+        alert(t.alert_err);
+        btn.innerText = t.btn;
+        btn.disabled = false;
     }
+}
 
-    async function submitToPending() {
-        const id = document.getElementById('gId').value.trim();
-        const name = document.getElementById('gName').value.trim();
-        
-        if(!id || !name) return alert(t.alert_missing);
-        if(!mainImgBase64) return alert(t.alert_thumb);
-
-        const btn = document.getElementById('uploadBtn');
-        btn.innerText = t.btn_loading;
-        btn.disabled = true;
-
-        const pendingData = {
-            name: name,
-            developer: currentUser ? currentUser.displayName : "Unknown Dev",
-            devAvatar: currentUser ? currentUser.photoURL : "basicavtr.png",
-            platforms: document.getElementById('gPlatforms').value,
-            size: document.getElementById('gSize').value,
-            link: document.getElementById('gLink').value,
-            img: mainImgBase64,
-            reviewImg: reviewImgBase64,
-            customCss: document.getElementById('gCss').value,
-            customHtml: document.getElementById('gHtml').value
-        };
-
-        try {
-            await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/pending_games/${id}.json`, {
-                method: 'PUT',
-                body: JSON.stringify(pendingData)
-            });
-            alert(t.alert_ok);
-            window.location.href = "/";
-        } catch (e) {
-            alert(t.alert_err);
-            btn.innerText = t.btn;
-            btn.disabled = false;
-        }
-    }
-
-    window.onload = updatePreview;
+window.onload = updatePreview;
 </script>
 </body>
 </html>
