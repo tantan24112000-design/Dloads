@@ -6,13 +6,13 @@ let allGamesData = {};
 const id = new URLSearchParams(window.location.search).get('id');
 const userPage = new URLSearchParams(window.location.search).get('user');
 
-function formatPrice(price) {
+function formatPrice(price) { /* Giữ nguyên[cite: 3] */
     if (!price) return '';
     let formattedNumber = Number(price).toLocaleString('en-US');
     return isVi ? formattedNumber + ' VNĐ' : '$' + formattedNumber;
 }
 
-function trackUserPreference(category) {
+function trackUserPreference(category) { /* Giữ nguyên[cite: 3] */
     if (!category) return;
     let userPrefs = JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
     let tags = category.split(',').map(t => t.trim());
@@ -22,15 +22,15 @@ function trackUserPreference(category) {
     localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
 }
 
-function getUserPreferences() {
+function getUserPreferences() { /* Giữ nguyên[cite: 3] */
     return JSON.parse(localStorage.getItem('userCategoryPrefs')) || {};
 }
 
-// ĐÃ FIX LỖI "NO GAMES FOUND" Ở HÀM NÀY
-async function fetchAllGames() {
+// 1. CHỈ TẢI BẢN NHẸ DÀNH CHO TRANG CHỦ (META)
+async function fetchGamesMeta() {
     if (Object.keys(allGamesData).length > 0) return allGamesData;
     
-    let cached = sessionStorage.getItem('cachedGames');
+    let cached = sessionStorage.getItem('cachedGamesMeta');
     if (cached) {
         try {
             allGamesData = JSON.parse(cached);
@@ -40,34 +40,52 @@ async function fetchAllGames() {
         }
     }
     
-    // 1. Chỉ lấy data từ Firebase
     try {
-        const res = await fetch(`${dbUrl}/games.json`);
+        // TẢI TỪ NHÁNH NHẸ (Bạn cần cập nhật hàm upload để lưu thêm nhánh này)
+        const res = await fetch(`${dbUrl}/games_meta.json`); 
         allGamesData = await res.json() || {};
     } catch (e) {
         console.error("Lỗi tải data từ Firebase:", e);
         allGamesData = {};
-        return allGamesData; // Mất mạng hoặc lỗi Firebase mới chịu thua
+        return allGamesData;
     }
 
-    // 2. Tách riêng phần lưu Cache để lỡ data to quá (Custom HTML/CSS dài) văng lỗi thì cũng KHÔNG bị mất game
     try {
-        sessionStorage.setItem('cachedGames', JSON.stringify(allGamesData));
+        sessionStorage.setItem('cachedGamesMeta', JSON.stringify(allGamesData));
     } catch (e) {
-        console.warn("Dữ liệu quá lớn để lưu Cache, bỏ qua bước lưu cache (Game vẫn hiển thị bình thường).");
+        console.warn("Lỗi lưu cache meta.");
     }
     
     return allGamesData;
 }
 
+// 2. HÀM TẢI DỮ LIỆU NẶNG KHI VÀO TRANG CHI TIẾT
+async function fetchGameDetailData(gameId) {
+    try {
+        // Chỉ tải cục data khổng lồ của đúng 1 game
+        const res = await fetch(`${dbUrl}/games/${gameId}.json`);
+        return await res.json();
+    } catch (e) {
+        console.error("Lỗi tải chi tiết game:", e);
+        return null;
+    }
+}
+
 async function init() {
-    const allGames = await fetchAllGames();
+    // Luôn tải list meta (nhẹ) để dùng[cite: 3]
+    const allGamesMeta = await fetchGamesMeta();
 
     if (id) {
         document.getElementById('detailView').style.display = 'block';
-        const data = allGames ? allGames[id] : null;
+        let data = allGamesMeta ? allGamesMeta[id] : null;
         
         if (data) {
+            // GỌI THÊM DATA NẶNG VÀ GỘP VÀO DATA NHẸ
+            const heavyData = await fetchGameDetailData(id);
+            if (heavyData) {
+                data = { ...data, ...heavyData };
+            }
+
             trackUserPreference(data.category);
 
             document.getElementById('gName').innerText = data.name;
@@ -92,7 +110,7 @@ async function init() {
                 document.getElementById('gFakePrice').innerText = formatPrice(data.price);
             }
 
-            // Xử lý Custom HTML
+            // Dữ liệu nặng: HTML
             const devContentEl = document.getElementById('customDevContent');
             if (data.customHtml && data.customHtml.trim() !== '') {
                 if (typeof DOMPurify !== 'undefined') {
@@ -108,7 +126,7 @@ async function init() {
                 devContentEl.style.display = 'none';
             }
 
-            // Xử lý Custom CSS
+            // Dữ liệu nặng: CSS
             const existingStyle = document.getElementById('devCustomCss');
             if (existingStyle) existingStyle.remove();
             
@@ -124,6 +142,7 @@ async function init() {
                 alert(isVi ? "Đã copy link!" : "Link copied!");
             };
 
+            // Dữ liệu nặng: Review Base64
             if (data.reviewText || data.reviewImg) {
                 document.getElementById('reviewSec').style.display = 'block';
                 document.getElementById('rText').innerText = data.reviewText || '';
@@ -134,15 +153,16 @@ async function init() {
                 }
             }
 
+            // Render lại list gợi ý dựa trên bộ Meta nhẹ
             const recGrid = document.getElementById('recGrid');
             let count = 0;
             let recHtml = '';
-            for (let gId in allGames) {
+            for (let gId in allGamesMeta) {
                 if (gId !== id && count < 4) {
                     recHtml += `
                         <a href="?id=${gId}" class="rec-card">
-                            <img src="${allGames[gId].img || 'https://via.placeholder.com/150x80'}">
-                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGames[gId].name}</div>
+                            <img src="${allGamesMeta[gId].img || 'https://via.placeholder.com/150x80'}">
+                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${allGamesMeta[gId].name}</div>
                         </a>
                     `;
                     count++;
@@ -170,6 +190,7 @@ async function init() {
     }
 }
 
+// ... Giữ nguyên hàm updateGrid ...[cite: 3]
 function updateGrid(targetUser = null) {
     const searchInput = document.getElementById('searchInput');
     const sortSelect = document.getElementById('sortSelect');
