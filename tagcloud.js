@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const GAP_FROM_SORT = 30;    // px, từ mép trong của khung sáng tới cột tag
+    const GAP_FROM_SORT = 25;    // px, từ mép trong của khung sáng tới cột tag
     const EDGE_PAD = 12;        // px, chừa lề phải bên trong khung sáng
     const MIN_WIDTH = 240;      // px, cột tag hẹp hơn mức này thì ẩn luôn
     const MAX_WIDTH = 420;      // px, bề rộng tối đa của cột tag
