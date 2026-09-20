@@ -150,6 +150,39 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Layout chia đôi phần list */
+.list-layout { display: flex; gap: 30px; align-items: flex-start; }
+.list-main { flex: 1; min-width: 0; }
+.tag-sidebar { width: 160px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+
+/* Responsive trên điện thoại thì đẩy tag xuống hoặc lên tuỳ mày, ở đây tao đẩy xuống dưới thành hàng ngang */
+@media (max-width: 768px) { 
+    .list-layout { flex-direction: column; } 
+    .tag-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; } 
+}
+
+/* Style cho tag: chữ trắng thường, k viền, k nền, gạch chân khi hover */
+.side-tag {
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    text-align: left;
+    transition: opacity 0.2s;
+}
+.side-tag:hover {
+    text-decoration: underline;
+}
+.side-tag.active {
+    text-decoration: underline;
+    font-weight: bold;
+    color: #00e676; /* Đổi màu nhẹ để dễ nhận biết tag đang chọn, nếu k thích mày đổi thành #fff */
+}
     </style>
     <script>
         window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
