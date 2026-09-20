@@ -7,14 +7,13 @@
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; margin: 0; box-sizing: border-box; }
         .container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; box-sizing: border-box; }
         .preview-container { flex: 1; min-width: 320px; background: #0a0a0a; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; box-sizing: border-box; }
-        
-        /* Profile Section CSS */
-        .profile-box { display: flex; align-items: center; gap: 15px; background: #111; padding: 15px; border: 1px solid #333; margin-bottom: 20px; border-radius: 5px; }
+        .profile-box { display: flex; align-items: center; gap: 15px; background: #111; padding: 15px; border: 1px solid #333; margin-bottom: 20px; }
         .profile-box img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #555; }
-        .btn-avatar { background: #333; color: #fff; font-size: 11px; padding: 6px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; border-radius: 3px; display: inline-block; margin-top: 5px; }
+        .btn-avatar { background: #333; color: #fff; font-size: 11px; padding: 6px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; display: inline-block; margin-top: 5px; }
         .btn-avatar:hover { background: #555; }
-
         .section-title { font-size: 13px; font-weight: bold; color: #fff; background: #222; padding: 6px 10px; margin: 18px 0 10px 0; border-left: 3px solid #fff; text-transform: uppercase; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; background: #0a0a0a; color: #ccc; border: 1px solid #333; padding: 8px 14px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; letter-spacing: 1px; }
+        .btn-back:hover { color: #fff; border-color: #fff; }
         h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         label { display: block; margin-top: 12px; font-size: 12px; color: #aaa; font-weight: bold; text-transform: uppercase; }
         input[type="text"], textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-top: 5px; box-sizing: border-box; font-size: 13px; }
@@ -24,279 +23,264 @@
         button:hover { background: #ccc; }
         button:disabled { background: #555; cursor: not-allowed; color: #888; }
         iframe { width: 100%; flex-grow: 1; border: 1px dashed #555; background: #000; margin-top: 10px; min-height: 450px; }
+        .dev-readonly { background: #0a0a0a; border: 1px solid #222; color: #00e676; padding: 10px; font-size: 13px; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 id="t_title">UPLOAD GAME CỦA MÀY</h2>
+    <a class="btn-back" onclick="window.location.href='/'">← TẤT CẢ GAME</a>
 
-    <!-- KHUNG HỒ SƠ NGƯỜI DÙNG -->
+    <h2>UPLOAD GAME CỦA MÀY</h2>
+
     <div class="profile-box">
         <img id="userAvatar" src="basicavtr.png" alt="Avatar">
         <div>
-            <div style="font-size: 14px; color: #aaa;">Hello, <b id="userNameDisplay" style="color:#fff;">Loading...</b></div>
-            <label class="btn-avatar" for="avatarUpload" id="t_change_avt">ĐỔI ẢNH ĐẠI DIỆN</label>
+            <div style="font-size: 14px; color: #aaa;">Hello, <b id="userNameDisplay" style="color:#fff;">...</b></div>
+            <label class="btn-avatar" for="avatarUpload">ĐỔI ẢNH ĐẠI DIỆN</label>
             <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
         </div>
     </div>
-    
-    <div class="section-title" id="t_sec1">1. THÔNG TIN CƠ BẢN</div>
-    <label id="t_id_lbl">ID Game (vd: my-game-123)</label>
+
+    <div class="section-title">1. THÔNG TIN CƠ BẢN</div>
+
+    <label>ID Game (vd: my-game-123)</label>
     <input type="text" id="gId" placeholder="my-game-123">
 
-    <label id="t_name_lbl">Tên Game</label>
+    <label>Tên Game</label>
     <input type="text" id="gName" placeholder="Nhập tên game..." oninput="updatePreview()">
 
-    <label id="t_plat_lbl">Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)</label>
+    <label>Developer (tự động)</label>
+    <div class="dev-readonly" id="gDevDisplay">Đang tải...</div>
+
+    <label>Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)</label>
     <input type="text" id="gPlatforms" placeholder="Windows, Web..." oninput="updatePreview()">
 
-    <label id="t_size_lbl">Dung Lượng (vd: 250 MB)</label>
+    <label>Dung Lượng (vd: 250 MB)</label>
     <input type="text" id="gSize" placeholder="250 MB" oninput="updatePreview()">
 
-    <label id="t_link_lbl">Link Tải Gốc</label>
+    <label>Link Tải Gốc</label>
     <input type="text" id="gLink" placeholder="https://...">
 
-    <div class="section-title" id="t_sec2">2. HÌNH ẢNH</div>
-    <label id="t_thumb_lbl">Thumbnail / Ảnh Bìa Game (Bắt buộc)</label>
+    <div class="section-title">2. HÌNH ẢNH</div>
+    <label>Thumbnail / Ảnh Bìa Game (Bắt buộc)</label>
     <input type="file" id="fileMain" accept="image/*">
     <img id="prevMain" class="img-preview">
 
-    <label id="t_rev_lbl">Ảnh Review / Devlog (Tùy chọn)</label>
+    <label>Ảnh Review / Devlog (Tùy chọn)</label>
     <input type="file" id="fileReview" accept="image/*">
     <img id="prevReview" class="img-preview">
 
-    <div class="section-title" id="t_sec3">3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)</div>
-    <label id="t_css_lbl">Custom CSS (Tự viết style cho trang chi tiết)</label>
-    <textarea id="gCss" rows="5" placeholder="body { background: #000; }\n.detail-box { border-color: red; }" oninput="updatePreview()"></textarea>
+    <div class="section-title">3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)</div>
+    <label>Custom CSS</label>
+    <textarea id="gCss" rows="5" placeholder="body { background: #000; }" oninput="updatePreview()"></textarea>
 
-    <label id="t_html_lbl">Custom HTML (Mô tả game, nhúng video, hình ảnh...)</label>
-    <textarea id="gHtml" rows="6" placeholder="" oninput="updatePreview()"></textarea>
+    <label>Custom HTML (Mô tả game, nhúng video...)</label>
+    <textarea id="gHtml" rows="6" oninput="updatePreview()"></textarea>
 
     <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
 </div>
 
-<!-- Bảng Iframe xem trước -->
 <div class="preview-container">
-    <h2 id="t_prev_title">XEM TRƯỚC GIAO DIỆN</h2>
-    <p id="t_prev_desc" style="font-size: 12px; color: #888; margin: 0 0 10px 0;">Giao diện chi tiết game sẽ hiển thị trên web như thế này:</p>
+    <h2>XEM TRƯỚC GIAO DIỆN</h2>
+    <p style="font-size: 12px; color: #888; margin: 0 0 10px 0;">Giao diện chi tiết game sẽ hiển thị trên web như thế này:</p>
     <iframe id="previewFrame"></iframe>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script>
-// =========================================================
-// upload.html - THAY TOÀN BỘ PHẦN "LOGIC HOẠT ĐỘNG" BẰNG FILE NÀY
-// (giữ nguyên firebaseConfig + dict `t` ở trên)
-//
-// LƯU Ý: file upload.html hiện tại khai báo updatePreview() và
-// submitToPending() HAI LẦN -> bản thứ 2 đè bản thứ 1 nên avatar
-// vẫn lấy photoURL (rỗng). Xóa hết bản cũ, chỉ để file này.
-// =========================================================
-const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
-const BUCKET = 'game-images';
+    // =========================================================
+    // CONFIG
+    // =========================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
+        authDomain: "sf2g-bf285.firebaseapp.com",
+        projectId: "sf2g-bf285",
+        databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
+        storageBucket: "sf2g-bf285.firebasestorage.app",
+        messagingSenderId: "982578480996",
+        appId: "1:982578480996:web:609acf09d1d5b951299c71"
+    };
 
-const SB_HEADERS = {
-    apikey: SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-};
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
-let currentUser = null;
-let mainImgUrl = "";
-let reviewImgUrl = "";
+    const SUPABASE_URL      = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
+    const BUCKET            = 'game-images';
 
-// ---------- nén ảnh trước khi upload ----------
-function compressImage(file, maxSize, quality) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+    const SB = {
+        apikey:        SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    };
 
-        reader.onload = e => {
-            const img = new Image();
+    let currentUser  = null;
+    let mainImgUrl   = '';
+    let reviewImgUrl = '';
 
-            img.onload = () => {
-                let { width, height } = img;
-
-                if (width > height && width > maxSize) {
-                    height *= maxSize / width;
-                    width = maxSize;
-                } else if (height > maxSize) {
-                    width *= maxSize / height;
-                    height = maxSize;
-                }
-
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-
-                canvas.toBlob(
-                    blob => blob ? resolve(blob) : reject(new Error('compress fail')),
-                    'image/jpeg',
-                    quality
-                );
+    // =========================================================
+    // ẢNH COMPRESS + UPLOAD
+    // =========================================================
+    function compressImage(file, maxSize = 1280, quality = 0.82) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > height && width > maxSize) { height *= maxSize / width; width = maxSize; }
+                    else if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('compress fail')), 'image/jpeg', quality);
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
             };
-
-            img.onerror = reject;
-            img.src = e.target.result;
-        };
-
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-async function uploadToStorage(blob, path) {
-    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
-        method: 'POST',
-        headers: { ...SB_HEADERS, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
-        body: blob
-    });
-
-    if (!res.ok) throw new Error(await res.text());
-
-    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
-}
-
-async function uploadImageFile(file, path, maxSize = 1280, quality = 0.82) {
-    const blob = await compressImage(file, maxSize, quality);
-    return uploadToStorage(blob, path);
-}
-
-// ---------- profile ----------
-async function loadProfile(uid) {
-    try {
-        const res = await fetch(
-            `${SUPABASE_URL}/rest/v1/profiles?uid=eq.${encodeURIComponent(uid)}&select=avatar,display_name&limit=1`,
-            { headers: { ...SB_HEADERS, Accept: 'application/json' } }
-        );
-        const rows = await res.json();
-        return rows && rows[0] ? rows[0] : null;
-    } catch {
-        return null;
-    }
-}
-
-async function saveProfile(uid, patch) {
-    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-        method: 'POST',
-        headers: {
-            ...SB_HEADERS,
-            'Content-Type': 'application/json',
-            Prefer: 'resolution=merge-duplicates,return=minimal'
-        },
-        body: JSON.stringify({ uid, ...patch })
-    });
-}
-
-// ---------- auth (VẪN LÀ FIREBASE) ----------
-firebase.auth().onAuthStateChanged(async user => {
-    if (!user) {
-        alert(t.alert_login);
-        window.location.href = "auth.html";
-        return;
-    }
-
-    currentUser = user;
-    document.getElementById('userNameDisplay').innerText = user.displayName || "Unknown Dev";
-
-    const profile = await loadProfile(user.uid);
-    const avatar = profile?.avatar || "basicavtr.png";
-
-    currentUser.customPhoto = avatar;
-    document.getElementById('userAvatar').src = avatar;
-
-    updatePreview();
-});
-
-document.getElementById('avatarUpload').onchange = async e => {
-    const file = e.target.files[0];
-    if (!file || !currentUser) return;
-
-    const label = document.getElementById('t_change_avt');
-    label.innerText = "...";
-
-    try {
-        const url = await uploadImageFile(
-            file,
-            `avatars/${currentUser.uid}.jpg`,
-            150,
-            0.8
-        );
-
-        // cache-bust vì path cố định
-        const finalUrl = `${url}?v=${Date.now()}`;
-
-        await saveProfile(currentUser.uid, {
-            display_name: currentUser.displayName || null,
-            avatar: finalUrl
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
         });
-
-        currentUser.customPhoto = finalUrl;
-        document.getElementById('userAvatar').src = finalUrl;
-        alert(t.avt_ok);
-        updatePreview();
-    } catch (err) {
-        console.error(err);
-        alert(t.avt_err);
-    } finally {
-        label.innerText = t.change_avt;
     }
-};
 
-// ---------- chọn ảnh game ----------
-function bindGameImage(inputId, previewId, onDone) {
-    document.getElementById(inputId).onchange = async e => {
+    async function uploadToStorage(blob, path) {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+            method: 'POST',
+            headers: { ...SB, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+            body: blob
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+    }
+
+    async function uploadImageFile(file, path, maxSize = 1280, quality = 0.82) {
+        const blob = await compressImage(file, maxSize, quality);
+        return uploadToStorage(blob, path);
+    }
+
+    // =========================================================
+    // PROFILE (SUPABASE)
+    // =========================================================
+    async function loadProfile(uid) {
+        try {
+            const res = await fetch(
+                `${SUPABASE_URL}/rest/v1/profiles?uid=eq.${encodeURIComponent(uid)}&select=avatar,display_name&limit=1`,
+                { headers: { ...SB, Accept: 'application/json' } }
+            );
+            const rows = await res.json();
+            return rows?.[0] || null;
+        } catch { return null; }
+    }
+
+    async function saveProfile(uid, patch) {
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+            method: 'POST',
+            headers: { ...SB, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({ uid, ...patch })
+        });
+    }
+
+    // =========================================================
+    // FIREBASE AUTH
+    // =========================================================
+    firebase.auth().onAuthStateChanged(async user => {
+        if (!user) {
+            alert('Đăng nhập để upload!');
+            window.location.href = 'auth.html';
+            return;
+        }
+
+        currentUser = user;
+
+        const devName = user.displayName || 'Unknown Dev';
+        document.getElementById('userNameDisplay').innerText = devName;
+        document.getElementById('gDevDisplay').innerText = devName;
+
+        const profile = await loadProfile(user.uid);
+        const avatar = profile?.avatar || 'basicavtr.png';
+        currentUser.customPhoto = avatar;
+        document.getElementById('userAvatar').src = avatar;
+
+        updatePreview();
+    });
+
+    // ---------- đổi avatar ----------
+    document.getElementById('avatarUpload').onchange = async e => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file || !currentUser) return;
 
-        const img = document.getElementById(previewId);
-        img.src = URL.createObjectURL(file);
-        img.style.display = 'block';
-
-        const gameId = (document.getElementById('gId').value.trim() || `tmp-${Date.now()}`)
-            .replace(/[^a-zA-Z0-9_-]/g, '_');
+        const label = document.getElementById('t_change_avt') || { innerText: '' };
 
         try {
-            const url = await uploadImageFile(
-                file,
-                `games/${gameId}-${inputId}-${Date.now()}.jpg`
-            );
-            onDone(url);
+            const url = await uploadImageFile(file, `avatars/${currentUser.uid}.jpg`, 150, 0.8);
+            const finalUrl = `${url}?v=${Date.now()}`;
+
+            await saveProfile(currentUser.uid, {
+                display_name: currentUser.displayName || null,
+                avatar: finalUrl
+            });
+
+            currentUser.customPhoto = finalUrl;
+            document.getElementById('userAvatar').src = finalUrl;
+            alert('Cập nhật avatar thành công!');
             updatePreview();
         } catch (err) {
             console.error(err);
-            alert('Upload ảnh lỗi!');
+            alert('Lỗi khi cập nhật avatar!');
         }
     };
-}
 
-bindGameImage('fileMain', 'prevMain', url => { mainImgUrl = url; });
-bindGameImage('fileReview', 'prevReview', url => { reviewImgUrl = url; });
+    // =========================================================
+    // BIND GAME IMAGES
+    // =========================================================
+    function bindGameImage(inputId, previewId, onDone) {
+        document.getElementById(inputId).onchange = async e => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-// ---------- preview ----------
-function updatePreview() {
-    const name = document.getElementById('gName').value || t.if_name;
-    const platforms = document.getElementById('gPlatforms').value || 'Windows';
-    const size = document.getElementById('gSize').value || '--';
-    const css = document.getElementById('gCss').value;
-    const html = document.getElementById('gHtml').value;
-    const frame = document.getElementById('previewFrame');
+            const img = document.getElementById(previewId);
+            img.src = URL.createObjectURL(file);
+            img.style.display = 'block';
 
-    const devName = currentUser ? currentUser.displayName : 'Dev Name';
-    const devAvt = (currentUser && currentUser.customPhoto) ? currentUser.customPhoto : 'basicavtr.png';
+            const gameId = (document.getElementById('gId').value.trim() || `tmp-${Date.now()}`)
+                .replace(/[^a-zA-Z0-9_-]/g, '_');
 
-    const thumbHtml = mainImgUrl
-        ? `<img src="${mainImgUrl}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">`
-        : '';
+            try {
+                const url = await uploadImageFile(file, `games/${gameId}-${inputId}-${Date.now()}.jpg`);
+                onDone(url);
+                updatePreview();
+            } catch (err) {
+                console.error(err);
+                alert('Upload ảnh lỗi!');
+            }
+        };
+    }
 
-    const revHtml = reviewImgUrl
-        ? `<img src="${reviewImgUrl}" style="width:100%;margin-top:15px;border:1px solid #333;">`
-        : '';
+    bindGameImage('fileMain',   'prevMain',   url => { mainImgUrl   = url; });
+    bindGameImage('fileReview', 'prevReview', url => { reviewImgUrl = url; });
 
-    frame.srcdoc = `
-        <!DOCTYPE html><html><head><style>
+    // =========================================================
+    // PREVIEW
+    // =========================================================
+    function updatePreview() {
+        const name      = document.getElementById('gName').value      || 'Tên Game';
+        const platforms = document.getElementById('gPlatforms').value  || 'Windows';
+        const size      = document.getElementById('gSize').value       || '--';
+        const css       = document.getElementById('gCss').value;
+        const html      = document.getElementById('gHtml').value;
+        const frame     = document.getElementById('previewFrame');
+
+        const devName = currentUser?.displayName || 'Dev Name';
+        const devAvt  = currentUser?.customPhoto  || 'basicavtr.png';
+
+        const thumbHtml = mainImgUrl
+            ? `<img src="${mainImgUrl}" style="width:100%;height:220px;object-fit:cover;border:1px solid #333;margin-bottom:15px;">`
+            : '';
+        const revHtml = reviewImgUrl
+            ? `<img src="${reviewImgUrl}" style="width:100%;margin-top:15px;border:1px solid #333;">`
+            : '';
+
+        frame.srcdoc = `<!DOCTYPE html><html><head><style>
             body { background:#000; color:#fff; font-family:sans-serif; padding:15px; margin:0; }
             .detail-box { background:#0a0a0a; border:1px solid #222; padding:20px; }
             .dev-info { display:flex; align-items:center; gap:10px; color:#888; font-size:13px; margin-bottom:15px; }
@@ -310,65 +294,62 @@ function updatePreview() {
                 <h2 style="margin:0 0 10px 0;">${name}</h2>
                 <div class="dev-info">
                     <img src="${devAvt}">
-                    <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
+                    <div>A game by <b style="color:#fff;">${devName}</b> | Nền tảng: ${platforms} | Dung lượng: ${size}</div>
                 </div>
-                <div id="customDevContent">${html || t.if_html}</div>
+                <div id="customDevContent">${html || '<i style="color:#666">HTML mô tả game hiển thị ở đây...</i>'}</div>
                 ${revHtml}
             </div>
-        </body></html>
-    `;
-}
-
-// ---------- gửi duyệt ----------
-async function submitToPending() {
-    const gameId = document.getElementById('gId').value.trim();
-    const name = document.getElementById('gName').value.trim();
-
-    if (!gameId || !name) return alert(t.alert_missing);
-    if (!mainImgUrl) return alert(t.alert_thumb);
-
-    const btn = document.getElementById('uploadBtn');
-    btn.innerText = t.btn_loading;
-    btn.disabled = true;
-
-    try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/pending_games`, {
-            method: 'POST',
-            headers: {
-                ...SB_HEADERS,
-                'Content-Type': 'application/json',
-                Prefer: 'resolution=merge-duplicates,return=minimal'
-            },
-            body: JSON.stringify({
-                id: gameId,
-                name,
-                developer: currentUser ? currentUser.displayName : "Unknown Dev",
-                dev_uid: currentUser ? currentUser.uid : null,
-                dev_avatar: currentUser ? (currentUser.customPhoto || "basicavtr.png") : "basicavtr.png",
-                platforms: document.getElementById('gPlatforms').value,
-                size: document.getElementById('gSize').value,
-                link: document.getElementById('gLink').value,
-                img: mainImgUrl,
-                review_img: reviewImgUrl || null,
-                custom_css: document.getElementById('gCss').value,
-                custom_html: document.getElementById('gHtml').value,
-                status: 'pending'
-            })
-        });
-
-        if (!res.ok) throw new Error(await res.text());
-
-        alert(t.alert_ok);
-        window.location.href = "/";
-    } catch (err) {
-        console.error(err);
-        alert(t.alert_err);
-        btn.innerText = t.btn;
-        btn.disabled = false;
+        </body></html>`;
     }
-}
 
-window.onload = updatePreview;
+    // =========================================================
+    // GỬI DUYỆT
+    // =========================================================
+    async function submitToPending() {
+        const gameId = document.getElementById('gId').value.trim();
+        const name   = document.getElementById('gName').value.trim();
+
+        if (!gameId || !name) return alert('Điền thiếu ID hoặc Tên Game!');
+        if (!mainImgUrl)      return alert('Vui lòng chọn Thumbnail / Ảnh Bìa Game!');
+
+        const btn = document.getElementById('uploadBtn');
+        btn.innerText = 'ĐANG GỬI LÊN...';
+        btn.disabled  = true;
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/pending_games`, {
+                method: 'POST',
+                headers: { ...SB, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+                body: JSON.stringify({
+                    id:         gameId,
+                    name,
+                    developer:  currentUser?.displayName || 'Unknown Dev',
+                    dev_uid:    currentUser?.uid          || null,
+                    dev_avatar: currentUser?.customPhoto  || 'basicavtr.png',
+                    platforms:  document.getElementById('gPlatforms').value,
+                    size:       document.getElementById('gSize').value,
+                    link:       document.getElementById('gLink').value,
+                    img:        mainImgUrl,
+                    review_img: reviewImgUrl || null,
+                    custom_css: document.getElementById('gCss').value,
+                    custom_html:document.getElementById('gHtml').value,
+                    status:     'pending'
+                })
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+
+            alert('Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.');
+            window.location.href = '/';
+        } catch (err) {
+            console.error(err);
+            alert('Lỗi khi gửi duyệt!');
+            btn.innerText = 'GỬI YÊU CẦU DUYỆT';
+            btn.disabled  = false;
+        }
+    }
+
+    updatePreview();
 </script>
 </body>
 </html>
