@@ -515,6 +515,42 @@ function createGameCardHtml(item, index, total) {
     return html;
 }
 
+let activeTag = null;
+
+function renderTagPanel() {
+    const panel = document.getElementById('tagPanel');
+    if (!panel) return;
+
+    const tagCount = Object.create(null);
+    for (const item of gamesList) {
+        if (!item.category) continue;
+        for (const raw of item.category.split(',')) {
+            const tag = raw.trim();
+            if (tag) tagCount[tag] = (tagCount[tag] || 0) + 1;
+        }
+    }
+
+    const tags = Object.keys(tagCount).sort();
+    if (!tags.length) { panel.style.display = 'none'; return; }
+
+    let html = '<div class="tag-item ' + (activeTag === null ? 'tag-active' : '') + '" data-tag="">' + (isVi ? 'Tất cả' : 'All') + '</div>';
+
+    for (const tag of tags) {
+        html += '<div class="tag-item ' + (activeTag === tag ? 'tag-active' : '') + '" data-tag="' + escapeHtml(tag) + '">' + escapeHtml(tag) + '</div>';
+    }
+
+    panel.innerHTML = html;
+    panel.style.display = 'block';
+
+    panel.onclick = e => {
+        const el = e.target.closest('[data-tag]');
+        if (!el) return;
+        activeTag = el.dataset.tag || null;
+        renderTagPanel();
+        updateGrid();
+    };
+}
+
 function updateGrid(targetUser = null) {
     const searchInput = document.getElementById('searchInput');
     const sortSelect = document.getElementById('sortSelect');
@@ -535,6 +571,12 @@ function updateGrid(targetUser = null) {
     } else if (query) {
         for (const item of gamesList) {
             if (item.searchText.includes(query)) filtered.push(item);
+        }
+    } else if (activeTag) {
+        for (const item of gamesList) {
+            if (item.category && item.category.split(',').map(t => t.trim()).includes(activeTag)) {
+                filtered.push(item);
+            }
         }
     } else {
         filtered.push(...gamesList);
@@ -610,6 +652,7 @@ async function initList(targetUser = null) {
         grid.before(heading);
     }
 
+    renderTagPanel();
     updateGrid(targetUser ? targetUser.toLowerCase() : null);
     setupListEvents(targetUser);
     hideSpinner();
