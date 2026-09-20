@@ -59,14 +59,16 @@
                 position: absolute;
                 display: none;
                 grid-template-columns: repeat(${PER_ROW}, minmax(0, max-content));
-                column-gap: 22px;
-                row-gap: 14px;
+                column-gap: 10px;
+                row-gap: 10px;
                 align-content: start;
                 z-index: 1;
             }
             #tcLayer .tc-title {
                 grid-column: 1 / -1;
                 margin: 0 0 4px 0;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #2a2a2a;
                 color: #fff;
                 font-size: 15px;
                 font-weight: 600;
@@ -76,10 +78,14 @@
             #tcLayer .tc-item {
                 display: block;
                 min-width: 0;
-                color: #fff;
-                font-size: 20px;
+                padding: 6px 12px;
+                background: #0a0a0a;
+                border: 1px solid #2a2a2a;
+                color: #d4d4d4;
+                font-size: 17px;
                 font-weight: 700;
-                line-height: 1.5;
+                line-height: 1.4;
+                text-align: center;
                 text-underline-offset: 4px;
                 white-space: nowrap;
                 overflow: hidden;
@@ -87,11 +93,19 @@
                 cursor: pointer;
                 outline: none;
                 user-select: none;
+                transition: border-color 0.15s, color 0.15s, background 0.15s;
             }
             #tcLayer .tc-item:hover,
             #tcLayer .tc-item:active,
-            #tcLayer .tc-item:focus-visible,
+            #tcLayer .tc-item:focus-visible {
+                border-color: #fff;
+                color: #fff;
+                text-decoration: underline;
+            }
             #tcLayer .tc-item.is-active {
+                background: #fff;
+                border-color: #fff;
+                color: #000;
                 text-decoration: underline;
             }
 
@@ -104,8 +118,15 @@
                 margin-bottom: 12px;
             }
             .tc-indicator b { color: #fff; font-weight: 700; }
-            .tc-clear { cursor: pointer; color: #999; }
-            .tc-clear:hover { color: #fff; text-decoration: underline; }
+            .tc-clear {
+                padding: 3px 9px;
+                background: #0a0a0a;
+                border: 1px solid #2a2a2a;
+                color: #ccc;
+                cursor: pointer;
+                transition: border-color 0.15s, color 0.15s;
+            }
+            .tc-clear:hover { border-color: #fff; color: #fff; }
         `;
         document.head.appendChild(style);
     }
