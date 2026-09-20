@@ -15,7 +15,7 @@
     const MAX_ITEMS = 12;       // số tag tối đa (ưu tiên tag nhiều game nhất)
     const PER_ROW = 3;          // số tag mỗi hàng
 
-    const SIDE_BG = '#141414';    // màu lõi sáng bên phải
+    const SIDE_BG = '#0f0f0f';    // màu lõi sáng bên phải
     const SIDE_INNER = '#0a0a0a'; // viền trong: nhạt hơn đen 1 chút, tối hơn SIDE_BG
     const SIDE_OUTER = '#000';    // viền ngoài: trùng màu nền trang
     const SIDE_OUTER_W = 12;      // px, độ dày viền ngoài
