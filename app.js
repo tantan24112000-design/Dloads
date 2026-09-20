@@ -539,7 +539,7 @@ function updateGrid(targetUser = null) {
     } else {
         filtered.push(...gamesList);
     }
-
+    if (window.TagCloud) filtered = filtered.filter(TagCloud.matches);
     // Supabase đã trả về created_at DESC => 'new' không cần xử lý thêm.
     if (sortMethod === 'az') {
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -613,6 +613,9 @@ async function initList(targetUser = null) {
     updateGrid(targetUser ? targetUser.toLowerCase() : null);
     setupListEvents(targetUser);
     hideSpinner();
+    if (!targetUser) {
+    window.TagCloud?.init({ getItems: () => gamesList, onChange: () => updateGrid() });
+}
 }
 
 // =========================================================
