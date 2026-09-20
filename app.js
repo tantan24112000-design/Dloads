@@ -525,7 +525,7 @@ function updateGrid(targetUser = null) {
     const query = searchInput?.value.trim().toLowerCase() || '';
     const sortMethod = sortSelect?.value || 'new';
 
-    const filtered = [];
+    let filtered = [];
 
     if (targetUser) {
         const normalizedUser = targetUser.toLowerCase();
