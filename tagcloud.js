@@ -8,17 +8,21 @@
 (function () {
     'use strict';
 
-    const GAP_FROM_SORT = 13; // px, từ mép phải nút sort ("Cho bạn") tới cột tag
+    const GAP_FROM_SORT = 25;    // px, từ mép phải nút sort ("Cho bạn") tới cột tag
     const EDGE_PAD = 20;        // px, chừa lề phải màn hình
     const MIN_WIDTH = 240;      // px, cột tag hẹp hơn mức này thì ẩn luôn
     const MAX_WIDTH = 420;      // px, bề rộng tối đa của cột tag
     const MAX_ITEMS = 12;       // số tag tối đa (ưu tiên tag nhiều game nhất)
     const PER_ROW = 3;          // số tag mỗi hàng
 
+    const SIDE_BG = '#141414';  // màu vùng trống bên phải (nền đen là #000)
+    const SIDE_MIN_WIDTH = 30;  // px, vùng trống hẹp hơn mức này thì không tô
+
     const isVi = (navigator.language || '').toLowerCase().includes('vi');
 
     let layer = null;
     let indicator = null;
+    let side = null;
     let tags = [];
     let activeTag = null;       // tag đang lọc (null = không lọc)
     let onChange = function () {};
@@ -33,6 +37,17 @@
         const style = document.createElement('style');
         style.id = 'tcStyles';
         style.textContent = `
+            #tcSide {
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                display: none;
+                background: ${SIDE_BG};
+                pointer-events: none;
+                z-index: 0;
+            }
+
             #tcLayer {
                 position: absolute;
                 display: none;
@@ -92,6 +107,12 @@
     // DOM
     // ---------------------------------------------------------
     function createDom() {
+        // Nền sáng hơn cho vùng trống bên phải (chèn đầu body để nằm dưới mọi thứ)
+        side = document.createElement('div');
+        side.id = 'tcSide';
+        side.setAttribute('aria-hidden', 'true');
+        document.body.insertBefore(side, document.body.firstChild);
+
         layer = document.createElement('div');
         layer.id = 'tcLayer';
         layer.setAttribute('role', 'group');
@@ -128,14 +149,26 @@
         layer.appendChild(frag);
     }
 
-    // Đặt vị trí: cách mép phải nút sort đúng GAP_FROM_SORT px, top ngang nút sort.
+    // Đặt vị trí: vùng sáng bên phải + cột tag cách mép phải nút sort GAP_FROM_SORT px.
     function layout() {
         const sortEl = document.getElementById('sortSelect');
         if (!layer || !sortEl) return;
 
         const rect = sortEl.getBoundingClientRect();
+        const viewportW = document.documentElement.clientWidth;
+
+        // Vùng trống bên phải: từ mép phải nội dung tới hết màn hình
+        if (side) {
+            if (viewportW - rect.right >= SIDE_MIN_WIDTH) {
+                side.style.left = `${rect.right}px`;
+                side.style.display = 'block';
+            } else {
+                side.style.display = 'none';
+            }
+        }
+
         const leftInView = rect.right + GAP_FROM_SORT;
-        const availableW = document.documentElement.clientWidth - leftInView - EDGE_PAD;
+        const availableW = viewportW - leftInView - EDGE_PAD;
 
         if (availableW < MIN_WIDTH) {
             layer.style.display = 'none';
