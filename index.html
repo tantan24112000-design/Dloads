@@ -230,7 +230,9 @@
             </div>
         </div>
 
-        <div id="listView" style="display: none;">
+<div id="listView" style="display: none;">
+    <div class="list-layout">
+        <div class="list-main">
             <div class="controls-wrap">
                 <div class="controls-bar">
                     <input type="text" id="searchInput" class="search-input" data-vi="Tìm kiếm trò chơi, tác giả..." data-en="Search games, creators..." placeholder="Search games, creators...">
@@ -244,7 +246,11 @@
             
             <div class="game-grid" id="gameGrid"></div>
         </div>
-
+        
+        <!-- Khung chứa random tags -->
+        <div class="tag-sidebar" id="tagSidebar"></div>
+    </div>
+</div>
         <div id="detailView" style="display: none;">
             <a href="/" class="btn-back" id="t_backBtn" data-vi="← TẤT CẢ GAME" data-en="← ALL GAMES">← ALL GAMES</a>
             <div class="detail-box" id="mainDetailBox">
