@@ -445,11 +445,15 @@ function getDebounced(fn, delay = 120) {
 }
 
 // =========================================================
-// TAG CLOUD (CỘT TAG Ở LỀ TRỐNG BÊN PHẢI TRANG CHỦ) - lọc nhanh theo tag
+// TAG CLOUD (CỘT TAG BÊN PHẢI NÚT SORT TRANG CHỦ) - lọc nhanh theo tag
+// Thay toàn bộ đoạn từ comment "TAG CLOUD" cũ đến hết hàm initTagCloud() bằng đoạn này.
 // =========================================================
-const TAG_CLOUD_MIN_MARGIN = 150;  // lề phải rộng tối thiểu ngần này mới hiện tag
-const TAG_CLOUD_MAX_ITEMS = 12;    // số tag tối đa hiển thị (ưu tiên tag dùng nhiều nhất)
-const TAG_CLOUD_MAX_WIDTH = 240;   // bề rộng tối đa của cột tag
+const TAG_CLOUD_GAP_FROM_SORT = 75.6; // khoảng cách từ mép phải nút sort ("Cho bạn") tới cột tag (px)
+const TAG_CLOUD_EDGE_PAD = 20;        // chừa lề phải màn hình (px)
+const TAG_CLOUD_MIN_WIDTH = 240;      // cột tag hẹp hơn mức này thì ẩn luôn (px)
+const TAG_CLOUD_MAX_WIDTH = 420;      // bề rộng tối đa của cột tag (px)
+const TAG_CLOUD_MAX_ITEMS = 12;       // số tag tối đa hiển thị (ưu tiên tag nhiều game nhất)
+const TAG_CLOUD_PER_ROW = 3;          // số tag mỗi hàng
 let tagCloudEntries = [];
 
 // Style cho cột tag - nhét thẳng vào đây để chỉ cần sửa app.js.
@@ -461,23 +465,31 @@ function ensureTagCloudStyles() {
     style.id = 'tagCloudStyles';
     style.textContent = `
         #tagCloudLayer {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            max-height: calc(100vh - 180px);
-            flex-direction: column;
-            gap: 14px;
-            overflow-y: auto;
-            scrollbar-width: none;
+            position: absolute;
+            grid-template-columns: repeat(${TAG_CLOUD_PER_ROW}, minmax(0, max-content));
+            column-gap: 22px;
+            row-gap: 14px;
+            align-content: start;
             pointer-events: auto;
             z-index: 1;
         }
-        #tagCloudLayer::-webkit-scrollbar { display: none; }
+        #tagCloudLayer .tag-cloud-title {
+            grid-column: 1 / -1;
+            margin: 0 0 4px 0;
+            color: #fff;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            font-style: normal;
+            line-height: 1.5;
+            letter-spacing: normal;
+            text-transform: none;
+            user-select: none;
+        }
         #tagCloudLayer .tag-cloud-item {
             position: static;
-            flex: 0 0 auto;
             display: block;
-            width: 100%;
+            min-width: 0;
             margin: 0;
             padding: 0;
             background: none;
@@ -485,25 +497,28 @@ function ensureTagCloudStyles() {
             box-shadow: none;
             color: #fff;
             font-family: inherit;
-            font-size: 17px;
-            font-weight: 400;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.5;
             letter-spacing: normal;
             text-transform: none;
             text-align: left;
             text-decoration: none;
+            text-underline-offset: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
             transition: none;
+            outline: none;
         }
         #tagCloudLayer .tag-cloud-item:hover,
-        #tagCloudLayer .tag-cloud-item:focus,
-        #tagCloudLayer .tag-cloud-item:focus-visible {
+        #tagCloudLayer .tag-cloud-item:active,
+        #tagCloudLayer .tag-cloud-item:focus-visible,
+        #tagCloudLayer .tag-cloud-item.is-active {
             background: none;
             color: #fff;
-            text-decoration: none;
-            outline: none;
+            text-decoration: underline;
         }
     `;
     document.head.appendChild(style);
@@ -538,27 +553,18 @@ function buildTagCloudEntries() {
     return getTopTags();
 }
 
-function layoutTagCloud() {
+// Dựng DOM 1 lần: tiêu đề "All Tags" + các tag.
+function renderTagCloud() {
     const layer = document.getElementById('tagCloudLayer');
-    if (!layer || tagCloudEntries.length === 0) return;
-
-    const bodyPaddingX = 20;   // khớp với padding của body trong CSS
-    const containerMax = 900;  // khớp với max-width của .container
-    const viewportW = document.documentElement.clientWidth;
-    const contentAreaW = viewportW - bodyPaddingX * 2;
-    const marginEach = (contentAreaW - containerMax) / 2;
-
-    if (marginEach < TAG_CLOUD_MIN_MARGIN) {
-        layer.style.display = 'none';
-        return;
-    }
-
-    // Cột tag nằm sát mép phải của phần nội dung, giữa lề phải
-    const sideWidth = Math.min(marginEach - 40, TAG_CLOUD_MAX_WIDTH);
-    const rightStart = bodyPaddingX + marginEach + containerMax + 20;
+    if (!layer) return;
 
     layer.innerHTML = '';
     const frag = document.createDocumentFragment();
+
+    const title = document.createElement('div');
+    title.className = 'tag-cloud-title';
+    title.textContent = 'All Tags';
+    frag.appendChild(title);
 
     for (const entry of tagCloudEntries) {
         const el = document.createElement('span');
@@ -572,9 +578,44 @@ function layoutTagCloud() {
     }
 
     layer.appendChild(frag);
-    layer.style.left = `${Math.round(rightStart)}px`;
-    layer.style.width = `${Math.round(sideWidth)}px`;
-    layer.style.display = 'flex';
+    syncTagCloudActive();
+}
+
+// Đặt vị trí: cách mép phải nút sort đúng TAG_CLOUD_GAP_FROM_SORT px, top ngang nút sort.
+function layoutTagCloud() {
+    const layer = document.getElementById('tagCloudLayer');
+    const sortEl = document.getElementById('sortSelect');
+    if (!layer || !sortEl || tagCloudEntries.length === 0) return;
+
+    const rect = sortEl.getBoundingClientRect();
+    const viewportW = document.documentElement.clientWidth;
+    const leftInView = rect.right + TAG_CLOUD_GAP_FROM_SORT;
+    const availableW = viewportW - leftInView - TAG_CLOUD_EDGE_PAD;
+
+    if (availableW < TAG_CLOUD_MIN_WIDTH) {
+        layer.style.display = 'none';
+        return;
+    }
+
+    layer.style.left = `${leftInView + window.scrollX}px`;
+    layer.style.top = `${rect.top + window.scrollY}px`;
+    layer.style.width = `${Math.min(availableW, TAG_CLOUD_MAX_WIDTH)}px`;
+    layer.style.display = 'grid';
+}
+
+// Tag đang lọc thì giữ gạch chân.
+function syncTagCloudActive() {
+    const layer = document.getElementById('tagCloudLayer');
+    if (!layer) return;
+
+    const activeLower = activeTagFilter ? activeTagFilter.toLowerCase() : '';
+
+    for (const el of layer.querySelectorAll('.tag-cloud-item')) {
+        el.classList.toggle(
+            'is-active',
+            !!activeLower && el.dataset.tag.toLowerCase() === activeLower
+        );
+    }
 }
 
 function applyTagFilter(tag) {
@@ -587,12 +628,16 @@ function applyTagFilter(tag) {
 
     updateGrid();
     updateTagFilterIndicator();
+    syncTagCloudActive();
+    layoutTagCloud(); // dòng "Đang lọc theo" đẩy nút sort xuống -> canh lại
 }
 
 function clearTagFilter() {
     activeTagFilter = null;
     updateGrid();
     updateTagFilterIndicator();
+    syncTagCloudActive();
+    layoutTagCloud();
 }
 
 function updateTagFilterIndicator() {
@@ -613,6 +658,35 @@ function updateTagFilterIndicator() {
     }
 }
 
+function initTagCloud() {
+    const layer = document.getElementById('tagCloudLayer');
+    if (!layer) return;
+
+    tagCloudEntries = buildTagCloudEntries();
+    if (tagCloudEntries.length === 0) return;
+
+    ensureTagCloudStyles();
+    renderTagCloud();
+    layoutTagCloud();
+
+    layer.addEventListener('click', event => {
+        const el = event.target.closest('.tag-cloud-item');
+        if (el) applyTagFilter(el.dataset.tag);
+    });
+
+    layer.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const el = event.target.closest('.tag-cloud-item');
+        if (!el) return;
+        event.preventDefault();
+        applyTagFilter(el.dataset.tag);
+    });
+
+    // Resize + scrollbar hiện/ẩn (đổi bề rộng body) đều làm nút sort lệch -> canh lại.
+    const relayout = getDebounced(layoutTagCloud, 100);
+    window.addEventListener('resize', relayout, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(relayout).observe(document.body);
+}
 function initTagCloud() {
     const layer = document.getElementById('tagCloudLayer');
     if (!layer) return;
