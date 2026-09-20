@@ -27,6 +27,7 @@ let gamesList = [];
 let userPrefs = loadUserPreferences();
 let metaRefreshPromise = null;
 let metaCacheTimestamp = 0;
+let activeTagFilter = null;
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
@@ -527,17 +528,21 @@ function updateGrid(targetUser = null) {
 
     const filtered = [];
 
-    if (targetUser) {
-        const normalizedUser = targetUser.toLowerCase();
-        for (const item of gamesList) {
-            if (item.developerLower === normalizedUser) filtered.push(item);
-        }
-    } else if (query) {
-        for (const item of gamesList) {
-            if (item.searchText.includes(query)) filtered.push(item);
-        }
-    } else {
-        filtered.push(...gamesList);
+const query = searchInput?.value.trim().toLowerCase() || '';
+    const sortMethod = sortSelect?.value || 'new';
+
+    const filtered = [];
+    const normalizedUser = targetUser ? targetUser.toLowerCase() : null;
+
+    for (const item of gamesList) {
+        // Lọc theo dev
+        if (normalizedUser && item.developerLower !== normalizedUser) continue;
+        // Lọc theo search input
+        if (query && !item.searchText.includes(query)) continue;
+        // Lọc theo tag bên sidebar
+        if (activeTagFilter && !(item.category || '').toLowerCase().includes(activeTagFilter.toLowerCase())) continue;
+
+        filtered.push(item);
     }
 
     // Supabase đã trả về created_at DESC => 'new' không cần xử lý thêm.
