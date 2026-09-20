@@ -598,7 +598,7 @@ async function initList(targetUser = null) {
     document.getElementById('listView').style.display = 'block';
 
     await fetchGamesMeta();
-
+    renderTagsSidebar();
     const grid = document.getElementById('gameGrid');
 
     if (targetUser && grid) {
@@ -613,11 +613,69 @@ async function initList(targetUser = null) {
         heading.appendChild(nameEl);
 
         grid.before(heading);
+        
     }
 
     updateGrid(targetUser ? targetUser.toLowerCase() : null);
     setupListEvents(targetUser);
     hideSpinner();
+    // Trộn mảng ngẫu nhiên
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Lọc tag trùng lặp từ gamesList, random và đẩy lên giao diện
+function renderTagsSidebar() {
+    const sidebar = document.getElementById('tagSidebar');
+    if (!sidebar) return;
+
+    const tagsSet = new Set();
+    gamesList.forEach(item => {
+        if (item.category) {
+            item.category.split(',').forEach(tag => {
+                const t = tag.trim();
+                if (t) tagsSet.add(t);
+            });
+        }
+    });
+
+    let tagsArray = Array.from(tagsSet);
+    tagsArray = shuffleArray(tagsArray).slice(0, 15); // Lấy tối đa 15 tag random cho đỡ tràn màn hình
+
+    // Tiêu đề nhỏ (có i18n cho vi/en)
+    let html = `<div style="font-size: 11px; color: #555; text-transform: uppercase; margin-bottom: 5px;" data-vi="THẺ" data-en="TAGS">TAGS</div>`;
+    
+    tagsArray.forEach(tag => {
+        html += `<span class="side-tag" onclick="toggleTagFilter('${escapeHtml(tag)}')">${escapeHtml(tag)}</span>`;
+    });
+
+    sidebar.innerHTML = html;
+    
+    // Gọi hàm đổi ngôn ngữ nếu có
+    if (window.applyLanguage) window.applyLanguage();
+}
+
+// Sự kiện khi bấm vào 1 tag
+window.toggleTagFilter = function(tag) {
+    // Nếu tag đang bấm trùng với tag đã chọn -> Bỏ chọn. Nếu không -> Lấy tag mới.
+    activeTagFilter = (activeTagFilter === tag) ? null : tag;
+    
+    // Gạch chân cái thẻ đang được bật
+    document.querySelectorAll('.side-tag').forEach(el => {
+        if (el.innerText === activeTagFilter) {
+            el.classList.add('active');
+        } else {
+            el.classList.remove('active');
+        }
+    });
+
+    // Cập nhật lại Grid
+    updateGrid(userPage); 
+};
 }
 
 // =========================================================
