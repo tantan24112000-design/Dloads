@@ -69,6 +69,55 @@
         .rec-card img { width: 100%; height: 70px; object-fit: cover; margin-bottom: 5px; }
         .loader { text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; padding: 40px; animation: pulse 1s infinite alternate; text-transform: uppercase; }
 
+        /* TAG CLOUD - các tag rải random ở phần lề trống hai bên trang chủ, dùng để lọc nhanh */
+        .tag-cloud-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            z-index: 1;
+            display: none;
+        }
+        .tag-cloud-item {
+            position: absolute;
+            display: block;
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-weight: 400;
+            font-size: 13px;
+            letter-spacing: normal;
+            text-transform: none;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+            pointer-events: auto;
+        }
+        .tag-cloud-item:hover,
+        .tag-cloud-item:focus-visible {
+            text-decoration: underline;
+        }
+
+        .tag-filter-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+        .tag-filter-indicator b { color: #fff; font-weight: 700; }
+        .tag-filter-clear { cursor: pointer; color: #999; text-decoration: none; }
+        .tag-filter-clear:hover { color: #fff; text-decoration: underline; }
+
         /* BẢNG REVIEW TRƯỢT TỪ TRÊN XUỐNG */
         .review-panel {
             position: absolute;
@@ -150,39 +199,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Layout chia đôi phần list */
-.list-layout { display: flex; gap: 30px; align-items: flex-start; }
-.list-main { flex: 1; min-width: 0; }
-.tag-sidebar { width: 160px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-
-/* Responsive trên điện thoại thì đẩy tag xuống hoặc lên tuỳ mày, ở đây tao đẩy xuống dưới thành hàng ngang */
-@media (max-width: 768px) { 
-    .list-layout { flex-direction: column; } 
-    .tag-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; } 
-}
-
-/* Style cho tag: chữ trắng thường, k viền, k nền, gạch chân khi hover */
-.side-tag {
-    color: #fff;
-    font-family: inherit;
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: none;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    border: none;
-    text-align: left;
-    transition: opacity 0.2s;
-}
-.side-tag:hover {
-    text-decoration: underline;
-}
-.side-tag.active {
-    text-decoration: underline;
-    font-weight: bold;
-    color: #00e676; /* Đổi màu nhẹ để dễ nhận biết tag đang chọn, nếu k thích mày đổi thành #fff */
-}
     </style>
     <script>
         window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
@@ -210,6 +226,8 @@
         <div class="spin-loader"></div>
     </div>
 
+    <div class="tag-cloud-layer" id="tagCloudLayer" aria-hidden="true"></div>
+
     <div class="container">
         <div class="header-logo">
             <div class="logo-wrap" onclick="window.location.href='/'">
@@ -230,10 +248,9 @@
             </div>
         </div>
 
-<div id="listView" style="display: none;">
-    <div class="list-layout">
-        <div class="list-main">
+        <div id="listView" style="display: none;">
             <div class="controls-wrap">
+                <div class="tag-filter-indicator" id="tagFilterIndicator"></div>
                 <div class="controls-bar">
                     <input type="text" id="searchInput" class="search-input" data-vi="Tìm kiếm trò chơi, tác giả..." data-en="Search games, creators..." placeholder="Search games, creators...">
                     <select id="sortSelect" class="sort-select">
@@ -246,11 +263,7 @@
             
             <div class="game-grid" id="gameGrid"></div>
         </div>
-        
-        <!-- Khung chứa random tags -->
-        <div class="tag-sidebar" id="tagSidebar"></div>
-    </div>
-</div>
+
         <div id="detailView" style="display: none;">
             <a href="/" class="btn-back" id="t_backBtn" data-vi="← TẤT CẢ GAME" data-en="← ALL GAMES">← ALL GAMES</a>
             <div class="detail-box" id="mainDetailBox">
