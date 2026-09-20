@@ -8,15 +8,19 @@
 (function () {
     'use strict';
 
-    const GAP_FROM_SORT = 25;    // px, từ mép phải nút sort ("Cho bạn") tới cột tag
-    const EDGE_PAD = 20;        // px, chừa lề phải màn hình
+    const GAP_FROM_SORT = 45;    // px, từ mép trong của khung sáng tới cột tag
+    const EDGE_PAD = 12;        // px, chừa lề phải bên trong khung sáng
     const MIN_WIDTH = 240;      // px, cột tag hẹp hơn mức này thì ẩn luôn
     const MAX_WIDTH = 420;      // px, bề rộng tối đa của cột tag
     const MAX_ITEMS = 12;       // số tag tối đa (ưu tiên tag nhiều game nhất)
     const PER_ROW = 3;          // số tag mỗi hàng
 
-    const SIDE_BG = '#141414';  // màu vùng trống bên phải (nền đen là #000)
-    const SIDE_MIN_WIDTH = 30;  // px, vùng trống hẹp hơn mức này thì không tô
+    const SIDE_BG = '#141414';    // màu lõi sáng bên phải
+    const SIDE_INNER = '#0a0a0a'; // viền trong: nhạt hơn đen 1 chút, tối hơn SIDE_BG
+    const SIDE_OUTER = '#000';    // viền ngoài: trùng màu nền trang
+    const SIDE_OUTER_W = 12;      // px, độ dày viền ngoài
+    const SIDE_INNER_W = 12;      // px, độ dày viền trong
+    const SIDE_MIN_WIDTH = 100;   // px, vùng trống hẹp hơn mức này thì không tô
 
     const isVi = (navigator.language || '').toLowerCase().includes('vi');
 
@@ -43,7 +47,10 @@
                 right: 0;
                 bottom: 0;
                 display: none;
+                box-sizing: border-box;
+                border: ${SIDE_OUTER_W}px solid ${SIDE_OUTER};
                 background: ${SIDE_BG};
+                box-shadow: inset 0 0 0 ${SIDE_INNER_W}px ${SIDE_INNER};
                 pointer-events: none;
                 z-index: 0;
             }
@@ -167,8 +174,10 @@
             }
         }
 
-        const leftInView = rect.right + GAP_FROM_SORT;
-        const availableW = viewportW - leftInView - EDGE_PAD;
+        // Cột tag nằm trong lõi sáng: chừa khung (viền ngoài + viền trong) ở hai bên
+        const frame = SIDE_OUTER_W + SIDE_INNER_W;
+        const leftInView = rect.right + frame + GAP_FROM_SORT;
+        const availableW = viewportW - frame - EDGE_PAD - leftInView;
 
         if (availableW < MIN_WIDTH) {
             layer.style.display = 'none';
