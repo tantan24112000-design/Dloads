@@ -8,7 +8,7 @@
 //   không đổi UX của user, chỉ bot mới thấy bản HTML tĩnh.
 
 const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
-const SUPABASE_ANON_KEY = 'PASTE_ANON_KEY_HERE';
+const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
 
 const BOT_UA_REGEX =
     /bot|crawl|spider|slurp|facebookexternalhit|twitterbot|discordbot|telegrambot|whatsapp|linkedinbot|pinterest|embedly|quora link preview|showyoubot|outbrain|vkshare|w3c_validator/i;
