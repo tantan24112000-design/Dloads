@@ -44,46 +44,46 @@
 
     <div class="section-title">1. THÔNG TIN CƠ BẢN</div>
 
-    <label>ID Game (vd: my-game-123)</label>
+    <label id="t_id_lbl">ID Game (vd: my-game-123)</label>
     <input type="text" id="gId" placeholder="my-game-123">
 
-    <label>Tên Game</label>
+    <label id="t_name_lbl">Tên Game</label>
     <input type="text" id="gName" placeholder="Nhập tên game..." oninput="updatePreview()">
 
-    <label>Developer (tự động)</label>
+    <label id="t_dev_lbl">Developer (tự động)</label>
     <div class="dev-readonly" id="gDevDisplay">Đang tải...</div>
 
-    <label>Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)</label>
+    <label id="t_plat_lbl">Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)</label>
     <input type="text" id="gPlatforms" placeholder="Windows, Web..." oninput="updatePreview()">
 
-    <label>Dung Lượng (vd: 250 MB)</label>
+    <label id="t_size_lbl">Dung Lượng (vd: 250 MB)</label>
     <input type="text" id="gSize" placeholder="250 MB" oninput="updatePreview()">
 
-    <label>Link Tải Gốc</label>
+    <label id="t_link_lbl">Link Tải Gốc</label>
     <input type="text" id="gLink" placeholder="https://...">
 
     <div class="section-title">2. HÌNH ẢNH</div>
-    <label>Thumbnail / Ảnh Bìa Game (Bắt buộc)</label>
+    <label id="t_thumb_lbl">Thumbnail / Ảnh Bìa Game (Bắt buộc)</label>
     <input type="file" id="fileMain" accept="image/*">
     <img id="prevMain" class="img-preview">
 
-    <label>Ảnh Review / Devlog (Tùy chọn)</label>
+    <label id="t_rev_lbl">Ảnh Review / Devlog (Tùy chọn)</label>
     <input type="file" id="fileReview" accept="image/*">
     <img id="prevReview" class="img-preview">
 
     <div class="section-title">3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)</div>
-    <label>Custom CSS</label>
+    <label id="t_css_lbl">Custom CSS</label>
     <textarea id="gCss" rows="5" placeholder="body { background: #000; }" oninput="updatePreview()"></textarea>
 
-    <label>Custom HTML (Mô tả game, nhúng video...)</label>
+    <label id="t_html_lbl">Custom HTML (Mô tả game, nhúng video...)</label>
     <textarea id="gHtml" rows="6" oninput="updatePreview()"></textarea>
 
     <button id="uploadBtn" onclick="submitToPending()">GỬI YÊU CẦU DUYỆT</button>
 </div>
 
 <div class="preview-container">
-    <h2>XEM TRƯỚC GIAO DIỆN</h2>
-    <p style="font-size: 12px; color: #888; margin: 0 0 10px 0;">Giao diện chi tiết game sẽ hiển thị trên web như thế này:</p>
+    <h2 id="t_prev_title">XEM TRƯỚC GIAO DIỆN</h2>
+    <p id="t_prev_desc" style="font-size: 12px; color: #888; margin: 0 0 10px 0;">Giao diện chi tiết game sẽ hiển thị trên web như thế này:</p>
     <iframe id="previewFrame"></iframe>
 </div>
 
@@ -93,6 +93,127 @@
     // =========================================================
     // CONFIG
     // =========================================================
+    // =========================================================
+    // NGÔN NGỮ
+    // =========================================================
+    const isVi = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
+
+    const t = isVi ? {
+        title:        'UPLOAD GAME CỦA MÀY',
+        change_avt:   'ĐỔI ẢNH ĐẠI DIỆN',
+        sec1:         '1. THÔNG TIN CƠ BẢN',
+        id_lbl:       'ID Game (vd: my-game-123)',
+        id_ph:        'my-game-123',
+        name_lbl:     'Tên Game',
+        name_ph:      'Nhập tên game...',
+        dev_lbl:      'Developer (tự động)',
+        plat_lbl:     'Nền Tảng Hỗ Trợ (vd: Windows, Mac, Web)',
+        plat_ph:      'Windows, Web...',
+        size_lbl:     'Dung Lượng (vd: 250 MB)',
+        size_ph:      '250 MB',
+        link_lbl:     'Link Tải Gốc',
+        sec2:         '2. HÌNH ẢNH',
+        thumb_lbl:    'Thumbnail / Ảnh Bìa Game (Bắt buộc)',
+        rev_lbl:      'Ảnh Review / Devlog (Tùy chọn)',
+        sec3:         '3. TỰ TÙY CHỈNH GIAO DIỆN (CSS & HTML)',
+        css_lbl:      'Custom CSS',
+        css_ph:       'body { background: #000; }',
+        html_lbl:     'Custom HTML (Mô tả game, nhúng video...)',
+        btn:          'GỬI YÊU CẦU DUYỆT',
+        btn_loading:  'ĐANG GỬI LÊN...',
+        prev_title:   'XEM TRƯỚC GIAO DIỆN',
+        prev_desc:    'Giao diện chi tiết game sẽ hiển thị trên web như thế này:',
+        back:         '← TẤT CẢ GAME',
+        if_plat:      'Nền tảng:',
+        if_size:      'Dung lượng:',
+        if_html:      '${t.if_html}',
+        alert_login:  'Đăng nhập để upload!',
+        alert_miss:   'Điền thiếu ID hoặc Tên Game!',
+        alert_thumb:  'Vui lòng chọn Thumbnail / Ảnh Bìa Game!',
+        alert_ok:     'Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.',
+        alert_err:    'Lỗi khi gửi duyệt!',
+        avt_ok:       'Cập nhật avatar thành công!',
+        avt_err:      'Lỗi khi cập nhật avatar!',
+        hello:        'Xin chào,',
+        dev_loading:  'Đang tải...'
+    } : {
+        title:        'UPLOAD YOUR GAME',
+        change_avt:   'CHANGE AVATAR',
+        sec1:         '1. BASIC INFO',
+        id_lbl:       'Game ID (e.g. my-game-123)',
+        id_ph:        'my-game-123',
+        name_lbl:     'Game Name',
+        name_ph:      'Enter game name...',
+        dev_lbl:      'Developer (auto-filled)',
+        plat_lbl:     'Supported Platforms (e.g. Windows, Mac, Web)',
+        plat_ph:      'Windows, Web...',
+        size_lbl:     'File Size (e.g. 250 MB)',
+        size_ph:      '250 MB',
+        link_lbl:     'Original Download Link',
+        sec2:         '2. IMAGES',
+        thumb_lbl:    'Thumbnail / Cover Image (Required)',
+        rev_lbl:      'Review / Devlog Image (Optional)',
+        sec3:         '3. CUSTOM INTERFACE (CSS & HTML)',
+        css_lbl:      'Custom CSS',
+        css_ph:       'body { background: #000; }',
+        html_lbl:     'Custom HTML (Description, embed video...)',
+        btn:          'SUBMIT FOR REVIEW',
+        btn_loading:  'SUBMITTING...',
+        prev_title:   'LIVE PREVIEW',
+        prev_desc:    'The game detail page will look like this on the web:',
+        back:         '← ALL GAMES',
+        if_plat:      'Platform:',
+        if_size:      'Size:',
+        if_html:      '<i style="color:#666">HTML description will appear here...</i>',
+        alert_login:  'Please login to upload!',
+        alert_miss:   'Missing Game ID or Name!',
+        alert_thumb:  'Please select a Thumbnail / Cover Image!',
+        alert_ok:     'Game submitted! Please wait for Admin approval.',
+        alert_err:    'Error submitting for review!',
+        avt_ok:       'Avatar updated successfully!',
+        avt_err:      'Error updating avatar!',
+        hello:        'Hello,',
+        dev_loading:  'Loading...'
+    };
+
+    // Áp dụng ngôn ngữ vào DOM
+    function applyLang() {
+        document.querySelector('h2').innerText = t.title;
+        document.querySelector('.btn-back').innerText = t.back;
+        document.getElementById('t_change_avt').innerText = t.change_avt;
+        document.getElementById('userNameDisplay').innerText = t.dev_loading;
+
+        const labels = document.querySelectorAll('.section-title');
+        labels[0].innerText = t.sec1;
+        labels[1].innerText = t.sec2;
+        labels[2].innerText = t.sec3;
+
+        const pairs = [
+            ['t_id_lbl', 'id_lbl'], ['t_name_lbl', 'name_lbl'], ['t_dev_lbl', 'dev_lbl'],
+            ['t_plat_lbl', 'plat_lbl'], ['t_size_lbl', 'size_lbl'], ['t_link_lbl', 'link_lbl'],
+            ['t_thumb_lbl', 'thumb_lbl'], ['t_rev_lbl', 'rev_lbl'],
+            ['t_css_lbl', 'css_lbl'], ['t_html_lbl', 'html_lbl']
+        ];
+        for (const [id, key] of pairs) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = t[key];
+        }
+
+        document.getElementById('gId').placeholder       = t.id_ph;
+        document.getElementById('gName').placeholder     = t.name_ph;
+        document.getElementById('gPlatforms').placeholder = t.plat_ph;
+        document.getElementById('gSize').placeholder     = t.size_ph;
+        document.getElementById('gCss').placeholder      = t.css_ph;
+        document.getElementById('uploadBtn').innerText    = t.btn;
+
+        const prevTitle = document.getElementById('t_prev_title');
+        const prevDesc  = document.getElementById('t_prev_desc');
+        if (prevTitle) prevTitle.innerText = t.prev_title;
+        if (prevDesc)  prevDesc.innerText  = t.prev_desc;
+    }
+
+    document.addEventListener('DOMContentLoaded', applyLang);
+
     const firebaseConfig = {
         apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
         authDomain: "sf2g-bf285.firebaseapp.com",
@@ -185,7 +306,7 @@
     // =========================================================
     firebase.auth().onAuthStateChanged(async user => {
         if (!user) {
-            alert('Đăng nhập để upload!');
+            alert(t.alert_login);
             window.location.href = 'auth.html';
             return;
         }
@@ -222,11 +343,11 @@
 
             currentUser.customPhoto = finalUrl;
             document.getElementById('userAvatar').src = finalUrl;
-            alert('Cập nhật avatar thành công!');
+            alert(t.avt_ok);
             updatePreview();
         } catch (err) {
             console.error(err);
-            alert('Lỗi khi cập nhật avatar!');
+            alert(t.avt_err);
         }
     };
 
@@ -294,9 +415,9 @@
                 <h2 style="margin:0 0 10px 0;">${name}</h2>
                 <div class="dev-info">
                     <img src="${devAvt}">
-                    <div>A game by <b style="color:#fff;">${devName}</b> | Nền tảng: ${platforms} | Dung lượng: ${size}</div>
+                    <div>A game by <b style="color:#fff;">${devName}</b> | ${t.if_plat} ${platforms} | ${t.if_size} ${size}</div>
                 </div>
-                <div id="customDevContent">${html || '<i style="color:#666">HTML mô tả game hiển thị ở đây...</i>'}</div>
+                <div id="customDevContent">${html || '${t.if_html}'}</div>
                 ${revHtml}
             </div>
         </body></html>`;
@@ -309,11 +430,11 @@
         const gameId = document.getElementById('gId').value.trim();
         const name   = document.getElementById('gName').value.trim();
 
-        if (!gameId || !name) return alert('Điền thiếu ID hoặc Tên Game!');
-        if (!mainImgUrl)      return alert('Vui lòng chọn Thumbnail / Ảnh Bìa Game!');
+        if (!gameId || !name) return alert(t.alert_miss);
+        if (!mainImgUrl)      return alert(t.alert_thumb);
 
         const btn = document.getElementById('uploadBtn');
-        btn.innerText = 'ĐANG GỬI LÊN...';
+        btn.innerText = t.btn_loading;
         btn.disabled  = true;
 
         try {
@@ -339,12 +460,12 @@
 
             if (!res.ok) throw new Error(await res.text());
 
-            alert('Đã gửi game thành công! Vui lòng chờ Admin phê duyệt.');
+            alert(t.alert_ok);
             window.location.href = '/';
         } catch (err) {
             console.error(err);
-            alert('Lỗi khi gửi duyệt!');
-            btn.innerText = 'GỬI YÊU CẦU DUYỆT';
+            alert(t.alert_err);
+            btn.innerText = t.btn;
             btn.disabled  = false;
         }
     }
