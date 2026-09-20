@@ -159,6 +159,9 @@ function applyGamesMeta(rows) {
             searchText: `${game.name} ${game.developer}`.toLowerCase(),
             primaryCategory: game.category.split(',')[0]?.trim() || '',
             category: game.category,
+            tagsLower: game.category
+                ? game.category.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+                : [],
             platforms: game.platforms
         });
     }
@@ -441,6 +444,169 @@ function getDebounced(fn, delay = 120) {
     };
 }
 
+// =========================================================
+// TAG CLOUD (LỀ TRỐNG HAI BÊN TRANG CHỦ) - trang trí + lọc nhanh theo tag
+// =========================================================
+const TAG_CLOUD_MIN_MARGIN = 130; // lề mỗi bên phải rộng tối thiểu ngần này mới hiện tag
+const TAG_CLOUD_MAX_ITEMS = 26;
+let tagCloudEntries = [];
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getAllUniqueTags() {
+    const seen = new Map();
+
+    for (const item of gamesList) {
+        if (!item.category) continue;
+
+        for (const raw of item.category.split(',')) {
+            const trimmed = raw.trim();
+            if (!trimmed) continue;
+
+            const lower = trimmed.toLowerCase();
+            if (!seen.has(lower)) seen.set(lower, trimmed);
+        }
+    }
+
+    return [...seen.values()];
+}
+
+// Chia đều theo "khoang" rồi rung ngẫu nhiên trong khoang đó, để tag rải random
+// nhưng không dồn cục / đè lên nhau quá nhiều.
+function buildTagCloudEntries() {
+    const tags = shuffleArray(getAllUniqueTags()).slice(0, TAG_CLOUD_MAX_ITEMS);
+    const n = tags.length;
+    if (n === 0) return [];
+
+    const entries = tags.map((tag, i) => {
+        const binStart = i / n;
+        const binSize = 1 / n;
+        const jitter = (Math.random() - 0.5) * binSize * 0.8;
+
+        return {
+            tag,
+            side: Math.random() < 0.5 ? 'left' : 'right',
+            topFraction: Math.min(0.97, Math.max(0.03, binStart + binSize / 2 + jitter))
+        };
+    });
+
+    return shuffleArray(entries);
+}
+
+function layoutTagCloud() {
+    const layer = document.getElementById('tagCloudLayer');
+    if (!layer || tagCloudEntries.length === 0) return;
+
+    const bodyPaddingX = 20;   // khớp với padding của body trong CSS
+    const containerMax = 900;  // khớp với max-width của .container
+    const viewportW = document.documentElement.clientWidth;
+    const contentAreaW = viewportW - bodyPaddingX * 2;
+    const marginEach = (contentAreaW - containerMax) / 2;
+
+    if (marginEach < TAG_CLOUD_MIN_MARGIN) {
+        layer.style.display = 'none';
+        return;
+    }
+
+    const leftStart = bodyPaddingX + 10;
+    const sideWidth = marginEach - 20;
+    const rightStart = bodyPaddingX + marginEach + containerMax + 10;
+
+    const listView = document.getElementById('listView');
+    const refHeight = Math.max(listView ? listView.offsetHeight : 0, window.innerHeight);
+    const topPad = 60;
+    const usableHeight = Math.max(refHeight - topPad - 60, 200);
+
+    layer.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    for (const entry of tagCloudEntries) {
+        const el = document.createElement('span');
+        el.className = 'tag-cloud-item';
+        el.textContent = entry.tag;
+        el.tabIndex = 0;
+        el.setAttribute('role', 'button');
+        el.dataset.tag = entry.tag;
+
+        el.style.top = `${Math.round(topPad + entry.topFraction * usableHeight)}px`;
+        el.style.width = `${Math.round(sideWidth)}px`;
+        el.style.textAlign = entry.side === 'left' ? 'left' : 'right';
+        el.style.left = `${Math.round(entry.side === 'left' ? leftStart : rightStart)}px`;
+
+        frag.appendChild(el);
+    }
+
+    layer.appendChild(frag);
+    layer.style.display = 'block';
+}
+
+function applyTagFilter(tag) {
+    if (!tag) return;
+
+    activeTagFilter = tag;
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+
+    updateGrid();
+    updateTagFilterIndicator();
+}
+
+function clearTagFilter() {
+    activeTagFilter = null;
+    updateGrid();
+    updateTagFilterIndicator();
+}
+
+function updateTagFilterIndicator() {
+    const el = document.getElementById('tagFilterIndicator');
+    if (!el) return;
+
+    if (activeTagFilter) {
+        el.style.display = 'flex';
+        el.innerHTML = `
+            <span>${isVi ? 'Đang lọc theo' : 'Filtering by'}: <b>${escapeHtml(activeTagFilter)}</b></span>
+            <span class="tag-filter-clear" id="tagFilterClear">${isVi ? 'Xoá lọc ✕' : 'Clear ✕'}</span>
+        `;
+        const clearBtn = document.getElementById('tagFilterClear');
+        if (clearBtn) clearBtn.onclick = clearTagFilter;
+    } else {
+        el.style.display = 'none';
+        el.innerHTML = '';
+    }
+}
+
+function initTagCloud() {
+    const layer = document.getElementById('tagCloudLayer');
+    if (!layer) return;
+
+    tagCloudEntries = buildTagCloudEntries();
+    if (tagCloudEntries.length === 0) return;
+
+    layoutTagCloud();
+
+    layer.addEventListener('click', event => {
+        const el = event.target.closest('.tag-cloud-item');
+        if (el) applyTagFilter(el.dataset.tag);
+    });
+
+    layer.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const el = event.target.closest('.tag-cloud-item');
+        if (!el) return;
+        event.preventDefault();
+        applyTagFilter(el.dataset.tag);
+    });
+
+    window.addEventListener('resize', getDebounced(layoutTagCloud, 150), { passive: true });
+}
+
 function createGameCardHtml(item, index, total) {
     const game = item.game;
     const image = escapeHtml(getImageUrl(game.img));
@@ -526,23 +692,22 @@ function updateGrid(targetUser = null) {
     const query = searchInput?.value.trim().toLowerCase() || '';
     const sortMethod = sortSelect?.value || 'new';
 
-    const filtered = [];
+    let filtered;
 
-const query = searchInput?.value.trim().toLowerCase() || '';
-    const sortMethod = sortSelect?.value || 'new';
+    if (targetUser) {
+        const normalizedUser = targetUser.toLowerCase();
+        filtered = gamesList.filter(item => item.developerLower === normalizedUser);
+    } else {
+        filtered = gamesList.slice();
+    }
 
-    const filtered = [];
-    const normalizedUser = targetUser ? targetUser.toLowerCase() : null;
+    if (query) {
+        filtered = filtered.filter(item => item.searchText.includes(query));
+    }
 
-    for (const item of gamesList) {
-        // Lọc theo dev
-        if (normalizedUser && item.developerLower !== normalizedUser) continue;
-        // Lọc theo search input
-        if (query && !item.searchText.includes(query)) continue;
-        // Lọc theo tag bên sidebar
-        if (activeTagFilter && !(item.category || '').toLowerCase().includes(activeTagFilter.toLowerCase())) continue;
-
-        filtered.push(item);
+    if (activeTagFilter) {
+        const tagLower = activeTagFilter.toLowerCase();
+        filtered = filtered.filter(item => item.tagsLower && item.tagsLower.includes(tagLower));
     }
 
     // Supabase đã trả về created_at DESC => 'new' không cần xử lý thêm.
@@ -598,7 +763,7 @@ async function initList(targetUser = null) {
     document.getElementById('listView').style.display = 'block';
 
     await fetchGamesMeta();
-    renderTagsSidebar();
+
     const grid = document.getElementById('gameGrid');
 
     if (targetUser && grid) {
@@ -613,69 +778,15 @@ async function initList(targetUser = null) {
         heading.appendChild(nameEl);
 
         grid.before(heading);
-        
     }
 
     updateGrid(targetUser ? targetUser.toLowerCase() : null);
     setupListEvents(targetUser);
     hideSpinner();
-    // Trộn mảng ngẫu nhiên
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+
+    if (!targetUser) {
+        scheduleIdle(initTagCloud);
     }
-    return array;
-}
-
-// Lọc tag trùng lặp từ gamesList, random và đẩy lên giao diện
-function renderTagsSidebar() {
-    const sidebar = document.getElementById('tagSidebar');
-    if (!sidebar) return;
-
-    const tagsSet = new Set();
-    gamesList.forEach(item => {
-        if (item.category) {
-            item.category.split(',').forEach(tag => {
-                const t = tag.trim();
-                if (t) tagsSet.add(t);
-            });
-        }
-    });
-
-    let tagsArray = Array.from(tagsSet);
-    tagsArray = shuffleArray(tagsArray).slice(0, 15); // Lấy tối đa 15 tag random cho đỡ tràn màn hình
-
-    // Tiêu đề nhỏ (có i18n cho vi/en)
-    let html = `<div style="font-size: 11px; color: #555; text-transform: uppercase; margin-bottom: 5px;" data-vi="THẺ" data-en="TAGS">TAGS</div>`;
-    
-    tagsArray.forEach(tag => {
-        html += `<span class="side-tag" onclick="toggleTagFilter('${escapeHtml(tag)}')">${escapeHtml(tag)}</span>`;
-    });
-
-    sidebar.innerHTML = html;
-    
-    // Gọi hàm đổi ngôn ngữ nếu có
-    if (window.applyLanguage) window.applyLanguage();
-}
-
-// Sự kiện khi bấm vào 1 tag
-window.toggleTagFilter = function(tag) {
-    // Nếu tag đang bấm trùng với tag đã chọn -> Bỏ chọn. Nếu không -> Lấy tag mới.
-    activeTagFilter = (activeTagFilter === tag) ? null : tag;
-    
-    // Gạch chân cái thẻ đang được bật
-    document.querySelectorAll('.side-tag').forEach(el => {
-        if (el.innerText === activeTagFilter) {
-            el.classList.add('active');
-        } else {
-            el.classList.remove('active');
-        }
-    });
-
-    // Cập nhật lại Grid
-    updateGrid(userPage); 
-};
 }
 
 // =========================================================
