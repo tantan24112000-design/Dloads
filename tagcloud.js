@@ -19,12 +19,18 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS (sử dụng font mặc định phổ biến: Arial, Helvetica, sans-serif)
+    // CSS (Toàn bộ chữ chuyển thành IN HOA & phông chữ in)
     // ---------------------------------------------------------
     function injectCss() {
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
+        /* Ép toàn bộ phông chữ sidebar và dung lượng thành CHỮ IN HOA */
+        .layout-side, .layout-side *, .rev-size, #detailSize {
+            text-transform: uppercase !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+        }
+
         .container { max-width: 1240px !important; }
         .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
@@ -38,32 +44,31 @@
 
         /* Box lọc theo thẻ */
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
-        #tagBox, #tagBox * { font-family: Arial, Helvetica, sans-serif; }
 
-        .side-title { font-size: 11px; letter-spacing: 2px; color: #888; text-transform: uppercase;
+        .side-title { font-size: 11px; letter-spacing: 2px; color: #888;
             margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; text-transform: uppercase; margin: 14px 0 8px 0; }
+        .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; margin: 14px 0 8px 0; }
         .side-sub:first-of-type { margin-top: 0; }
 
         .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag-item { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;
+        .tag-item { font-size: 10px; letter-spacing: 1px; color: #aaa;
             background: #111; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
         .tag-item:hover { color: #fff; border-color: #666; }
         .tag-item.on { color: #000; background: #fff; border-color: #fff; }
         .tag-count { color: #666; margin-left: 4px; }
         .tag-item.on .tag-count { color: #444; }
         .tag-clear { width: 100%; margin-top: auto; background: #111; border: 1px solid #333; color: #888;
-            font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; text-transform: uppercase; }
+            font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #fff; border-color: #fff; }
 
         /* Card: ẩn dung lượng, nút VIEW full width */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
         .game-card > div:last-child > p { display: none !important; }
         .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; }
+            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important; }
 
         /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px; text-transform: uppercase;
+        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px;
             border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
         #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
         `;
@@ -113,7 +118,7 @@
                 if (p) plats.set(p, (plats.get(p) || 0) + 1);
             }
         }
-        const sort = m => [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+        const sort = m => [...m.entries()].sort((a, b) => b[1] - a[0] || a[0].localeCompare(b[0]));
         return { tags: sort(tags), plats: sort(plats) };
     }
 
@@ -238,7 +243,7 @@
         `;
         if (onDetail) document.getElementById('tagBox').remove();
 
-        setupChat();
+        if (typeof setupChat === 'function') setupChat();
         watchGrid();
         moveSizeOnDetail();
 
