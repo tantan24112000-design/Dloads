@@ -18,69 +18,61 @@
 
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
-    // ---------------------------------------------------------
-    // FONT: Roboto (font phổ biến nhất trên Google Fonts) cho box lọc theo thẻ
-    // ---------------------------------------------------------
-    function injectGoogleFont() {
-        if (document.getElementById('tagBoxFont')) return;
-        const link = document.createElement('link');
-        link.id = 'tagBoxFont';
-        link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
-        document.head.appendChild(link);
+// ---------------------------------------------------------
+// CSS (dùng font hệ thống gốc của Google: Roboto / Google Sans)
+// ---------------------------------------------------------
+function injectCss() {
+    if (document.getElementById('sidebarCss')) return;
+    
+    const s = document.createElement('style');
+    s.id = 'sidebarCss';
+    s.textContent = `
+    .container { max-width: 1240px !important; }
+    .layout-row { display: flex; gap: 20px; align-items: stretch; }
+    .layout-main { flex: 1; min-width: 0; }
+    .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
+    @media (max-width: 1000px) {
+        .layout-row { flex-direction: column; }
+        .layout-side { width: 100%; }
     }
 
-    // ---------------------------------------------------------
-    // CSS (giữ style gốc: đen, viền xám, không màu mè)
-    // ---------------------------------------------------------
- function injectCss() {
-        const s = document.createElement('style');
-        s.id = 'sidebarCss';
-        s.textContent = `
-        .container { max-width: 1240px !important; }
-        .layout-row { display: flex; gap: 20px; align-items: stretch; }
-        .layout-main { flex: 1; min-width: 0; }
-        .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
-        @media (max-width: 1000px) {
-            .layout-row { flex-direction: column; }
-            .layout-side { width: 100%; }
-        }
+    .side-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
 
-        .side-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
-
-        /* Box lọc theo thẻ */
-        #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
-        #tagBox, #tagBox * { font-family: 'Roboto', Arial, sans-serif; }
-
-        .side-title { font-size: 11px; letter-spacing: 2px; color: #888; text-transform: uppercase;
-            margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; text-transform: uppercase; margin: 14px 0 8px 0; }
-        .side-sub:first-of-type { margin-top: 0; }
-
-        .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag-item { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;
-            background: #111; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
-        .tag-item:hover { color: #fff; border-color: #666; }
-        .tag-item.on { color: #000; background: #fff; border-color: #fff; }
-        .tag-count { color: #666; margin-left: 4px; }
-        .tag-item.on .tag-count { color: #444; }
-        .tag-clear { width: 100%; margin-top: auto; background: #111; border: 1px solid #333; color: #888;
-            font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; text-transform: uppercase; }
-        .tag-clear:hover { color: #fff; border-color: #fff; }
-
-        /* Card: ẩn dung lượng, nút VIEW full width */
-        .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
-        .game-card > div:last-child > p { display: none !important; }
-        .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; }
-
-        /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px; text-transform: uppercase;
-            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
-        `;
-        document.head.appendChild(s);
+    /* Box lọc theo thẻ - Font mặc định gốc Google */
+    #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
+    #tagBox, #tagBox * { 
+        font-family: 'Google Sans', Roboto, 'Segoe UI', Arial, sans-serif; 
     }
+
+    .side-title { font-size: 11px; letter-spacing: 2px; color: #888; text-transform: uppercase;
+        margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
+    .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; text-transform: uppercase; margin: 14px 0 8px 0; }
+    .side-sub:first-of-type { margin-top: 0; }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-item { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;
+        background: #111; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
+    .tag-item:hover { color: #fff; border-color: #666; }
+    .tag-item.on { color: #000; background: #fff; border-color: #fff; }
+    .tag-count { color: #666; margin-left: 4px; }
+    .tag-item.on .tag-count { color: #444; }
+    .tag-clear { width: 100%; margin-top: auto; background: #111; border: 1px solid #333; color: #888;
+        font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; text-transform: uppercase; }
+    .tag-clear:hover { color: #fff; border-color: #fff; }
+
+    /* Card: ẩn dung lượng, nút VIEW full width */
+    .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
+    .game-card > div:last-child > p { display: none !important; }
+    .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
+        box-sizing: border-box; padding: 10px !important; }
+
+    /* Dung lượng nằm trong bảng review */
+    .rev-size { font-size: 10px; color: #888; letter-spacing: 1px; text-transform: uppercase;
+        border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
+    #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
+    `;
+    document.head.appendChild(s);
+}
 
     // ---------------------------------------------------------
     // LAYOUT
