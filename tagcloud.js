@@ -1,29 +1,14 @@
 // =========================================================
-// DLOADS - SIDEBAR: TAG CLOUD + REGIONAL CHAT
+// DLOADS - SIDEBAR: TAG CLOUD
 // File riêng, KHÔNG sửa app.js. Load trước app.js.
 // =========================================================
 (function () {
     'use strict';
 
-    const RTDB = 'https://sf2g-bf285-default-rtdb.firebaseio.com';
-    const MAX_MSG = 40;
-    const POLL_MS = 8000;
-    const SEND_COOLDOWN = 3000;
-
-    const REGIONS = [
-        { k: 'vn', vi: 'VIỆT NAM', en: 'VIETNAM' },
-        { k: 'intl', vi: 'NƯỚC NGOÀI', en: 'INTERNATIONAL' },
-        { k: 'global', vi: 'CHUNG', en: 'GENERAL' }
-    ];
-
     let selTags = new Set();
     let selPlats = new Set();
     let getItems = () => [];
     let onChange = () => {};
-    let curRegion = localStorage.getItem('dloads:region') ||
-        ((navigator.language || '').toLowerCase().includes('vi') ? 'vn' : 'intl');
-    let lastSend = 0;
-    let pollTimer = 0;
 
     function esc(v) {
         return String(v ?? '')
@@ -34,6 +19,18 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
+    // FONT: Roboto (font phổ biến nhất trên Google Fonts) cho box lọc theo thẻ
+    // ---------------------------------------------------------
+    function injectGoogleFont() {
+        if (document.getElementById('tagBoxFont')) return;
+        const link = document.createElement('link');
+        link.id = 'tagBoxFont';
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
+        document.head.appendChild(link);
+    }
+
+    // ---------------------------------------------------------
     // CSS (giữ style gốc: đen, viền xám, không màu mè)
     // ---------------------------------------------------------
     function injectCss() {
@@ -41,15 +38,20 @@
         s.id = 'sidebarCss';
         s.textContent = `
         .container { max-width: 1240px !important; }
-        .layout-row { display: flex; gap: 20px; align-items: flex-start; }
+        .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
-        .layout-side { width: 260px; flex-shrink: 0; }
+        .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
         @media (max-width: 1000px) {
             .layout-row { flex-direction: column; }
             .layout-side { width: 100%; }
         }
 
         .side-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
+
+        /* Box lọc theo thẻ: giãn hết chiều cao cột trái (khu vực lưới game) */
+        #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
+        #tagBox, #tagBox * { font-family: 'Roboto', Arial, sans-serif; }
+
         .side-title { font-size: 11px; letter-spacing: 2px; color: #888; text-transform: uppercase;
             margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
         .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; text-transform: uppercase; margin: 14px 0 8px 0; }
@@ -62,26 +64,9 @@
         .tag-item.on { color: #000; background: #fff; border-color: #fff; }
         .tag-count { color: #666; margin-left: 4px; }
         .tag-item.on .tag-count { color: #444; }
-        .tag-clear { width: 100%; margin-top: 12px; background: #111; border: 1px solid #333; color: #888;
+        .tag-clear { width: 100%; margin-top: auto; background: #111; border: 1px solid #333; color: #888;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; text-transform: uppercase; }
         .tag-clear:hover { color: #fff; border-color: #fff; }
-
-        .chat-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
-        .chat-tab { flex: 1; font-size: 9px; letter-spacing: 1px; text-align: center; background: #111;
-            border: 1px solid #333; color: #888; padding: 6px 2px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .chat-tab:hover { color: #fff; border-color: #666; }
-        .chat-tab.on { background: #fff; color: #000; border-color: #fff; }
-        .chat-log { height: 230px; overflow-y: auto; background: #050505; border: 1px solid #222; padding: 10px; margin-bottom: 10px; }
-        .chat-msg { font-size: 12px; line-height: 1.45; color: #ccc; margin-bottom: 8px; word-break: break-word; }
-        .chat-msg b { color: #fff; font-weight: bold; font-size: 11px; letter-spacing: 0.5px; }
-        .chat-empty { color: #555; font-size: 11px; text-align: center; padding: 20px 0; letter-spacing: 1px; }
-        .chat-name, .chat-input { width: 100%; box-sizing: border-box; background: #0a0a0a; border: 1px solid #333;
-            color: #fff; padding: 9px 10px; font-size: 12px; outline: none; margin-bottom: 8px; font-family: inherit; }
-        .chat-name:focus, .chat-input:focus { border-color: #fff; }
-        .chat-send { width: 100%; background: #fff; color: #000; border: 1px solid #fff; padding: 9px;
-            font-size: 11px; font-weight: bold; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
-        .chat-send:hover { background: #000; color: #fff; }
-        .chat-note { font-size: 10px; color: #555; margin: 8px 0 0 0; font-style: italic; text-align: center; }
 
         /* Card: ẩn dung lượng, nút VIEW full width */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
@@ -150,7 +135,7 @@
 
         const { tags, plats } = collect(getItems());
         if (!tags.length && !plats.length) { box.style.display = 'none'; return; }
-        box.style.display = 'block';
+        box.style.display = 'flex';
 
         const line = (list, sel, kind) => list.map(([name, count]) =>
             `<span class="tag-item ${sel.has(name) ? 'on' : ''}" data-kind="${kind}" data-name="${esc(name)}">${esc(name)}<span class="tag-count">${count}</span></span>`
@@ -179,132 +164,6 @@
         if (clear) clear.onclick = () => { selTags.clear(); selPlats.clear(); renderTagBox(); onChange(); };
 
         if (window.applyLanguage) window.applyLanguage();
-    }
-
-    // ---------------------------------------------------------
-    // CHAT THEO KHU VỰC
-    // ---------------------------------------------------------
-    function chatHtml() {
-        const tabs = REGIONS.map(r =>
-            `<div class="chat-tab ${r.k === curRegion ? 'on' : ''}" data-region="${r.k}" data-vi="${r.vi}" data-en="${r.en}">${r.en}</div>`
-        ).join('');
-
-        return `
-            <p class="side-title" data-vi="CHAT THEO KHU VỰC" data-en="REGIONAL CHAT">REGIONAL CHAT</p>
-            <div class="chat-tabs">${tabs}</div>
-            <div class="chat-log" id="chatLog">
-                <div class="chat-empty" data-vi="ĐANG TẢI..." data-en="LOADING...">LOADING...</div>
-            </div>
-            <input type="text" id="chatName" class="chat-name" maxlength="20"
-                data-vi="Tên của bạn" data-en="Your name" placeholder="Your name">
-            <input type="text" id="chatInput" class="chat-input" maxlength="200"
-                data-vi="Nhập tin nhắn..." data-en="Type a message..." placeholder="Type a message...">
-            <button class="chat-send" id="chatSend" data-vi="GỬI" data-en="SEND">SEND</button>
-            <p class="chat-note" data-vi="Giữ lịch sự. Tin nhắn hiển thị công khai."
-               data-en="Be respectful. Messages are public.">Be respectful. Messages are public.</p>
-        `;
-    }
-
-    function timeLabel(ts) {
-        try {
-            return new Date(ts).toLocaleTimeString(window.isVN ? 'vi-VN' : 'en-US',
-                { hour: '2-digit', minute: '2-digit' });
-        } catch { return ''; }
-    }
-
-    async function loadChat() {
-        const log = document.getElementById('chatLog');
-        if (!log) return;
-
-        try {
-            const res = await fetch(`${RTDB}/chat/${curRegion}.json?orderBy="$key"&limitToLast=${MAX_MSG}`);
-            const data = await res.json();
-            const rows = data ? Object.values(data).filter(Boolean) : [];
-            rows.sort((a, b) => (a.ts || 0) - (b.ts || 0));
-
-            if (!rows.length) {
-                log.innerHTML = `<div class="chat-empty" data-vi="CHƯA CÓ TIN NHẮN" data-en="NO MESSAGES YET">NO MESSAGES YET</div>`;
-            } else {
-                log.innerHTML = rows.map(m =>
-                    `<div class="chat-msg"><b>${esc(m.n || 'Guest')}</b> <span style="color:#555; font-size:10px;">${esc(timeLabel(m.ts))}</span><br>${esc(m.t || '')}</div>`
-                ).join('');
-                log.scrollTop = log.scrollHeight;
-            }
-        } catch {
-            log.innerHTML = `<div class="chat-empty" data-vi="KHÔNG TẢI ĐƯỢC CHAT" data-en="COULD NOT LOAD CHAT">COULD NOT LOAD CHAT</div>`;
-        }
-
-        if (window.applyLanguage) window.applyLanguage();
-    }
-
-    async function sendChat() {
-        const nameEl = document.getElementById('chatName');
-        const inputEl = document.getElementById('chatInput');
-        if (!inputEl) return;
-
-        const text = inputEl.value.trim();
-        if (!text) return;
-
-        if (Date.now() - lastSend < SEND_COOLDOWN) {
-            alert(window.isVN ? 'Gửi chậm thôi, đợi vài giây.' : 'Slow down, wait a few seconds.');
-            return;
-        }
-
-        const user = (window.firebase && firebase.apps.length) ? firebase.auth().currentUser : null;
-        const name = (user && user.displayName) || nameEl?.value.trim() ||
-            (window.isVN ? 'Khách' : 'Guest');
-
-        lastSend = Date.now();
-        inputEl.value = '';
-
-        try {
-            localStorage.setItem('dloads:chatName', name);
-        } catch {}
-
-        try {
-            await fetch(`${RTDB}/chat/${curRegion}.json`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ n: name.slice(0, 20), t: text.slice(0, 200), ts: Date.now() })
-            });
-        } catch {}
-
-        loadChat();
-    }
-
-    function setupChat() {
-        const box = document.getElementById('chatBox');
-        if (!box) return;
-
-        box.innerHTML = chatHtml();
-
-        box.querySelectorAll('.chat-tab').forEach(tab => {
-            tab.onclick = () => {
-                curRegion = tab.dataset.region;
-                try { localStorage.setItem('dloads:region', curRegion); } catch {}
-                box.querySelectorAll('.chat-tab').forEach(t => t.classList.toggle('on', t === tab));
-                loadChat();
-            };
-        });
-
-        const nameEl = document.getElementById('chatName');
-        try {
-            const saved = localStorage.getItem('dloads:chatName');
-            if (saved && nameEl) nameEl.value = saved;
-        } catch {}
-
-        document.getElementById('chatSend').onclick = sendChat;
-        document.getElementById('chatInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') sendChat();
-        });
-
-        if (window.applyLanguage) window.applyLanguage();
-        loadChat();
-
-        clearInterval(pollTimer);
-        pollTimer = setInterval(() => {
-            if (document.visibilityState === 'visible') loadChat();
-        }, POLL_MS);
     }
 
     // ---------------------------------------------------------
