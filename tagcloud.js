@@ -33,7 +33,7 @@
     // ---------------------------------------------------------
     // CSS (giữ style gốc: đen, viền xám, không màu mè)
     // ---------------------------------------------------------
-    function injectCss() {
+ function injectCss() {
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
@@ -48,7 +48,7 @@
 
         .side-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
 
-        /* Box lọc theo thẻ: giãn hết chiều cao cột trái (khu vực lưới game) */
+        /* Box lọc theo thẻ */
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
         #tagBox, #tagBox * { font-family: 'Roboto', Arial, sans-serif; }
 
