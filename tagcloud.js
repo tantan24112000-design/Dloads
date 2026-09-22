@@ -140,7 +140,7 @@
             <div class="tag-list">${line(tags, selTags, 'tag')}</div>` : ''}
             ${plats.length ? `<p class="side-sub" data-vi="NỀN TẢNG" data-en="PLATFORMS">PLATFORMS</p>
             <div class="tag-list">${line(plats, selPlats, 'plat')}</div>` : ''}
-            <button class="tag-clear" id="tagClear" data-vi="XÓA BỘ LỌC" data-en="CLEAR FILTERS">CLEAR FILTERS</button>
+           
         `;
 
         box.querySelectorAll('.tag-item').forEach(el => {
