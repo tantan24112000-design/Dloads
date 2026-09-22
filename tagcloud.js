@@ -21,23 +21,14 @@
     // ---------------------------------------------------------
     // CSS (Toàn bộ chữ chuyển thành IN HOA)
     // ---------------------------------------------------------
-    function injectFont() {
-        if (document.getElementById('sidebarFont')) return;
-        const link = document.createElement('link');
-        link.id = 'sidebarFont';
-        link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap';
-        document.head.appendChild(link);
-    }
-
     function injectCss() {
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
-        /* Ép toàn bộ chữ sidebar và dung lượng thành CHỮ IN HOA, dùng Open Sans */
+        /* Ép toàn bộ chữ sidebar và dung lượng thành CHỮ IN HOA, dùng font y hệt trang chính */
         .layout-side, .layout-side *, .rev-size, #detailSize {
             text-transform: uppercase !important;
-            font-family: 'Open Sans', Arial, sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
         .container { max-width: 1240px !important; }
@@ -240,7 +231,6 @@
     // BOOT
     // ---------------------------------------------------------
     function boot() {
-        injectFont();
         injectCss();
         const side = buildLayout();
         if (!side) return;
