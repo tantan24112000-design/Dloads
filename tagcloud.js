@@ -19,16 +19,15 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS (Toàn bộ chữ chuyển thành IN HOA & phông chữ in)
+    // CSS (Toàn bộ chữ chuyển thành IN HOA)
     // ---------------------------------------------------------
     function injectCss() {
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
-        /* Ép toàn bộ phông chữ sidebar và dung lượng thành CHỮ IN HOA */
+        /* Ép toàn bộ chữ sidebar và dung lượng thành CHỮ IN HOA */
         .layout-side, .layout-side *, .rev-size, #detailSize {
             text-transform: uppercase !important;
-            font-family: Arial, Helvetica, sans-serif !important;
         }
 
         .container { max-width: 1240px !important; }
