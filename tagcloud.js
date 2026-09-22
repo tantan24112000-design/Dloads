@@ -19,14 +19,41 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS (Toàn bộ chữ chuyển thành IN HOA)
+    // CSS luôn cần (không phụ thuộc sidebar)
     // ---------------------------------------------------------
-    function injectCss() {
+    function injectBaseCss() {
+        if (document.getElementById('sidebarBaseCss')) return;
+        const s = document.createElement('style');
+        s.id = 'sidebarBaseCss';
+        s.textContent = `
+        .rev-size, #detailSize {
+            text-transform: uppercase !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+
+        /* Card: ẩn dung lượng, nút VIEW full width */
+        .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
+        .game-card > div:last-child > p { display: none !important; }
+        .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
+            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important; }
+
+        /* Dung lượng nằm trong bảng review */
+        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px;
+            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
+        #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
+        `;
+        document.head.appendChild(s);
+    }
+
+    // ---------------------------------------------------------
+    // CSS chỉ cần khi build sidebar (menu chính)
+    // ---------------------------------------------------------
+    function injectSidebarCss() {
+        if (document.getElementById('sidebarCss')) return;
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
-        /* Ép toàn bộ chữ sidebar và dung lượng thành CHỮ IN HOA, dùng font y hệt trang chính */
-        .layout-side, .layout-side *, .rev-size, #detailSize {
+        .layout-side, .layout-side * {
             text-transform: uppercase !important;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
@@ -42,7 +69,6 @@
 
         .side-box { background: #0a0a0a; border: 1px solid #121212; padding: 15px; margin-bottom: 20px; }
 
-        /* Box lọc theo thẻ */
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
 
         .side-title { font-size: 11px; letter-spacing: 2px; color: #888;
@@ -60,17 +86,6 @@
         .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #888;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #fff; border-color: #fff; }
-
-        /* Card: ẩn dung lượng, nút VIEW full width */
-        .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
-        .game-card > div:last-child > p { display: none !important; }
-        .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important; }
-
-        /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px;
-            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
         `;
         document.head.appendChild(s);
     }
@@ -231,19 +246,25 @@
     // BOOT
     // ---------------------------------------------------------
     function boot() {
-        injectCss();
-        const side = buildLayout();
-        if (!side) return;
+        injectBaseCss();
 
-        const onDetail = !!new URLSearchParams(location.search).get('id');
+        const qs = new URLSearchParams(location.search);
+        const isMainMenu = !qs.get('id') && !qs.get('user');
 
-        side.innerHTML = `
-            <div class="side-box" id="tagBox" style="display:none;"></div>
-            <div class="side-box" id="chatBox"></div>
-        `;
-        if (onDetail) document.getElementById('tagBox').remove();
+        // Chỉ dựng sidebar/kéo container rộng khi thực sự ở menu chính.
+        // View game hoặc trang dev (?user=) giữ nguyên layout gốc.
+        if (isMainMenu) {
+            injectSidebarCss();
+            const side = buildLayout();
+            if (side) {
+                side.innerHTML = `
+                    <div class="side-box" id="tagBox"></div>
+                    <div class="side-box" id="chatBox"></div>
+                `;
+                if (typeof setupChat === 'function') setupChat();
+            }
+        }
 
-        if (typeof setupChat === 'function') setupChat();
         watchGrid();
         moveSizeOnDetail();
 
