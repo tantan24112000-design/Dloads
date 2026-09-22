@@ -26,7 +26,7 @@
         const s = document.createElement('style');
         s.id = 'sidebarBaseCss';
         s.textContent = `
-        /* Card: ẩn dung lượng mặc định bên dưới, nút VIEW full width */
+        /* Card: ẩn dung lượng bên dưới, nút VIEW full width (GIỮ PHÔNG/MÀU/KIỂU CHỮ GỐC) */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
         .game-card > div:last-child > p { display: none !important; }
         .game-card > div:last-child > .btn { 
@@ -34,10 +34,7 @@
             width: 100% !important;
             box-sizing: border-box; 
             padding: 10px !important; 
-            text-transform: uppercase !important;
-            font-family: sans-serif !important; 
-            font-weight: bold !important; 
-            color: #ffffff !important; 
+            /* Đã bỏ text-transform, font-family, font-weight, color để nút dùng style gốc */
         }
 
         /* Khung dung lượng trong bảng review */
@@ -59,7 +56,7 @@
             gap: 4px;
         }
 
-        /* Nhãn chữ (DUNG LƯỢNG / SIZE): Giữ in hoa & style đậm */
+        /* Nhãn chữ (DUNG LƯỢNG / SIZE) */
         .rev-size-label, #detailSize .size-label {
             text-transform: uppercase !important;
             font-family: sans-serif !important;
@@ -68,7 +65,7 @@
             letter-spacing: 1px;
         }
 
-        /* Giá trị số MB / GB: TÁCH RIÊNG - Không bị ép in hoa hay phông màu nút */
+        /* Giá trị số MB / GB (Không bị ép style) */
         .rev-size-val, #detailSize .size-val {
             text-transform: none !important;
             font-weight: normal !important;
@@ -210,7 +207,7 @@
     }
 
     // ---------------------------------------------------------
-    // DUNG LƯỢNG -> BẢNG REVIEW (ĐÃ TÁCH NHÃN VÀ GIÁ TRỊ MB/GB)
+    // DUNG LƯỢNG -> BẢNG REVIEW
     // ---------------------------------------------------------
     function moveSizeOnCards() {
         document.querySelectorAll('#gameGrid .game-card').forEach(card => {
