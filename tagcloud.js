@@ -57,7 +57,7 @@
         .tag-item.on { color: #000; background: #fff; border-color: #fff; }
         .tag-count { color: #666; margin-left: 4px; }
         .tag-item.on .tag-count { color: #444; }
-        .tag-clear { width: 100%; margin-top: auto; background: #111; border: 1px solid #333; color: #888;
+        .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #888;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #fff; border-color: #fff; }
 
