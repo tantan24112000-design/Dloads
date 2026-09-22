@@ -28,19 +28,22 @@
         s.textContent = `
         .rev-size, #detailSize {
             text-transform: uppercase !important;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            font-family: sans-serif !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
         }
 
         /* Card: ẩn dung lượng, nút VIEW full width */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
         .game-card > div:last-child > p { display: none !important; }
         .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important; }
+            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important;
+            font-family: sans-serif !important; font-weight: bold !important; color: #ffffff !important; }
 
         /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #888; letter-spacing: 1px;
+        .rev-size { font-size: 10px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; letter-spacing: 1px;
             border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; color: #888; margin: 10px 0 0 0; letter-spacing: 1px; }
+        #detailSize { font-size: 12px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; margin: 10px 0 0 0; letter-spacing: 1px; }
         `;
         document.head.appendChild(s);
     }
@@ -55,7 +58,9 @@
         s.textContent = `
         .layout-side, .layout-side * {
             text-transform: uppercase !important;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            font-family: sans-serif !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
         }
 
         .container { max-width: 2500px !important; }
@@ -71,21 +76,21 @@
 
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
 
-        .side-title { font-size: 11px; letter-spacing: 2px; color: #888;
+        .side-title { font-size: 11px; letter-spacing: 2px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
             margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        .side-sub { font-size: 10px; letter-spacing: 1px; color: #666; margin: 14px 0 8px 0; }
+        .side-sub { font-size: 10px; letter-spacing: 1px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important; margin: 14px 0 8px 0; }
         .side-sub:first-of-type { margin-top: 0; }
 
         .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag-item { font-size: 10px; letter-spacing: 1px; color: #aaa;
+        .tag-item { font-size: 10px; letter-spacing: 1px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
             background: #121212; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
-        .tag-item:hover { color: #fff; border-color: #666; }
-        .tag-item.on { color: #000; background: #fff; border-color: #fff; }
-        .tag-count { color: #666; margin-left: 4px; }
-        .tag-item.on .tag-count { color: #444; }
-        .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #888;
+        .tag-item:hover { color: #ffffff !important; border-color: #666; }
+        .tag-item.on { color: #ffffff !important; background: #333; border-color: #fff; }
+        .tag-count { color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important; margin-left: 4px; }
+        .tag-item.on .tag-count { color: #ffffff !important; }
+        .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
-        .tag-clear:hover { color: #fff; border-color: #fff; }
+        .tag-clear:hover { color: #ffffff !important; border-color: #fff; }
         `;
         document.head.appendChild(s);
     }
@@ -155,7 +160,6 @@
             <div class="tag-list">${line(tags, selTags, 'tag')}</div>` : ''}
             ${plats.length ? `<p class="side-sub" data-vi="NỀN TẢNG" data-en="PLATFORMS">PLATFORMS</p>
             <div class="tag-list">${line(plats, selPlats, 'plat')}</div>` : ''}
-           
         `;
 
         box.querySelectorAll('.tag-item').forEach(el => {
@@ -251,8 +255,6 @@
         const qs = new URLSearchParams(location.search);
         const isMainMenu = !qs.get('id') && !qs.get('user');
 
-        // Chỉ dựng sidebar/kéo container rộng khi thực sự ở menu chính.
-        // View game hoặc trang dev (?user=) giữ nguyên layout gốc.
         if (isMainMenu) {
             injectSidebarCss();
             const side = buildLayout();
