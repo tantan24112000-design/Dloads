@@ -26,90 +26,55 @@
         const s = document.createElement('style');
         s.id = 'sidebarBaseCss';
         s.textContent = `
-        /* CHỈ ÉP KIỂU CHO THẺ DUNG LƯỢNG DO SCRIPT NÀY TẠO RA */
-        .rev-size, #detailSize {
-            text-transform: uppercase !important;
-            font-family: sans-serif !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
-        }
-
-        /* Card: ẩn dung lượng, dàn nút VIEW full width - KỆ NÚT VIEW, KHÔNG ÉP FONT/MÀU Ở ĐÂY */
+        /* Card: ẩn dung lượng mặc định bên dưới, nút VIEW full width */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
         .game-card > div:last-child > p { display: none !important; }
         .game-card > div:last-child > .btn { 
-            display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important; 
+            display: block !important; 
+            width: 100% !important;
+            box-sizing: border-box; 
+            padding: 10px !important; 
+            text-transform: uppercase !important;
+            font-family: sans-serif !important; 
+            font-weight: bold !important; 
+            color: #ffffff !important; 
         }
 
-        /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; letter-spacing: 1px;
-            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; margin: 10px 0 0 0; letter-spacing: 1px; }
-        `;
-        document.head.appendChild(s);
-    }
+        /* Khung dung lượng trong bảng review */
+        .rev-size { 
+            font-size: 10px; 
+            border-top: 1px solid #222; 
+            margin-top: auto; 
+            padding-top: 8px; 
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    // ---------------------------------------------------------
-    // CSS chỉ cần khi build sidebar (menu chính)
-    // ---------------------------------------------------------
-    function injectSidebarCssTao hiểu ý mày rồi. Vấn đề của cái code gốc là đoạn CSS ` .game-card > div:last-child > .btn ` quét quá rộng, nó ép style toàn bộ các nút nằm ở cuối thẻ game, dẫn đến việc hỏng UI của các nút khác. 
+        #detailSize { 
+            font-size: 12px; 
+            margin: 10px 0 0 0; 
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-Mày muốn nếu đụng đúng cái nút có chữ "VIEW" thì mới xử lý (hoặc các nút khác thì **kệ nó** không đụng tới), đồng thời **giới hạn phạm vi (scope) cực kỳ chặt chẽ** để không phá vỡ UI bên ngoài, và đặc biệt là không được mất chức năng nào.
-
-Tao đã viết lại đoạn xử lý đó. Tao sẽ để JS tự động quét, nếu đúng là nút "VIEW" thì tao mới nhét một cái `class` riêng rẽ vào để cho CSS tác động, còn không phải thì "kệ nó". Toàn bộ chức năng cũ tao giữ nguyên xi.
-
-Mày copy đè toàn bộ code này vào file nhé:
-
-```javascript
-// =========================================================
-// DLOADS - SIDEBAR: TAG CLOUD
-// File riêng, KHÔNG sửa app.js. Load trước app.js.
-// =========================================================
-(function () {
-    'use strict';
-
-    let selTags = new Set();
-    let selPlats = new Set();
-    let getItems = () => [];
-    let onChange = () => {};
-
-    function esc(v) {
-        return String(v ?? '')
-            .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-    }
-
-    function lang() { return window.isVN ? 'vi' : 'en'; }
-
-    // ---------------------------------------------------------
-    // CSS luôn cần (không phụ thuộc sidebar)
-    // ---------------------------------------------------------
-    function injectBaseCss() {
-        if (document.getElementById('sidebarBaseCss')) return;
-        const s = document.createElement('style');
-        s.id = 'sidebarBaseCss';
-        s.textContent = `
-        .rev-size, #detailSize {
+        /* Nhãn chữ (DUNG LƯỢNG / SIZE): Giữ in hoa & style đậm */
+        .rev-size-label, #detailSize .size-label {
             text-transform: uppercase !important;
             font-family: sans-serif !important;
             font-weight: bold !important;
             color: #ffffff !important;
+            letter-spacing: 1px;
         }
 
-        /* ĐÃ GIỚI HẠN PHẠM VI: Chỉ tác động qua class được JS chỉ định, không quét bừa */
-        .dloads-card-bottom { display: block !important; margin-top: 15px !important; }
-        .dloads-hide-size { display: none !important; }
-        .dloads-view-btn { 
-            display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important;
-            font-family: sans-serif !important; font-weight: bold !important; color: #ffffff !important; 
+        /* Giá trị số MB / GB: TÁCH RIÊNG - Không bị ép in hoa hay phông màu nút */
+        .rev-size-val, #detailSize .size-val {
+            text-transform: none !important;
+            font-weight: normal !important;
+            color: #cccccc !important;
+            letter-spacing: normal !important;
         }
-
-        /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; letter-spacing: 1px;
-            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; margin: 10px 0 0 0; letter-spacing: 1px; }
         `;
         document.head.appendChild(s);
     }
@@ -245,35 +210,21 @@ Mày copy đè toàn bộ code này vào file nhé:
     }
 
     // ---------------------------------------------------------
-    // DUNG LƯỢNG -> BẢNG REVIEW
+    // DUNG LƯỢNG -> BẢNG REVIEW (ĐÃ TÁCH NHÃN VÀ GIÁ TRỊ MB/GB)
     // ---------------------------------------------------------
     function moveSizeOnCards() {
         document.querySelectorAll('#gameGrid .game-card').forEach(card => {
             const bottom = card.lastElementChild;
-            if (!bottom) return;
-
-            // Đánh dấu class riêng để CSS không dính vào các thẻ khác ngoài file
-            bottom.classList.add('dloads-card-bottom');
-
-            const sizeP = bottom.querySelector('p');
-            if (sizeP) sizeP.classList.add('dloads-hide-size');
-
-            // Xử lý nút VIEW: Kiểm tra có phải nút VIEW không?
-            const btn = bottom.querySelector('.btn');
-            if (btn && btn.textContent.toUpperCase().includes('VIEW')) {
-                // Nếu đúng là VIEW thì ép style full width
-                btn.classList.add('dloads-view-btn');
-            }
-            // Mấy nút khác (nếu có) sẽ "kệ nó", không ăn class này nên không bị lỗi UI
-
+            const sizeP = bottom ? bottom.querySelector('p') : null;
             const panel = card.querySelector('.review-panel');
             if (!sizeP || !panel || panel.querySelector('.rev-size')) return;
 
             const label = window.isVN ? 'DUNG LƯỢNG' : 'SIZE';
+            const rawText = sizeP.textContent.replace(/dung lượng:|size:/i, '').trim();
+
             const div = document.createElement('div');
             div.className = 'rev-size';
-            div.dataset.size = sizeP.textContent.trim();
-            div.textContent = `${label}: ${div.dataset.size}`;
+            div.innerHTML = `<span class="rev-size-label">${label}:</span> <span class="rev-size-val">${esc(rawText)}</span>`;
             panel.appendChild(div);
         });
     }
@@ -284,9 +235,12 @@ Mày copy đè toàn bộ code này vào file nhé:
         if (!sizeEl || !reviewSec) return;
         if (reviewSec.style.display === 'none' || document.getElementById('detailSize')) return;
 
+        const label = window.isVN ? 'DUNG LƯỢNG' : 'SIZE';
+        const rawText = sizeEl.innerText.replace(/dung lượng:|size:/i, '').trim();
+
         const clone = document.createElement('p');
         clone.id = 'detailSize';
-        clone.textContent = sizeEl.innerText;
+        clone.innerHTML = `<span class="size-label">${label}:</span> <span class="size-val">${esc(rawText)}</span>`;
         reviewSec.appendChild(clone);
         sizeEl.style.display = 'none';
     }
