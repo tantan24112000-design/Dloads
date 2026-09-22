@@ -31,7 +31,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
-        .container { max-width: 1240px !important; }
+        .container { max-width: 2000px !important; }
         .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
         .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
