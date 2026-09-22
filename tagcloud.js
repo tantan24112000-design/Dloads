@@ -52,7 +52,7 @@
 
         .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
         .tag-item { font-size: 10px; letter-spacing: 1px; color: #aaa;
-            background: #111; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
+            background: #121212; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
         .tag-item:hover { color: #fff; border-color: #666; }
         .tag-item.on { color: #000; background: #fff; border-color: #fff; }
         .tag-count { color: #666; margin-left: 4px; }
