@@ -40,7 +40,7 @@
             .layout-side { width: 100%; }
         }
 
-        .side-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
+        .side-box { background: #0a0a0a; border: 1px solid #121212; padding: 15px; margin-bottom: 20px; }
 
         /* Box lọc theo thẻ */
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
