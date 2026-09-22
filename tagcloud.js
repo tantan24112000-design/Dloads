@@ -19,7 +19,7 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS luôn cần (không phụ thuộc sidebar)
+    // CSS cơ bản (Chỉ chỉnh đúng phần dung lượng & card trong sidebar/grid)
     // ---------------------------------------------------------
     function injectBaseCss() {
         if (document.getElementById('sidebarBaseCss')) return;
@@ -27,43 +27,35 @@
         s.id = 'sidebarBaseCss';
         s.textContent = `
         .rev-size, #detailSize {
-            text-transform: uppercase !important;
-            font-family: sans-serif !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
+            text-transform: uppercase;
+            font-family: sans-serif;
+            font-weight: bold;
+            color: #ffffff;
         }
 
-        /* Card: ẩn dung lượng, nút VIEW full width */
-        .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
-        .game-card > div:last-child > p { display: none !important; }
-        .game-card > div:last-child > .btn { display: block !important; width: 100% !important;
-            box-sizing: border-box; padding: 10px !important; text-transform: uppercase !important;
-            font-family: sans-serif !important; font-weight: bold !important; color: #ffffff !important; }
-
         /* Dung lượng nằm trong bảng review */
-        .rev-size { font-size: 10px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; letter-spacing: 1px;
-            border-top: 1px solid #222; margin-top: auto; padding-top: 8px; }
-        #detailSize { font-size: 12px; color: #ffffff !important; font-family: sans-serif !important; font-weight: bold !important; margin: 10px 0 0 0; letter-spacing: 1px; }
+        .rev-size { font-size: 10px; border-top: 1px solid #222; margin-top: auto; padding-top: 8px; letter-spacing: 1px; }
+        #detailSize { font-size: 12px; margin: 10px 0 0 0; letter-spacing: 1px; }
         `;
         document.head.appendChild(s);
     }
 
     // ---------------------------------------------------------
-    // CSS chỉ cần khi build sidebar (menu chính)
+    // CSS riêng cho Sidebar (Chỉ tác dụng BÊN TRONG #sideBar)
     // ---------------------------------------------------------
     function injectSidebarCss() {
         if (document.getElementById('sidebarCss')) return;
         const s = document.createElement('style');
         s.id = 'sidebarCss';
         s.textContent = `
-        .layout-side, .layout-side * {
+        /* Chỉ ép style chữ trắng, sans-serif, in đậm BÊN TRONG #sideBar */
+        #sideBar, #sideBar * {
             text-transform: uppercase !important;
             font-family: sans-serif !important;
             font-weight: bold !important;
             color: #ffffff !important;
         }
 
-        .container { max-width: 2500px !important; }
         .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
         .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
@@ -72,25 +64,21 @@
             .layout-side { width: 100%; }
         }
 
-        .side-box { background: #0a0a0a; border: 1px solid #121212; padding: 15px; margin-bottom: 20px; }
+        #sideBar .side-box { background: #0a0a0a; border: 1px solid #121212; padding: 15px; margin-bottom: 20px; }
 
         #tagBox { flex: 1; display: flex; flex-direction: column; margin-bottom: 0; }
 
-        .side-title { font-size: 11px; letter-spacing: 2px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
-            margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        .side-sub { font-size: 10px; letter-spacing: 1px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important; margin: 14px 0 8px 0; }
-        .side-sub:first-of-type { margin-top: 0; }
+        #sideBar .side-title { font-size: 11px; letter-spacing: 2px; margin: 0 0 12px 0; border-bottom: 1px solid #222; padding-bottom: 8px; }
+        #sideBar .side-sub { font-size: 10px; letter-spacing: 1px; margin: 14px 0 8px 0; }
+        #sideBar .side-sub:first-of-type { margin-top: 0; }
 
-        .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag-item { font-size: 10px; letter-spacing: 1px; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
-            background: #121212; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
-        .tag-item:hover { color: #ffffff !important; border-color: #666; }
-        .tag-item.on { color: #ffffff !important; background: #333; border-color: #fff; }
-        .tag-count { color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important; margin-left: 4px; }
-        .tag-item.on .tag-count { color: #ffffff !important; }
-        .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
-            font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
-        .tag-clear:hover { color: #ffffff !important; border-color: #fff; }
+        #sideBar .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        #sideBar .tag-item { font-size: 10px; letter-spacing: 1px; background: #121212; border: 1px solid #333; padding: 4px 7px; cursor: pointer; transition: 0.2s; user-select: none; }
+        #sideBar .tag-item:hover { border-color: #666; }
+        #sideBar .tag-item.on { background: #333; border-color: #fff; }
+        #sideBar .tag-count { margin-left: 4px; }
+        #sideBar .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
+        #sideBar .tag-clear:hover { border-color: #fff; }
         `;
         document.head.appendChild(s);
     }
