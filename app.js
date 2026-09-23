@@ -281,6 +281,261 @@ async function fetchGameDetailData(gameId) {
 }
 
 // =========================================================
+// BÌNH LUẬN (khoá nếu chưa đăng nhập, giao diện kiểu YouTube)
+// =========================================================
+let currentUser = null; // { uid, name, avatar } - set từ hook window.setCommentUser
+let commentLikeState = loadCommentLikeState();
+
+function loadCommentLikeState() {
+    try { return JSON.parse(localStorage.getItem('commentLikes')) || {}; }
+    catch { return {}; }
+}
+
+function saveCommentLikeState() {
+    try { localStorage.setItem('commentLikes', JSON.stringify(commentLikeState)); } catch {}
+}
+
+function timeAgo(dateStr) {
+    const diffMs = Math.max(0, Date.now() - new Date(dateStr).getTime());
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return isVi ? 'Vừa xong' : 'Just now';
+    if (mins < 60) return isVi ? `${mins} phút trước` : `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return isVi ? `${days} ngày trước` : `${days}d ago`;
+    const months = Math.floor(days / 30);
+    return isVi ? `${months} tháng trước` : `${months}mo ago`;
+}
+
+const HEART_ICON = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.1C.3 8.4 2 4.8 5.6 4.2c2-.3 3.9.6 5 2.2.9-1.6 2.9-2.5 4.9-2.2 3.6.6 5.3 4.2 3.6 7.7C19.5 16.4 12 21 12 21z" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+
+function commentAvatarHtml(avatar, size) {
+    const src = escapeHtml(getImageUrl(avatar, 'basicavtr.png'));
+    return `<img class="comment-avatar" style="width:${size}px;height:${size}px;" src="${src}" loading="lazy" decoding="async" alt="">`;
+}
+
+// Gọi từ hook auth trong index.html mỗi khi trạng thái đăng nhập đổi
+window.setCommentUser = function (user) {
+    currentUser = user;
+    const composer = document.getElementById('commentComposer');
+    const locked = document.getElementById('commentLocked');
+    if (!composer || !locked) return;
+
+    if (user) {
+        composer.style.display = 'flex';
+        locked.style.display = 'none';
+        const avatarImg = document.getElementById('composerAvatar');
+        if (avatarImg) avatarImg.src = getImageUrl(user.avatar, 'basicavtr.png');
+    } else {
+        composer.style.display = 'none';
+        locked.style.display = 'flex';
+    }
+};
+
+async function fetchComments(gameId) {
+    try {
+        return await sbFetch(`comments?game_id=eq.${encodeURIComponent(gameId)}&select=*&order=created_at.asc`);
+    } catch (error) {
+        console.error('Lỗi tải bình luận:', error);
+        return [];
+    }
+}
+
+async function postComment(gameId, text, parentId = null) {
+    if (!currentUser || !text.trim()) return null;
+
+    try {
+        const res = await fetch(`${REST}/comments`, {
+            method: 'POST',
+            headers: { ...SB_HEADERS, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+            body: JSON.stringify({
+                game_id: gameId,
+                user_id: currentUser.uid,
+                user_name: currentUser.name,
+                user_avatar: currentUser.avatar || '',
+                parent_id: parentId,
+                text: text.trim(),
+                likes: 0
+            })
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rows = await res.json();
+        return rows && rows[0] ? rows[0] : null;
+    } catch (error) {
+        console.error('Lỗi gửi bình luận:', error);
+        showToast(isVi ? 'Gửi bình luận thất bại.' : 'Failed to post comment.');
+        return null;
+    }
+}
+
+async function toggleCommentLike(commentId, btnEl, countEl) {
+    const liked = !!commentLikeState[commentId];
+    const current = Number(countEl.dataset.count) || 0;
+    const newCount = Math.max(0, liked ? current - 1 : current + 1);
+
+    commentLikeState[commentId] = !liked;
+    saveCommentLikeState();
+    btnEl.classList.toggle('liked', !liked);
+    countEl.dataset.count = newCount;
+    countEl.textContent = newCount > 0 ? newCount : '';
+
+    try {
+        await fetch(`${REST}/comments?id=eq.${encodeURIComponent(commentId)}`, {
+            method: 'PATCH',
+            headers: { ...SB_HEADERS, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+            body: JSON.stringify({ likes: newCount })
+        });
+    } catch (error) {
+        console.warn('Không đồng bộ được lượt tim:', error);
+    }
+}
+
+function commentItemHtml(comment, isReply) {
+    const liked = !!commentLikeState[comment.id];
+    const likeCount = Number(comment.likes) || 0;
+    const avatarSize = isReply ? 28 : 36;
+
+    return `
+        <div class="comment-item" data-comment-id="${comment.id}">
+            ${commentAvatarHtml(comment.user_avatar, avatarSize)}
+            <div class="comment-body">
+                <div class="comment-head">
+                    <span class="comment-name">${escapeHtml(comment.user_name || 'User')}</span>
+                    <span class="comment-time">${timeAgo(comment.created_at)}</span>
+                </div>
+                <p class="comment-text">${escapeHtml(comment.text)}</p>
+                <div class="comment-actions">
+                    <button class="comment-like-btn${liked ? ' liked' : ''}" data-comment-id="${comment.id}">
+                        ${HEART_ICON}
+                        <span class="like-count" data-count="${likeCount}">${likeCount > 0 ? likeCount : ''}</span>
+                    </button>
+                    ${isReply ? '' : `<button class="comment-reply-btn" data-comment-id="${comment.id}">${isVi ? 'TRẢ LỜI' : 'REPLY'}</button>`}
+                </div>
+                ${isReply ? '' : `<div class="comment-reply-slot" id="replySlot-${comment.id}"></div>`}
+                ${isReply ? '' : `<div class="comment-replies" id="replies-${comment.id}"></div>`}
+            </div>
+        </div>
+    `;
+}
+
+function renderComments(list) {
+    const container = document.getElementById('commentList');
+    if (!container) return;
+
+    const topLevel = list.filter(c => !c.parent_id);
+    const repliesMap = {};
+    for (const c of list) {
+        if (c.parent_id) {
+            (repliesMap[c.parent_id] ||= []).push(c);
+        }
+    }
+
+    if (topLevel.length === 0) {
+        container.innerHTML = `<div style="color:#555; font-size:12px; padding:6px 0;">${isVi ? 'Chưa có bình luận nào.' : 'No comments yet.'}</div>`;
+        return;
+    }
+
+    container.innerHTML = topLevel.map(c => commentItemHtml(c, false)).join('');
+
+    for (const comment of topLevel) {
+        const replies = repliesMap[comment.id];
+        if (!replies || !replies.length) continue;
+        const repliesEl = document.getElementById(`replies-${comment.id}`);
+        if (repliesEl) repliesEl.innerHTML = replies.map(r => commentItemHtml(r, true)).join('');
+    }
+}
+
+function openReplyComposer(parentId, gameId) {
+    const slot = document.getElementById(`replySlot-${parentId}`);
+    if (!slot || !currentUser) return;
+
+    if (slot.childElementCount > 0) {
+        slot.innerHTML = '';
+        return;
+    }
+
+    slot.innerHTML = `
+        <div class="comment-reply-composer">
+            ${commentAvatarHtml(currentUser.avatar, 28)}
+            <div class="comment-input-wrap">
+                <input type="text" class="comment-input reply-input" maxlength="500" placeholder="${isVi ? 'Trả lời...' : 'Reply...'}">
+            </div>
+            <button class="comment-post-btn reply-post-btn">${isVi ? 'Gửi' : 'Reply'}</button>
+        </div>
+    `;
+
+    const input = slot.querySelector('.reply-input');
+    const btn = slot.querySelector('.reply-post-btn');
+    input.focus();
+
+    const submit = async () => {
+        const text = input.value.trim();
+        if (!text) return;
+        btn.disabled = true;
+        const saved = await postComment(gameId, text, parentId);
+        btn.disabled = false;
+        if (saved) {
+            slot.innerHTML = '';
+            const repliesEl = document.getElementById(`replies-${parentId}`);
+            if (repliesEl) repliesEl.insertAdjacentHTML('beforeend', commentItemHtml(saved, true));
+        }
+    };
+
+    btn.onclick = submit;
+    input.addEventListener('keydown', event => { if (event.key === 'Enter') submit(); });
+}
+
+function setupCommentEvents(gameId) {
+    const list = document.getElementById('commentList');
+    if (!list || list.dataset.bound) return;
+    list.dataset.bound = '1';
+
+    list.addEventListener('click', event => {
+        const likeBtn = event.target.closest('.comment-like-btn');
+        if (likeBtn) {
+            if (!currentUser) return;
+            toggleCommentLike(likeBtn.dataset.commentId, likeBtn, likeBtn.querySelector('.like-count'));
+            return;
+        }
+
+        const replyBtn = event.target.closest('.comment-reply-btn');
+        if (replyBtn) openReplyComposer(replyBtn.dataset.commentId, gameId);
+    });
+}
+
+function setupCommentComposer(gameId) {
+    const input = document.getElementById('commentInput');
+    const btn = document.getElementById('commentPostBtn');
+    if (!input || !btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+
+    const submit = async () => {
+        const text = input.value.trim();
+        if (!text || !currentUser) return;
+        btn.disabled = true;
+        const saved = await postComment(gameId, text, null);
+        btn.disabled = false;
+        if (!saved) return;
+
+        input.value = '';
+        const container = document.getElementById('commentList');
+        if (container && !container.querySelector('.comment-item')) container.innerHTML = '';
+        container?.insertAdjacentHTML('beforeend', commentItemHtml(saved, false));
+    };
+
+    btn.onclick = submit;
+    input.addEventListener('keydown', event => { if (event.key === 'Enter') submit(); });
+}
+
+async function initComments(gameId) {
+    setupCommentComposer(gameId);
+    setupCommentEvents(gameId);
+    renderComments(await fetchComments(gameId));
+}
+
+// =========================================================
 // DETAIL PAGE
 // =========================================================
 function renderBasicDetail(data, gameId) {
@@ -445,6 +700,8 @@ async function initDetail() {
     renderBasicDetail(initialData, id);
     renderDetailExtra(initialData);
     hideSpinner();
+
+    initComments(id);
 
     scheduleIdle(async () => {
         try {
