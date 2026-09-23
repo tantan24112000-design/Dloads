@@ -19,7 +19,7 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS luôn cần (bao gồm cả THÔNG BÁO XOAY MÀN HÌNH)
+    // CSS luôn cần (không phụ thuộc sidebar)
     // ---------------------------------------------------------
     function injectBaseCss() {
         if (document.getElementById('sidebarBaseCss')) return;
@@ -70,39 +70,6 @@
             font-weight: normal !important;
             color: #cccccc !important;
             letter-spacing: normal !important;
-        }
-
-        /* ---------------------------------------------------------
-           THÔNG BÁO BẮT XOAY MÀN HÌNH DỌC (MOBILE)
-        --------------------------------------------------------- */
-        #rotate-warning {
-            display: none;
-        }
-
-        @media screen and (orientation: portrait) and (max-width: 900px) {
-            #rotate-warning {
-                display: flex !important;
-                justify-content: center;
-                align-items: center;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background-color: #000000;
-                color: #ffffff;
-                font-family: sans-serif;
-                font-size: 13px;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-                text-align: center;
-                padding: 20px;
-                box-sizing: border-box;
-                z-index: 999999;
-            }
-            body {
-                overflow: hidden !important;
-            }
         }
         `;
         document.head.appendChild(s);
@@ -172,15 +139,6 @@
         }
         `;
         document.head.appendChild(s);
-    }
-
-    // Tự động chèn div thông báo xoay màn hình vào body
-    function injectRotateWarningDiv() {
-        if (document.getElementById('rotate-warning')) return;
-        const div = document.createElement('div');
-        div.id = 'rotate-warning';
-        div.textContent = 'VUI LÒNG XOAY NGANG MÀN HÌNH ĐỂ XEM';
-        document.body.appendChild(div);
     }
 
     // ---------------------------------------------------------
@@ -343,7 +301,6 @@
     // ---------------------------------------------------------
     function boot() {
         injectBaseCss();
-        injectRotateWarningDiv(); // Tạo sẵn div thông báo xoay màn hình
 
         const qs = new URLSearchParams(location.search);
         const isMainMenu = !qs.get('id') && !qs.get('user');
