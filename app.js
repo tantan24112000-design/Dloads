@@ -59,13 +59,40 @@ function getImageUrl(value, fallback = 'https://via.placeholder.com/300x180') {
 
 function showSpinner() {
     const s = document.getElementById('globalSpinner');
-    if (s) s.style.display = 'flex';
+    if (!s) return;
+    s.style.display = 'flex';
+    s.classList.remove('hiding');
 }
 
 function hideSpinner() {
     const s = document.getElementById('globalSpinner');
-    if (s) s.style.display = 'none';
+    if (!s) return;
+    s.classList.add('hiding');
+    window.setTimeout(() => { s.style.display = 'none'; }, 250);
 }
+
+// Thông báo nhỏ nổi ở dưới, tự biến mất - thay cho alert()
+function showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.addEventListener('animationend', event => {
+        if (event.animationName === 'toastOut') toast.remove();
+    });
+    container.appendChild(toast);
+}
+
+// Bắt sự kiện load của mọi <img> (kể cả ảnh chèn động) để tắt shimmer khi ảnh vào xong
+document.addEventListener('load', event => {
+    if (event.target.tagName === 'IMG') event.target.classList.add('img-loaded');
+}, true);
 
 function scheduleIdle(callback) {
     if ('requestIdleCallback' in window) {
@@ -307,9 +334,9 @@ function renderBasicDetail(data, gameId) {
     document.getElementById('shareBtn').onclick = async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
-            alert(isVi ? 'Đã copy link!' : 'Link copied!');
+            showToast(isVi ? 'Đã copy link!' : 'Link copied!');
         } catch {
-            alert(isVi ? 'Không thể copy link.' : 'Could not copy link.');
+            showToast(isVi ? 'Không thể copy link.' : 'Could not copy link.');
         }
     };
 
@@ -522,6 +549,8 @@ function updateGrid(targetUser = null) {
 
     if (!grid) return;
 
+    grid.classList.add('is-updating');
+
     const query = searchInput?.value.trim().toLowerCase() || '';
     const sortMethod = sortSelect?.value || 'new';
 
@@ -552,6 +581,7 @@ function updateGrid(targetUser = null) {
     if (filtered.length === 0) {
         grid.innerHTML =
             '<div style="grid-column:1/-1; text-align:center; color:#555; padding:20px;">NO GAMES FOUND</div>';
+        requestAnimationFrame(() => grid.classList.remove('is-updating'));
         return;
     }
 
@@ -561,6 +591,7 @@ function updateGrid(targetUser = null) {
     }
 
     grid.innerHTML = html;
+    requestAnimationFrame(() => grid.classList.remove('is-updating'));
 }
 
 function setupListEvents(targetUser = null) {
