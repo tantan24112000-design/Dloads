@@ -1,4 +1,4 @@
-là file này á hả -- // functions/sitemap.xml.js
+// functions/sitemap.xml.js
 // Trả về sitemap.xml động từ Supabase.
 // Google đọc file này để biết có bao nhiêu game cần index.
 
