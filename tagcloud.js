@@ -19,7 +19,7 @@
     function lang() { return window.isVN ? 'vi' : 'en'; }
 
     // ---------------------------------------------------------
-    // CSS luôn cần (không phụ thuộc sidebar)
+    // CSS luôn cần (bao gồm cả THÔNG BÁO XOAY MÀN HÌNH)
     // ---------------------------------------------------------
     function injectBaseCss() {
         if (document.getElementById('sidebarBaseCss')) return;
@@ -71,6 +71,39 @@
             color: #cccccc !important;
             letter-spacing: normal !important;
         }
+
+        /* ---------------------------------------------------------
+           THÔNG BÁO BẮT XOAY MÀN HÌNH DỌC (MOBILE)
+        --------------------------------------------------------- */
+        #rotate-warning {
+            display: none;
+        }
+
+        @media screen and (orientation: portrait) and (max-width: 900px) {
+            #rotate-warning {
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: #000000;
+                color: #ffffff;
+                font-family: sans-serif;
+                font-size: 13px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+                z-index: 999999;
+            }
+            body {
+                overflow: hidden !important;
+            }
+        }
         `;
         document.head.appendChild(s);
     }
@@ -91,15 +124,7 @@
         }
 
         .container { max-width: 2500px !important; }
-        
-        /* BẮT BUỘC NẰM NGANG, BẤT CHẤP THIẾT BỊ */
-        .layout-row { 
-            display: flex; 
-            gap: 20px; 
-            align-items: stretch; 
-            flex-wrap: nowrap; /* Không cho rớt dòng */
-        }
-        
+        .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
         .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
 
@@ -121,24 +146,17 @@
         .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #ffffff !important; border-color: #fff; }
-
-        /* RESPONSIVE TRÊN ĐIỆN THOẠI (ÉP NẰM CẠNH, THU NHỎ LẠI) */
-        @media (max-width: 900px) {
-            .layout-row { 
-                gap: 10px; 
-                overflow-x: auto; /* Thêm thanh trượt ngang nếu màn hẹp */
-                padding-bottom: 10px;
-                -webkit-overflow-scrolling: touch; 
-            }
-            .layout-main { min-width: 60%; } /* Giữ cho phần main không bị ép chết */
-            .layout-side { width: 140px; } /* Sidebar nhỏ gọn lại */
-            .side-box { padding: 10px; }
-            .tag-item { font-size: 9px; padding: 3px 5px; }
-            .tag-count { margin-left: 2px; }
-            .side-title { font-size: 10px; letter-spacing: 1px; margin-bottom: 8px; }
-        }
         `;
         document.head.appendChild(s);
+    }
+
+    // Tự động chèn div thông báo xoay màn hình vào body
+    function injectRotateWarningDiv() {
+        if (document.getElementById('rotate-warning')) return;
+        const div = document.createElement('div');
+        div.id = 'rotate-warning';
+        div.textContent = 'VUI LÒNG XOAY NGANG MÀN HÌNH ĐỂ XEM';
+        document.body.appendChild(div);
     }
 
     // ---------------------------------------------------------
@@ -301,6 +319,7 @@
     // ---------------------------------------------------------
     function boot() {
         injectBaseCss();
+        injectRotateWarningDiv(); // Tạo sẵn div thông báo xoay màn hình
 
         const qs = new URLSearchParams(location.search);
         const isMainMenu = !qs.get('id') && !qs.get('user');
