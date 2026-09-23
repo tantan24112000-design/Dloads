@@ -34,6 +34,46 @@
         .game-card img { width: 100%; height: 145px; object-fit: cover; border: 1px solid #222; margin-bottom: 12px; transition: opacity 0.2s; border-radius: var(--radius-sm); }
         .game-card:hover img { opacity: 0.9; }
         .card-badge { position: absolute; top: 20px; right: 20px; background: #fff; color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 15; border-radius: var(--radius-sm); }
+
+        /* Nút VIEW: hiện đầy đủ mặc định, cuộn nhỏ lại và dạt về bên phải khi hover card */
+        .card-view-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 22;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            color: #000;
+            border: 1px solid #fff;
+            border-radius: var(--radius-pill);
+            padding: 7px 14px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: padding 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .card-view-btn svg { width: 12px; height: 12px; stroke: currentColor; flex-shrink: 0; }
+        .card-view-btn .cv-label {
+            display: inline-block;
+            max-width: 40px;
+            overflow: hidden;
+            transition: max-width 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+            opacity: 1;
+        }
+        .game-card:hover .card-view-btn {
+            padding: 7px 9px;
+            transform: translateX(14px);
+        }
+        .game-card:hover .card-view-btn .cv-label {
+            max-width: 0;
+            opacity: 0;
+            margin: 0;
+        }
         .game-title { font-size: 16px; margin: 0 0 4px 0; letter-spacing: 0.5px; }
         .dev-name { color: #888; font-size: 12px; margin: 0 0 10px 0; font-style: italic; }
         .platforms { margin-bottom: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
@@ -391,6 +431,32 @@
     </div>
     <script src="tagcloud.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Gắn nút "View" vào mỗi game-card (app.js render card thế nào cũng được,
+        // script này chỉ theo dõi #gameGrid và tự thêm nút nếu card chưa có).
+        (function() {
+            const eyeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+            const viewLabel = window.isVN ? 'Xem' : 'View';
+
+            function addViewButtons() {
+                document.querySelectorAll('.game-card').forEach(card => {
+                    if (card.querySelector('.card-view-btn')) return;
+                    const btn = document.createElement('span');
+                    btn.className = 'card-view-btn';
+                    btn.innerHTML = eyeIcon + '<span class="cv-label">' + viewLabel + '</span>';
+                    card.appendChild(btn);
+                });
+            }
+
+            const grid = document.getElementById('gameGrid');
+            if (grid) {
+                addViewButtons();
+                // Chỉ theo dõi card được thêm/xoá trực tiếp trong grid (không dùng
+                // subtree) để tránh tự bắt lại thay đổi do chính nút View gây ra.
+                new MutationObserver(addViewButtons).observe(grid, { childList: true });
+            }
+        })();
+    </script>
     <script>
         const fConfig = {
             apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
