@@ -34,7 +34,6 @@
             width: 100% !important;
             box-sizing: border-box; 
             padding: 10px !important; 
-            /* Đã bỏ text-transform, font-family, font-weight, color để nút dùng style gốc */
         }
 
         /* Khung dung lượng trong bảng review */
@@ -95,10 +94,6 @@
         .layout-row { display: flex; gap: 20px; align-items: stretch; }
         .layout-main { flex: 1; min-width: 0; }
         .layout-side { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; }
-        @media (max-width: 1450px) {
-            .layout-row { flex-direction: column; }
-            .layout-side { width: 100%; }
-        }
 
         .side-box { background: #0a0a0a; border: 1px solid #121212; padding: 15px; margin-bottom: 20px; }
 
@@ -119,6 +114,26 @@
         .tag-clear { width: 100%; margin-top: auto; background: #121212; border: 1px solid #333; color: #ffffff !important; font-weight: bold !important; font-family: sans-serif !important;
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #ffffff !important; border-color: #fff; }
+
+        /* RESPONSIVE CHO THIẾT BỊ NHỎ VÀ ĐIỆN THOẠI */
+        @media (max-width: 1450px) {
+            .layout-row { flex-direction: column; }
+            .layout-side { 
+                width: 100%; 
+                order: -1; /* Đẩy sidebar lên trên cùng, không bị rớt xuống dưới */
+            }
+            .side-box { padding: 12px; margin-bottom: 15px; }
+            .tag-list { 
+                flex-wrap: nowrap; /* Bỏ dàn dòng để tạo cuộn ngang */
+                overflow-x: auto; 
+                padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .tag-list::-webkit-scrollbar { height: 4px; }
+            .tag-list::-webkit-scrollbar-track { background: transparent; }
+            .tag-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+            .tag-item { flex-shrink: 0; /* Giữ nguyên form tag khi cuộn ngang */ }
+        }
         `;
         document.head.appendChild(s);
     }
