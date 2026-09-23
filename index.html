@@ -11,6 +11,7 @@
     <style>
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+        :root { --radius-sm: 6px; --radius: 10px; --radius-pill: 999px; }
         body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { max-width: 900px; margin: 0 auto; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .header-logo { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
@@ -18,55 +19,55 @@
         .header-logo h1 { font-size: 26px; letter-spacing: 3px; margin: 0; font-weight: 900; }
         .brand-icon { width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 2; }
         .nav-links { display: flex; gap: 15px; align-items: center; }
-        .nav-link { color: #888; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; background: #111; padding: 8px 12px; border: 1px solid #333; }
+        .nav-link { color: #888; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; background: #111; padding: 8px 12px; border: 1px solid #333; border-radius: var(--radius-pill); }
         .nav-link:hover { color: #fff; border-color: #fff; }
         .controls-wrap { margin-bottom: 25px; }
         .controls-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .search-input { flex: 1; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 12px 15px; font-size: 13px; outline: none; transition: 0.2s; }
+        .search-input { flex: 1; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 12px 15px; font-size: 13px; outline: none; transition: 0.2s; border-radius: var(--radius-pill); }
         .search-input:focus { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.1); }
-        .sort-select { background: #0a0a0a; border: 1px solid #333; color: #888; padding: 0 15px; font-size: 12px; outline: none; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .sort-select { background: #0a0a0a; border: 1px solid #333; color: #888; padding: 0 15px; font-size: 12px; outline: none; cursor: pointer; text-transform: uppercase; transition: 0.2s; border-radius: var(--radius-pill); }
         .sort-select:focus { border-color: #fff; color: #fff; }
         .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         @media (min-width: 768px) { .game-grid { grid-template-columns: repeat(3, 1fr); } }
-        .game-card { background: #0a0a0a; border: 1px solid #222; padding: 15px; text-align: left; display: flex; flex-direction: column; transition: all 0.25s ease; position: relative; overflow: hidden; }
+        .game-card { background: #0a0a0a; border: 1px solid #222; padding: 15px; text-align: left; display: flex; flex-direction: column; transition: all 0.25s ease; position: relative; overflow: hidden; border-radius: var(--radius); }
         .game-card:hover { transform: translateY(-5px); border-color: #fff; box-shadow: 0 8px 25px rgba(255,255,255,0.05); }
-        .game-card img { width: 100%; height: 145px; object-fit: cover; border: 1px solid #222; margin-bottom: 12px; transition: opacity 0.2s; }
+        .game-card img { width: 100%; height: 145px; object-fit: cover; border: 1px solid #222; margin-bottom: 12px; transition: opacity 0.2s; border-radius: var(--radius-sm); }
         .game-card:hover img { opacity: 0.9; }
-        .card-badge { position: absolute; top: 20px; right: 20px; background: #fff; color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 15; }
+        .card-badge { position: absolute; top: 20px; right: 20px; background: #fff; color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 15; border-radius: var(--radius-sm); }
         .game-title { font-size: 16px; margin: 0 0 4px 0; letter-spacing: 0.5px; }
         .dev-name { color: #888; font-size: 12px; margin: 0 0 10px 0; font-style: italic; }
         .platforms { margin-bottom: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
-        .plat-badge { font-size: 9px; border: 1px solid #444; padding: 2px 5px; color: #aaa; text-transform: uppercase; background: #111; }
-        .category-tag { background: #111; border: 1px solid #333; color: #fff; font-size: 10px; padding: 3px 8px; display: inline-block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .plat-badge { font-size: 9px; border: 1px solid #444; padding: 2px 5px; color: #aaa; text-transform: uppercase; background: #111; border-radius: var(--radius-sm); }
+        .category-tag { background: #111; border: 1px solid #333; color: #fff; font-size: 10px; padding: 3px 8px; display: inline-block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; border-radius: var(--radius-sm); }
         .row-divider { grid-column: 1 / -1; height: 1px; background: #2a2a2a; width: 85%; margin: 15px auto; }
         .fake-price { text-decoration: line-through; color: #ff4444; font-size: 13px; margin-right: 8px; opacity: 0.8; }
         .free-badge { color: #00e676; font-weight: bold; font-size: 14px; letter-spacing: 1px; }
         
-        .btn { display: block; background: #fff; color: #000; text-decoration: none; padding: 12px; font-weight: bold; font-size: 13px; border: 1px solid #fff; text-align: center; transition: 0.2s; letter-spacing: 1px; cursor: pointer; margin-top: auto; position: relative; z-index: 20; pointer-events: auto; }
+        .btn { display: block; background: #fff; color: #000; text-decoration: none; padding: 12px; font-weight: bold; font-size: 13px; border: 1px solid #fff; text-align: center; transition: 0.2s; letter-spacing: 1px; cursor: pointer; margin-top: auto; position: relative; z-index: 20; pointer-events: auto; border-radius: var(--radius-pill); }
         .btn:hover { background: #000; color: #fff; box-shadow: inset 0 0 0 1px #fff; }
         
-        .btn-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; background: #0a0a0a; color: #ccc; border: 1px solid #333; padding: 8px 14px; text-decoration: none; font-size: 12px; transition: 0.2s; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; background: #0a0a0a; color: #ccc; border: 1px solid #333; padding: 8px 14px; text-decoration: none; font-size: 12px; transition: 0.2s; border-radius: var(--radius-pill); }
         .btn-back:hover { color: #fff; border-color: #fff; }
-        .btn-icon { display: flex; align-items: center; justify-content: center; background: #111; border: 1px solid #333; width: 42px; cursor: pointer; transition: 0.2s; color: #fff; }
+        .btn-icon { display: flex; align-items: center; justify-content: center; background: #111; border: 1px solid #333; width: 42px; cursor: pointer; transition: 0.2s; color: #fff; border-radius: 50%; }
         .btn-icon:hover { border-color: #fff; }
-        .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 30px; text-align: left; max-width: 650px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .detail-box > img { width: 100%; height: 300px; object-fit: cover; border: 1px solid #333; margin-bottom: 18px; }
+        .detail-box { background: #0a0a0a; border: 1px solid #222; padding: 30px; text-align: left; max-width: 650px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: var(--radius); }
+        .detail-box > img { width: 100%; height: 300px; object-fit: cover; border: 1px solid #333; margin-bottom: 18px; border-radius: var(--radius-sm); }
         .creator-info { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 15px; }
-        #customDevContent { margin-bottom: 25px; line-height: 1.6; color: #ddd; font-size: 15px; padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333; }
-        #customDevContent img { max-width: 100%; height: auto; border: 1px solid #333; }
-        .action-container { background: #111; padding: 20px; border: 1px solid #333; margin-bottom: 20px; }
+        #customDevContent { margin-bottom: 25px; line-height: 1.6; color: #ddd; font-size: 15px; padding: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #333; border-radius: var(--radius-sm); }
+        #customDevContent img { max-width: 100%; height: auto; border: 1px solid #333; border-radius: var(--radius-sm); }
+        .action-container { background: #111; padding: 20px; border: 1px solid #333; margin-bottom: 20px; border-radius: var(--radius); }
         .action-row { display: flex; gap: 10px; }
         .action-row .btn { margin-top: 0; flex: 1; }
         .support-text { font-size: 11px; text-align: center; color: #888; margin-bottom: 15px; font-style: italic; }
         .review-box { margin-top: 30px; border-top: 1px dashed #333; padding-top: 20px; }
         .stars { color: #fff; letter-spacing: 4px; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-        .review-img { width: 100%; height: auto; border: 1px solid #333; margin-top: 12px; }
+        .review-img { width: 100%; height: auto; border: 1px solid #333; margin-top: 12px; border-radius: var(--radius-sm); }
         .recommend-sec { margin-top: 40px; border-top: 1px solid #222; padding-top: 25px; }
         .recommend-title { font-size: 13px; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase; }
         .recommend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        .rec-card { background: #111; border: 1px solid #222; padding: 8px; text-decoration: none; color: #fff; font-size: 11px; text-align: center; transition: 0.2s; }
+        .rec-card { background: #111; border: 1px solid #222; padding: 8px; text-decoration: none; color: #fff; font-size: 11px; text-align: center; transition: 0.2s; border-radius: var(--radius-sm); }
         .rec-card:hover { border-color: #fff; }
-        .rec-card img { width: 100%; height: 70px; object-fit: cover; margin-bottom: 5px; }
+        .rec-card img { width: 100%; height: 70px; object-fit: cover; margin-bottom: 5px; border-radius: var(--radius-sm); }
         .loader { text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; padding: 40px; animation: pulse 1s infinite alternate; text-transform: uppercase; }
 
         /* BẢNG REVIEW TRƯỢT TỪ TRÊN XUỐNG */
