@@ -216,6 +216,49 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
         }
+
+        /* ===================== BÌNH LUẬN ===================== */
+        .comment-section { margin-top: 40px; border-top: 1px solid #222; padding-top: 25px; }
+        .comment-title { font-size: 13px; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase; }
+
+        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #333; object-fit: cover; flex-shrink: 0; background: #111; }
+
+        .comment-composer { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .comment-input-wrap { flex: 1; min-width: 0; }
+        .comment-input { width: 100%; box-sizing: border-box; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 10px 16px; font-size: 13px; font-family: inherit; outline: none; border-radius: 20px; transition: 0.2s; }
+        .comment-input:focus { border-color: #fff; }
+        .comment-post-btn { background: #fff; color: #000; border: 1px solid #fff; padding: 9px 16px; font-weight: bold; font-size: 12px; border-radius: 20px; cursor: pointer; transition: 0.2s, transform 0.1s ease; flex-shrink: 0; }
+        .comment-post-btn:hover { background: #000; color: #fff; }
+        .comment-post-btn:active { transform: scale(0.96); }
+        .comment-post-btn:disabled { opacity: 0.4; cursor: default; }
+
+        .comment-locked { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0a0a0a; border: 1px solid #222; border-radius: 20px; padding: 12px 18px; color: #888; font-size: 13px; margin-bottom: 10px; }
+        .comment-login-link { color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #fff; flex-shrink: 0; }
+
+        .comment-list { margin-top: 15px; display: flex; flex-direction: column; gap: 18px; }
+        .comment-item { display: flex; gap: 12px; }
+        .comment-body { flex: 1; min-width: 0; }
+        .comment-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+        .comment-name { font-weight: bold; font-size: 13px; color: #fff; letter-spacing: 0.5px; }
+        .comment-time { font-size: 11px; color: #888; }
+        .comment-text { font-size: 13px; color: #ddd; line-height: 1.5; margin: 0 0 6px 0; word-break: break-word; }
+        .comment-actions { display: flex; align-items: center; gap: 18px; }
+        .comment-like-btn { display: flex; align-items: center; gap: 5px; background: none; border: none; color: #888; font-size: 11px; cursor: pointer; padding: 0; transition: 0.15s; }
+        .comment-like-btn svg { width: 15px; height: 15px; stroke: #888; fill: none; transition: 0.15s; }
+        .comment-like-btn:hover { color: #fff; }
+        .comment-like-btn:hover svg { stroke: #fff; }
+        .comment-like-btn.liked { color: #fff; }
+        .comment-like-btn.liked svg { stroke: #fff; fill: #fff; }
+        .comment-reply-btn { background: none; border: none; color: #888; font-size: 11px; font-weight: bold; cursor: pointer; padding: 0; letter-spacing: 0.5px; text-transform: uppercase; transition: 0.15s; }
+        .comment-reply-btn:hover { color: #fff; }
+
+        .comment-reply-composer { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .comment-reply-composer .comment-avatar { width: 28px; height: 28px; }
+        .comment-reply-composer .comment-input { padding: 8px 14px; font-size: 12px; }
+        .comment-reply-composer .comment-post-btn { padding: 7px 14px; font-size: 11px; }
+
+        .comment-replies { margin-top: 14px; margin-left: 48px; display: flex; flex-direction: column; gap: 14px; border-left: 1px solid #1a1a1a; padding-left: 16px; }
+        .comment-replies .comment-avatar { width: 28px; height: 28px; }
     </style>
     <script>
         window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
@@ -319,6 +362,25 @@
                     <img id="rImg" class="review-img" style="display: none;">
                 </div>
 
+                <div class="comment-section">
+                    <div class="comment-title" data-vi="BÌNH LUẬN" data-en="COMMENTS">COMMENTS</div>
+
+                    <div class="comment-composer" id="commentComposer" style="display: none;">
+                        <img class="comment-avatar" id="composerAvatar" src="basicavtr.png" alt="">
+                        <div class="comment-input-wrap">
+                            <input type="text" id="commentInput" class="comment-input" maxlength="500" data-vi="Viết bình luận..." data-en="Add a comment..." placeholder="Add a comment...">
+                        </div>
+                        <button class="comment-post-btn" id="commentPostBtn" data-vi="Gửi" data-en="Post">Post</button>
+                    </div>
+
+                    <div class="comment-locked" id="commentLocked">
+                        <span data-vi="Đăng nhập để bình luận" data-en="Log in to comment">Log in to comment</span>
+                        <a href="auth.html" class="comment-login-link" data-vi="Đăng nhập" data-en="Log in">Log in</a>
+                    </div>
+
+                    <div class="comment-list" id="commentList"></div>
+                </div>
+
                 <div class="recommend-sec">
                     <div class="recommend-title" data-vi="THÊM LỰA CHỌN TƯƠNG TỰ" data-en="MORE LIKE THIS">MORE LIKE THIS</div>
                     <div class="recommend-grid" id="recGrid"></div>
@@ -351,23 +413,26 @@
                 profileDiv.style.display = 'block';
                 
                 let dName = user.displayName || "Dev";
+                let dAvatar = "basicavtr.png";
                 
                 try {
                     const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
                     const data = await res.json();
                     
                     if (data && data.avatar) {
-                        avaImg.src = data.avatar; 
-                    } else {
-                        avaImg.src = "basicavtr.png"; 
+                        dAvatar = data.avatar;
                     }
-                } catch (e) {
-                    avaImg.src = "basicavtr.png"; 
-                }
+                } catch (e) {}
+
+                avaImg.src = dAvatar;
 
                 profileDiv.onclick = () => {
                     window.location.href = `/?user=${encodeURIComponent(dName)}`;
                 };
+
+                window.setCommentUser && window.setCommentUser({ uid: user.uid, name: dName, avatar: dAvatar });
+            } else {
+                window.setCommentUser && window.setCommentUser(null);
             }
         });
     </script>
