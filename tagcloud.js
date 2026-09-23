@@ -29,12 +29,12 @@
         /* Card: ẩn dung lượng bên dưới, nút VIEW full width */
         .game-card > div:last-child { display: block !important; margin-top: 15px !important; }
         .game-card > div:last-child > p { display: none !important; }
-        .game-card > div:last-child > .btn { 
-            display: block !important; 
-            width: 100% !important;
-            box-sizing: border-box; 
-            padding: 10px !important; 
-        }
+        .game-card > div:last-child > .btn:not(.card-view-btn) { 
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        padding: 10px !important;
+      }
 
         /* Khung dung lượng trong bảng review */
         .rev-size { 
