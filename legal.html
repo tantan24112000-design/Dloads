@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About, Terms, Privacy &amp; DMCA - Dloads</title>
+    <meta name="description" id="metaDesc" content="About Dloads, contact, terms of use, privacy policy and DMCA copyright notice.">
+    <link rel="icon" type="image/png" href="logo3.png">
+    <link rel="stylesheet" href="footer.css">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
+        ::selection { background: #00e676; color: #000; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header-logo { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+        .logo-wrap { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+        .logo-wrap h1 { font-size: 26px; letter-spacing: 3px; margin: 0; font-weight: 900; }
+        .brand-icon { width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 2; }
+        .nav-link, .toc a { color: #888; text-decoration: none; font-size: 13px; font-weight: bold; background: #111; padding: 8px 12px; border: 1px solid #333; border-radius: 2px; transition: .2s; }
+        .nav-link:hover, .toc a:hover { color: #00e676; border-color: #00e676; }
+        .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .doc { background: #0a0a0a; border: 1px solid #222; border-radius: 3px; padding: 10px 30px; }
+        section { padding: 22px 0; border-bottom: 1px solid #1a1a1a; scroll-margin-top: 20px; }
+        section:last-child { border-bottom: 0; }
+        h2 { font-size: 18px; letter-spacing: 1px; margin: 0 0 12px; }
+        p, li { font-size: 14px; line-height: 1.7; color: #ccc; margin: 0 0 8px; }
+        ul { padding-left: 20px; margin: 0; }
+        a { color: #fff; }
+        a:hover { color: #00e676; }
+        html[data-l="vi"] .en, html[data-l="en"] .vi { display: none; }
+        :focus-visible { outline: 1px solid #00e676; outline-offset: 3px; }
+    </style>
+    <script>
+        window.isVN = (navigator.language || 'en').toLowerCase().startsWith('vi');
+        document.documentElement.dataset.l = window.isVN ? 'vi' : 'en';
+        document.documentElement.lang = window.isVN ? 'vi' : 'en';
+        document.addEventListener('DOMContentLoaded', function () {
+            document.title = window.isVN ? 'Giới thiệu, Điều khoản, Quyền riêng tư & Bản quyền - Dloads' : 'About, Terms, Privacy & DMCA - Dloads';
+            document.getElementById('metaDesc').content = window.isVN
+                ? 'Giới thiệu Dloads, liên hệ, điều khoản sử dụng, chính sách quyền riêng tư và thông báo bản quyền DMCA.'
+                : 'About Dloads, contact, terms of use, privacy policy and DMCA copyright notice.';
+            document.querySelectorAll('[data-vi]').forEach(function (el) {
+                el.innerHTML = window.isVN ? el.getAttribute('data-vi') : el.getAttribute('data-en');
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-logo">
+            <a href="/" class="logo-wrap">
+                <svg class="brand-icon" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="#fff" fill="#000"/>
+                    <path d="M12 7v7m0 0l-3-3m3 3l3-3M8 17h8" stroke="#fff" stroke-linecap="round"/>
+                </svg>
+                <h1>DLOADS</h1>
+            </a>
+            <a href="/" class="nav-link" data-vi="TRÒ CHƠI" data-en="GAMES">GAMES</a>
+        </div>
+
+        <nav class="toc">
+            <a href="#about" data-vi="Giới thiệu" data-en="About">About</a>
+            <a href="#contact" data-vi="Liên hệ" data-en="Contact">Contact</a>
+            <a href="#terms" data-vi="Điều khoản" data-en="Terms">Terms</a>
+            <a href="#privacy" data-vi="Quyền riêng tư" data-en="Privacy">Privacy</a>
+            <a href="#dmca" data-vi="Bản quyền (DMCA)" data-en="Copyright (DMCA)">Copyright (DMCA)</a>
+        </nav>
+
+        <main class="doc">
+            <section id="about">
+                <h2 data-vi="Giới thiệu" data-en="About">About</h2>
+                <div class="vi"><p>Dloads là nơi tổng hợp game indie miễn phí. Mỗi game có trang riêng với thông tin do tác giả cung cấp, và nút tải dẫn tới liên kết chính thức của tác giả. Mục tiêu của Dloads là giúp những game nhỏ được nhiều người biết đến hơn.</p></div>
+                <div class="en"><p>Dloads is a home for free indie games. Each game has its own page with details from its creator, and the download button leads to the creator's official link. Our goal is to help small games reach more players.</p></div>
+            </section>
+
+            <section id="contact">
+                <h2 data-vi="Liên hệ" data-en="Contact">Contact</h2>
+                <div class="vi"><p>Góp ý, báo lỗi, đăng game hoặc yêu cầu gỡ nội dung: gửi email tới <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a>. Chúng tôi thường phản hồi trong vài ngày.</p></div>
+                <div class="en"><p>For feedback, bug reports, game submissions or takedown requests, email <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a>. We usually reply within a few days.</p></div>
+            </section>
+
+            <section id="terms">
+                <h2 data-vi="Điều khoản sử dụng" data-en="Terms of Use">Terms of Use</h2>
+                <div class="vi"><ul>
+                    <li>Dloads miễn phí. Bạn tự chịu trách nhiệm khi tải và cài đặt game.</li>
+                    <li>Game và nội dung do tác giả đăng. Dloads không sở hữu chúng và không đảm bảo an toàn tuyệt đối, hãy quét virus trước khi chạy.</li>
+                    <li>Không đăng nội dung vi phạm pháp luật, mã độc, nội dung vi phạm bản quyền, spam hoặc quấy rối trong bình luận.</li>
+                    <li>Chúng tôi có thể gỡ nội dung hoặc khóa tài khoản vi phạm mà không cần báo trước.</li>
+                    <li>Dịch vụ được cung cấp nguyên trạng. Điều khoản có thể thay đổi, tiếp tục sử dụng nghĩa là bạn đồng ý với bản mới.</li>
+                </ul></div>
+                <div class="en"><ul>
+                    <li>Dloads is free. You download and install games at your own risk.</li>
+                    <li>Games and content are posted by their creators. We do not own them and cannot guarantee they are safe, so scan files before running them.</li>
+                    <li>Do not post illegal content, malware, copyright-infringing material, spam or harassment in comments.</li>
+                    <li>We may remove content or suspend accounts that break these rules without notice.</li>
+                    <li>The service is provided as is. These terms may change, and continuing to use Dloads means you accept the updated version.</li>
+                </ul></div>
+            </section>
+
+            <section id="privacy">
+                <h2 data-vi="Quyền riêng tư" data-en="Privacy Policy">Privacy Policy</h2>
+                <div class="vi"><ul>
+                    <li>Chúng tôi lưu email và tên hiển thị khi bạn đăng ký, ảnh đại diện, bình luận và game bạn đăng.</li>
+                    <li>Dữ liệu chỉ dùng để đăng nhập, hiển thị hồ sơ và bình luận, và vận hành trang web. Chúng tôi không bán dữ liệu cá nhân.</li>
+                    <li>Đăng nhập và lưu trữ dữ liệu do Firebase (Google) xử lý. Trình duyệt lưu thông tin phiên đăng nhập tối thiểu để bạn không phải đăng nhập lại.</li>
+                    <li>Muốn xóa tài khoản hoặc dữ liệu của mình, hãy gửi email tới <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a>.</li>
+                </ul></div>
+                <div class="en"><ul>
+                    <li>We store your email and display name when you sign up, your avatar, your comments and the games you post.</li>
+                    <li>Data is used only to sign you in, show your profile and comments, and run the site. We do not sell personal data.</li>
+                    <li>Sign-in and data storage are handled by Firebase (Google). Your browser keeps minimal session data so you stay logged in.</li>
+                    <li>To delete your account or data, email <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a>.</li>
+                </ul></div>
+            </section>
+
+            <section id="dmca">
+                <h2 data-vi="Bản quyền (DMCA)" data-en="Copyright (DMCA)">Copyright (DMCA)</h2>
+                <div class="vi"><p>Nếu bạn là chủ sở hữu bản quyền và thấy nội dung vi phạm trên Dloads, hãy gửi email tới <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a> kèm: liên kết tới trang game, mô tả tác phẩm của bạn, thông tin liên hệ, và xác nhận bạn là chủ sở hữu hoặc người được ủy quyền. Chúng tôi sẽ xem xét và gỡ nội dung phù hợp sớm nhất có thể. Tác giả bị gỡ nhầm có thể gửi phản hồi qua cùng địa chỉ.</p></div>
+                <div class="en"><p>If you own the copyright and find infringing content on Dloads, email <a href="mailto:soletcraftstudio@gmail.com">soletcraftstudio@gmail.com</a> with: the link to the game page, a description of your work, your contact details, and a statement that you are the owner or authorized to act for them. We will review it and remove qualifying content as soon as possible. Creators whose content was removed by mistake can reply to the same address.</p></div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-inner">
+                <div class="footer-brand">DLOADS</div>
+                <nav class="footer-links">
+                    <a href="legal.html#about" data-vi="Giới thiệu" data-en="About">About</a>
+                    <a href="legal.html#contact" data-vi="Liên hệ" data-en="Contact">Contact</a>
+                    <a href="legal.html#terms" data-vi="Điều khoản" data-en="Terms">Terms</a>
+                    <a href="legal.html#privacy" data-vi="Quyền riêng tư" data-en="Privacy">Privacy</a>
+                    <a href="legal.html#dmca" data-vi="Bản quyền" data-en="Copyright">Copyright</a>
+                </nav>
+                <div class="footer-note" data-vi="&copy; 2026 Dloads. Game thuộc về tác giả của chúng. Liên kết tải dẫn tới nguồn do tác giả cung cấp." data-en="&copy; 2026 Dloads. Games belong to their creators. Download links lead to sources provided by the creators.">&copy; 2026 Dloads.</div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
