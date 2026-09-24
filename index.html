@@ -300,6 +300,116 @@
 
         .comment-replies { margin-top: 14px; margin-left: 48px; display: flex; flex-direction: column; gap: 14px; border-left: 1px solid #1a1a1a; padding-left: 16px; }
         .comment-replies .comment-avatar { width: 28px; height: 28px; }
+        /* ===== DLOADS FX — nạp SAU <style> chính, không đụng code cũ ===== */
+@property --fxa { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+/* Bo góc: gần như vuông, chỉ giữ tròn ở avatar, nút share, ô bình luận */
+:root { --radius-sm: 2px; --radius: 3px; --radius-pill: 2px; --g: #00e676; }
+
+::selection { background: var(--g); color: #000; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: #222; border: 2px solid #050505; }
+::-webkit-scrollbar-thumb:hover { background: var(--g); }
+:focus-visible { outline: 1px solid var(--g); outline-offset: 3px; }
+
+/* Nền: lưới trôi + đèn theo chuột + thanh tiến trình cuộn */
+body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
+    animation: fxGrid 22s linear infinite;
+}
+@keyframes fxGrid { to { background-position: 44px 44px; } }
+#fxCursor { position: fixed; top: 0; left: 0; width: 420px; height: 420px; z-index: -1; pointer-events: none; background: radial-gradient(circle, rgba(0,230,118,.09), transparent 62%); will-change: transform; }
+#fxProgress { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, var(--g), #fff); transform-origin: 0 50%; transform: scaleX(0); z-index: 100001; }
+
+/* Header */
+.header-logo { position: relative; border-bottom-color: #1a1a1a; }
+.header-logo::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 30%; height: 1px; background: linear-gradient(90deg, transparent, var(--g), transparent); animation: fxScan 4s ease-in-out infinite alternate; }
+@keyframes fxScan { to { left: 70%; } }
+.header-logo h1 { background: linear-gradient(90deg, #fff 0 40%, var(--g) 50%, #fff 60% 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: fxLogo 5s linear infinite; }
+@keyframes fxLogo { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.brand-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
+.brand-icon path, .brand-icon rect { transition: stroke .3s; }
+.logo-wrap:hover .brand-icon { transform: rotate(-10deg) scale(1.15); }
+.logo-wrap:hover .brand-icon path, .logo-wrap:hover .brand-icon rect { stroke: var(--g); }
+
+/* Nút / link: fill trượt từ dưới lên + ripple */
+.btn, .nav-link, .comment-post-btn, .btn-icon, .btn-back { position: relative; overflow: hidden; }
+.nav-link { isolation: isolate; }
+.nav-link::before { content: ""; position: absolute; inset: 0; background: #fff; transform: translateY(101%); transition: transform .3s cubic-bezier(.16,1,.3,1); z-index: -1; }
+.nav-link:hover { color: #000; border-color: #fff; }
+.nav-link:hover::before { transform: none; }
+#navUpload::before { background: var(--g); }
+.btn-back { transition: .25s, transform .25s; }
+.btn-back:hover { transform: translateX(-4px); border-color: var(--g); color: var(--g); }
+
+.btn { isolation: isolate; }
+.btn::before { content: ""; position: absolute; top: 0; left: -70%; width: 50%; height: 100%; background: linear-gradient(105deg, transparent, rgba(255,255,255,.8), transparent); transform: skewX(-20deg); z-index: -1; }
+.btn:hover { background: var(--g); border-color: var(--g); color: #000; box-shadow: 0 0 28px rgba(0,230,118,.35); letter-spacing: 1.6px; }
+.btn:hover::before { left: 130%; transition: left .7s ease; }
+#gLink { animation: fxPulse 2.4s ease-out infinite; }
+#gLink:hover { animation: none; }
+@keyframes fxPulse { 0% { box-shadow: 0 0 0 0 rgba(0,230,118,.45); } 70%, 100% { box-shadow: 0 0 0 14px rgba(0,230,118,0); } }
+.btn-icon:hover { border-color: var(--g); color: var(--g); transform: rotate(12deg); }
+.fx-ripple { position: absolute; border-radius: 50%; background: rgba(0,230,118,.4); transform: scale(0); animation: fxRipple .6s ease-out forwards; pointer-events: none; }
+@keyframes fxRipple { to { transform: scale(1); opacity: 0; } }
+
+/* Search / sort */
+.search-input { transition: border-color .25s, box-shadow .3s, background .3s; }
+.search-input:focus { border-color: var(--g); background: #050505; box-shadow: 0 0 0 3px rgba(0,230,118,.12), 0 0 24px rgba(0,230,118,.12); }
+.sort-select:hover { border-color: #666; color: #fff; }
+
+/* Game card: tilt 3D + đèn theo chuột + viền quét + panel review vào từng lớp */
+.game-card { transition: transform .18s ease-out, border-color .3s, box-shadow .35s; animation: fxCardIn .6s cubic-bezier(.16,1,.3,1) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes fxCardIn { from { opacity: 0; transform: translateY(22px) scale(.97); } }
+.game-card:hover { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-6px); border-color: #2a2a2a; box-shadow: 0 18px 40px rgba(0,0,0,.6), 0 0 30px rgba(0,230,118,.07); }
+.game-card::before { content: ""; position: absolute; inset: 0; z-index: 11; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(0,230,118,.16), transparent 65%); }
+.game-card::after {
+    content: ""; position: absolute; inset: -1px; padding: 1px; z-index: 30; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: conic-gradient(from var(--fxa), transparent 0 62%, var(--g) 82%, #fff 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+    animation: fxAng 2.6s linear infinite;
+}
+@keyframes fxAng { to { --fxa: 360deg; } }
+.game-card:hover::before, .game-card:hover::after { opacity: 1; }
+.review-panel { background: repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px), rgba(5,5,5,.96); border-bottom: 2px solid var(--g); box-shadow: 0 8px 24px rgba(0,230,118,.18); }
+.review-panel > * { opacity: 0; transform: translateY(14px); transition: opacity .35s ease, transform .45s cubic-bezier(.16,1,.3,1); }
+.game-card:hover .review-panel > * { opacity: 1; transform: none; }
+.game-card:hover .review-panel > :nth-child(2) { transition-delay: .08s; }
+.game-card:hover .review-panel > :nth-child(3) { transition-delay: .16s; }
+.game-card:hover .review-panel > :nth-child(4) { transition-delay: .24s; }
+.card-badge { transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+.game-card:hover .card-badge { transform: scale(1.12) rotate(-3deg); }
+
+/* Trang chi tiết */
+.detail-box { position: relative; }
+.detail-box::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--g), #fff, transparent); background-size: 200% 100%; animation: fxLine 3s linear infinite; }
+@keyframes fxLine { to { background-position: -200% 0; } }
+#gThumb { transition: filter .4s, border-color .3s; }
+#gThumb:hover { filter: saturate(1.25) brightness(1.08); border-color: #666; }
+.free-badge { text-shadow: 0 0 12px rgba(0,230,118,.5); }
+.fx-reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+.fx-reveal.in { opacity: 1; transform: none; }
+
+/* Gợi ý tương tự */
+.rec-card { transition: transform .25s cubic-bezier(.16,1,.3,1), border-color .25s, box-shadow .3s; }
+.rec-card img { transition: filter .3s; }
+.rec-card:hover { transform: translateY(-4px); border-color: var(--g); box-shadow: 0 10px 24px rgba(0,230,118,.12); }
+.rec-card:hover img { filter: brightness(1.2) saturate(1.2); }
+
+/* Bình luận */
+.comment-input:focus { border-color: var(--g); box-shadow: 0 0 0 3px rgba(0,230,118,.12); }
+.comment-avatar { transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .25s; }
+.comment-avatar:hover { transform: scale(1.12); border-color: var(--g); }
+.comment-like-btn.liked svg { animation: fxHeart .45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes fxHeart { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
+.comment-item { animation: fxCardIn .4s ease backwards; }
+.comment-reply-btn:hover, .comment-like-btn:hover { transform: translateY(-1px); }
     </style>
     <script>
         window.isVN = (navigator.language || navigator.userLanguage || 'en').toLowerCase().startsWith('vi');
