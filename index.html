@@ -300,7 +300,7 @@
 
         .comment-replies { margin-top: 14px; margin-left: 48px; display: flex; flex-direction: column; gap: 14px; border-left: 1px solid #1a1a1a; padding-left: 16px; }
         .comment-replies .comment-avatar { width: 28px; height: 28px; }
-        /* ===== DLOADS FX — nạp SAU <style> chính, không đụng code cũ ===== */
+  /* ===== DLOADS FX — nạp SAU <style> chính, không đụng code cũ ===== */
 @property --fxa { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 
 /* Bo góc: gần như vuông, chỉ giữ tròn ở avatar, nút share, ô bình luận */
@@ -328,8 +328,6 @@ body::before {
 
 /* Header */
 .header-logo { position: relative; border-bottom-color: #1a1a1a; }
-.header-logo::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 30%; height: 1px; background: linear-gradient(90deg, transparent, var(--g), transparent); animation: fxScan 4s ease-in-out infinite alternate; }
-@keyframes fxScan { to { left: 70%; } }
 .header-logo h1 { background: linear-gradient(90deg, #fff 0 40%, var(--g) 50%, #fff 60% 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: fxLogo 5s linear infinite; }
 @keyframes fxLogo { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 .brand-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
@@ -351,9 +349,6 @@ body::before {
 .btn::before { content: ""; position: absolute; top: 0; left: -70%; width: 50%; height: 100%; background: linear-gradient(105deg, transparent, rgba(255,255,255,.8), transparent); transform: skewX(-20deg); z-index: -1; }
 .btn:hover { background: var(--g); border-color: var(--g); color: #000; box-shadow: 0 0 28px rgba(0,230,118,.35); letter-spacing: 1.6px; }
 .btn:hover::before { left: 130%; transition: left .7s ease; }
-#gLink { animation: fxPulse 2.4s ease-out infinite; }
-#gLink:hover { animation: none; }
-@keyframes fxPulse { 0% { box-shadow: 0 0 0 0 rgba(0,230,118,.45); } 70%, 100% { box-shadow: 0 0 0 14px rgba(0,230,118,0); } }
 .btn-icon:hover { border-color: var(--g); color: var(--g); transform: rotate(12deg); }
 .fx-ripple { position: absolute; border-radius: 50%; background: rgba(0,230,118,.4); transform: scale(0); animation: fxRipple .6s ease-out forwards; pointer-events: none; }
 @keyframes fxRipple { to { transform: scale(1); opacity: 0; } }
