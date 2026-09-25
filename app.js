@@ -269,15 +269,10 @@ async function fetchGamesMeta() {
 }
 
 async function fetchGameDetailData(gameId) {
-    try {
-        const rows = await sbFetch(
-            `games?id=eq.${encodeURIComponent(gameId)}&select=*&limit=1`
-        );
-        return rows && rows[0] ? normalizeGame(rows[0]) : null;
-    } catch (error) {
-        console.error('Lỗi tải chi tiết game:', error);
-        return null;
-    }
+    const rows = await sbFetch(
+        `games?id=eq.${encodeURIComponent(gameId)}&select=*&limit=1`
+    );
+    return rows && rows[0] ? normalizeGame(rows[0]) : null;
 }
 
 // =========================================================
@@ -683,8 +678,15 @@ async function initDetail() {
     }
 
     let initialData = baseData;
+    let detailData = null;
 
-    const detailData = await fetchGameDetailData(id);
+    try {
+        detailData = await fetchGameDetailData(id);
+    } catch (error) {
+        console.error('Lỗi tải chi tiết game:', error);
+        // Không có dữ liệu nào sẵn để hiển thị -> đây là tải trang thất bại thật sự (mất mạng/timeout)
+        if (!baseData) throw error;
+    }
 
     if (detailData) {
         initialData = baseData ? { ...baseData, ...detailData } : detailData;
@@ -916,9 +918,14 @@ async function init() {
         } else {
             await initList(userPage);
         }
+        if (window.markPageLoaded) window.markPageLoaded();
     } catch (error) {
         console.error('Init error:', error);
-        hideSpinner();
+        if (window.markPageLoadFailed) {
+            window.markPageLoadFailed();
+        } else {
+            hideSpinner();
+        }
     }
 }
 
