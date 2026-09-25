@@ -349,6 +349,41 @@
 
         window.addEventListener('DOMContentLoaded', window.applyLanguage);
     </script>
+    <script>
+        // ----- Tự chuyển sang trang 404 nếu tải quá lâu hoặc mất mạng -----
+        (function () {
+            var FALLBACK_URL = '404.html';
+            var TIMEOUT_MS = 15000;
+            var settled = false;
+
+            function goToFallback() {
+                if (settled) return;
+                settled = true;
+                window.location.replace(FALLBACK_URL);
+            }
+
+            var watchdogTimer = window.setTimeout(goToFallback, TIMEOUT_MS);
+
+            // Không có mạng ngay khi vừa vào trang (vd: chế độ máy bay, wifi chưa bắt được)
+            if ('onLine' in navigator && navigator.onLine === false) {
+                goToFallback();
+            }
+
+            // Rớt mạng ngay trong lúc trang đang tải
+            window.addEventListener('offline', goToFallback);
+
+            // app.js gọi hàm này khi tải dữ liệu xong -> huỷ đồng hồ đếm ngược
+            window.markPageLoaded = function () {
+                if (settled) return;
+                settled = true;
+                window.clearTimeout(watchdogTimer);
+                window.removeEventListener('offline', goToFallback);
+            };
+
+            // app.js gọi hàm này khi tải thất bại hẳn -> chuyển ngay, không cần đợi đủ 15s
+            window.markPageLoadFailed = goToFallback;
+        })();
+    </script>
 </head>
 <body>
     <div id="globalSpinner" class="spinner-overlay">
