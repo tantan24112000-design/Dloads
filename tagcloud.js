@@ -1,5 +1,5 @@
 // =========================================================
-// DLOADS - SIDEBAR: TAG CLOUD
+// DLOADS - SIDEBAR: TAG CLOUD + BLOG
 // File riêng, KHÔNG sửa app.js. Load trước app.js.
 // =========================================================
 (function () {
@@ -9,6 +9,19 @@
     let selPlats = new Set();
     let getItems = () => [];
     let onChange = () => {};
+
+    // ---------- BLOG (Supabase) ----------
+    // Dùng chung project Supabase với app.js. Key này là "anon/publishable"
+    // key, vốn được thiết kế để lộ ra ở client nên tách riêng ở đây không
+    // làm giảm bảo mật so với app.js.
+    const BLOG_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co/rest/v1';
+    const BLOG_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
+    const BLOG_HEADERS = {
+        apikey: BLOG_KEY,
+        Authorization: `Bearer ${BLOG_KEY}`,
+        Accept: 'application/json'
+    };
+    const BLOG_LIMIT = 6;
 
     function esc(v) {
         return String(v ?? '')
@@ -122,6 +135,24 @@
             font-size: 10px; letter-spacing: 1px; padding: 7px; cursor: pointer; }
         .tag-clear:hover { color: #ffffff !important; border-color: #fff; }
 
+        /* Box blog: danh sách tên bài viết, kiểu itch.io (chỉ tiêu đề, xếp dọc) */
+        .blog-list { display: flex; flex-direction: column; }
+        .blog-item {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #ffffff !important;
+            font-weight: bold !important;
+            font-family: sans-serif !important;
+            text-decoration: none;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            transition: 0.2s;
+        }
+        .blog-item:last-child { border-bottom: none; }
+        .blog-item:hover { color: #00e676 !important; padding-left: 4px; }
+        .blog-empty { font-size: 10px; letter-spacing: 1px; color: #666 !important; font-weight: bold !important; font-family: sans-serif !important; }
+
         /* RESPONSIVE TRÊN ĐIỆN THOẠI (ÉP NẰM CẠNH, THU NHỎ LẠI) */
         @media (max-width: 900px) {
             .layout-row { 
@@ -136,6 +167,7 @@
             .tag-item { font-size: 9px; padding: 3px 5px; }
             .tag-count { margin-left: 2px; }
             .side-title { font-size: 10px; letter-spacing: 1px; margin-bottom: 8px; }
+            .blog-item { font-size: 9px; padding: 6px 0; }
         }
         `;
         document.head.appendChild(s);
@@ -220,6 +252,47 @@
 
         const clear = document.getElementById('tagClear');
         if (clear) clear.onclick = () => { selTags.clear(); selPlats.clear(); renderTagBox(); onChange(); };
+
+        if (window.applyLanguage) window.applyLanguage();
+    }
+
+    // ---------------------------------------------------------
+    // BLOG BOX ("Some Blog For Your Day") - chỉ hiện TÊN bài viết,
+    // giống kiểu widget devlog/blog nhỏ gọn của itch.io.
+    // ---------------------------------------------------------
+    async function fetchBlogPosts() {
+        try {
+            const res = await fetch(
+                `${BLOG_URL}/blog_posts?select=id,title&order=created_at.desc&limit=${BLOG_LIMIT}`,
+                { headers: BLOG_HEADERS }
+            );
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return await res.json();
+        } catch (e) {
+            // null = lỗi hoặc bảng blog_posts chưa tồn tại -> ẩn box đi,
+            // khác với mảng rỗng [] = bảng có nhưng chưa có bài nào.
+            console.error('Không tải được blog:', e);
+            return null;
+        }
+    }
+
+    async function renderBlogBox() {
+        const box = document.getElementById('blogBox');
+        if (!box) return;
+
+        const posts = await fetchBlogPosts();
+        if (posts === null) { box.style.display = 'none'; return; }
+
+        box.style.display = 'block';
+
+        const list = posts.length
+            ? posts.map(p => `<a class="blog-item" href="blog.html?id=${encodeURIComponent(p.id)}">${esc(p.title)}</a>`).join('')
+            : `<p class="blog-empty" data-vi="Chưa có bài viết nào." data-en="No posts yet.">No posts yet.</p>`;
+
+        box.innerHTML = `
+            <p class="side-title" data-vi="MỘT CHÚT BLOG CHO NGÀY CỦA BẠN" data-en="SOME BLOG FOR YOUR DAY">SOME BLOG FOR YOUR DAY</p>
+            <div class="blog-list">${list}</div>
+        `;
 
         if (window.applyLanguage) window.applyLanguage();
     }
@@ -311,9 +384,11 @@
             if (side) {
                 side.innerHTML = `
                     <div class="side-box" id="tagBox"></div>
+                    <div class="side-box" id="blogBox" style="display:none;"></div>
                     <div class="side-box" id="chatBox"></div>
                 `;
                 if (typeof setupChat === 'function') setupChat();
+                renderBlogBox();
             }
         }
 
