@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog - Dloads</title>
+<link rel="icon" type="image/png" href="logo3.png">
+<style>
+    body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
+    .container { max-width: 700px; margin: 0 auto; }
+    .btn-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; background: #0a0a0a; color: #ccc; border: 1px solid #333; padding: 8px 14px; text-decoration: none; font-size: 12px; transition: 0.2s; border-radius: 999px; }
+    .btn-back:hover { color: #fff; border-color: #fff; }
+    .post-box { background: #0a0a0a; border: 1px solid #222; padding: 30px; border-radius: 10px; }
+    .post-title { font-size: 24px; margin: 0 0 8px 0; letter-spacing: 0.5px; }
+    .post-date { color: #888; font-size: 12px; margin: 0 0 22px 0; text-transform: uppercase; letter-spacing: 1px; }
+    .post-content { color: #ddd; font-size: 15px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+    .loader, .error { text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; padding: 60px 0; text-transform: uppercase; }
+</style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span id="backLabel">ALL GAMES</span>
+        </a>
+        <div id="content" class="loader">LOADING...</div>
+    </div>
+
+    <script>
+        const isVN = (navigator.language || '').toLowerCase().startsWith('vi');
+        document.getElementById('backLabel').textContent = isVN ? 'VỀ TRANG CHỦ' : 'ALL GAMES';
+
+        const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
+        const REST = `${SUPABASE_URL}/rest/v1`;
+        const HEADERS = {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            Accept: 'application/json'
+        };
+
+        function esc(v) {
+            return String(v ?? '')
+                .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+        }
+
+        function formatDate(dateStr) {
+            try {
+                return new Date(dateStr).toLocaleDateString(isVN ? 'vi-VN' : 'en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+            } catch { return ''; }
+        }
+
+        async function loadPost() {
+            const id = new URLSearchParams(location.search).get('id');
+            const box = document.getElementById('content');
+            if (!id) {
+                box.className = 'error';
+                box.textContent = isVN ? 'KHÔNG TÌM THẤY BÀI VIẾT' : 'POST NOT FOUND';
+                return;
+            }
+
+            try {
+                const res = await fetch(
+                    `${REST}/blog_posts?id=eq.${encodeURIComponent(id)}&select=title,content,created_at&limit=1`,
+                    { headers: HEADERS }
+                );
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const rows = await res.json();
+                const post = rows && rows[0];
+
+                if (!post) {
+                    box.className = 'error';
+                    box.textContent = isVN ? 'KHÔNG TÌM THẤY BÀI VIẾT' : 'POST NOT FOUND';
+                    return;
+                }
+
+                box.className = '';
+                box.innerHTML = `
+                    <div class="post-box">
+                        <h1 class="post-title">${esc(post.title)}</h1>
+                        <p class="post-date">${esc(formatDate(post.created_at))}</p>
+                        <div class="post-content">${esc(post.content || '')}</div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Lỗi tải bài viết:', e);
+                box.className = 'error';
+                box.textContent = isVN ? 'LỖI TẢI BÀI VIẾT' : 'FAILED TO LOAD POST';
+            }
+        }
+
+        loadPost();
+    </script>
+</body>
+</html>
