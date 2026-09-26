@@ -33,7 +33,6 @@ const numberFormatter = new Intl.NumberFormat('en-US');
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 const userPage = params.get('user');
-const groupsPage = params.has('groups');
 const groupId = params.get('group');
 
 // =========================================================
@@ -123,6 +122,27 @@ function trackUserPreference(category) {
     try {
         localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
     } catch {}
+}
+
+function getDebounced(fn, delay = 120) {
+    let timer = 0;
+    return (...args) => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => fn(...args), delay);
+    };
+}
+
+function timeAgo(dateStr) {
+    const diffMs = Math.max(0, Date.now() - new Date(dateStr).getTime());
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return isVi ? 'Vừa xong' : 'Just now';
+    if (mins < 60) return isVi ? `${mins} phút trước` : `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return isVi ? `${days} ngày trước` : `${days}d ago`;
+    const months = Math.floor(days / 30);
+    return isVi ? `${months} tháng trước` : `${months}mo ago`;
 }
 
 // =========================================================
@@ -295,19 +315,6 @@ function loadCommentLikeState() {
 
 function saveCommentLikeState() {
     try { localStorage.setItem('commentLikes', JSON.stringify(commentLikeState)); } catch {}
-}
-
-function timeAgo(dateStr) {
-    const diffMs = Math.max(0, Date.now() - new Date(dateStr).getTime());
-    const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return isVi ? 'Vừa xong' : 'Just now';
-    if (mins < 60) return isVi ? `${mins} phút trước` : `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return isVi ? `${days} ngày trước` : `${days}d ago`;
-    const months = Math.floor(days / 30);
-    return isVi ? `${months} tháng trước` : `${months}mo ago`;
 }
 
 const HEART_ICON = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.1C.3 8.4 2 4.8 5.6 4.2c2-.3 3.9.6 5 2.2.9-1.6 2.9-2.5 4.9-2.2 3.6.6 5.3 4.2 3.6 7.7C19.5 16.4 12 21 12 21z" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -718,14 +725,6 @@ async function initDetail() {
 // =========================================================
 // LIST PAGE
 // =========================================================
-function getDebounced(fn, delay = 120) {
-    let timer = 0;
-    return (...args) => {
-        window.clearTimeout(timer);
-        timer = window.setTimeout(() => fn(...args), delay);
-    };
-}
-
 function createGameCardHtml(item, index, total) {
     const game = item.game;
     const image = escapeHtml(getImageUrl(game.img));
@@ -913,8 +912,9 @@ async function initList(targetUser = null) {
 // =========================================================
 async function init() {
     try {
-        if (groupsPage || groupId) {
-            // Trang Groups / chi tiết Group do groups.js tự khởi tạo riêng.
+        // Trang không có UI danh sách/chi tiết game (vd: groups.html) thì bỏ qua —
+        // trang đó tự khởi tạo lấy (xem groups.js).
+        if (!document.getElementById('listView') && !document.getElementById('detailView')) {
             hideSpinner();
             return;
         }
