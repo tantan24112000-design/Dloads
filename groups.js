@@ -2,6 +2,8 @@
 // DLOADS - GROUPS (giao diện kiểu Discord, dùng chung Supabase REST
 // và các helper (escapeHtml, getImageUrl, showToast, sbFetch, isVi, ...)
 // đã khai báo trong app.js — file này PHẢI load SAU app.js.
+// Trang này giờ đứng riêng ở groups.html: groups.html = danh sách,
+// groups.html?group=ID = chi tiết nhóm (giống kiểu index.html?id=ID).
 // =========================================================
 const GROUP_ICON_BUCKET = 'group-icons';
 const GROUP_POLL_MS = 4000;
@@ -21,7 +23,7 @@ const gdState = {
     pollTimer: null
 };
 
-// Gọi từ hook auth trong index.html mỗi khi trạng thái đăng nhập đổi
+// Gọi từ hook auth trong groups.html mỗi khi trạng thái đăng nhập đổi
 window.setGroupsUser = function (user) {
     groupsUser = user;
     refreshGroupsAuthUI();
@@ -128,7 +130,7 @@ function isGroupBanned(g) {
 function groupCardHtml(g) {
     const banned = isGroupBanned(g);
     const icon = escapeHtml(getImageUrl(g.icon, 'basicavtr.png'));
-    const href = banned ? '#' : `/?group=${encodeURIComponent(g.id)}`;
+    const href = banned ? '#' : `groups.html?group=${encodeURIComponent(g.id)}`;
 
     return `
         <a href="${href}" class="group-card${banned ? ' is-banned' : ''}">
@@ -253,7 +255,7 @@ async function handleCreateGroupSubmit() {
             role: 'owner'
         }, 'group_id,user_id');
 
-        window.location.href = `/?group=${encodeURIComponent(group.id)}`;
+        window.location.href = `groups.html?group=${encodeURIComponent(group.id)}`;
     } catch (error) {
         console.error('Lỗi tạo nhóm:', error);
         showToast(isVi ? 'Tạo nhóm thất bại.' : 'Failed to create group.');
@@ -617,10 +619,10 @@ function renderGroupComposerLockState() {
 // =========================================================
 async function initGroupsModule() {
     try {
-        if (typeof groupsPage !== 'undefined' && groupsPage) {
-            await initGroupsList();
-        } else if (typeof groupId !== 'undefined' && groupId) {
+        if (typeof groupId !== 'undefined' && groupId) {
             await initGroupDetail(groupId);
+        } else {
+            await initGroupsList();
         }
     } catch (error) {
         console.error('Groups init error:', error);
