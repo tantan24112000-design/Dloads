@@ -1,15 +1,22 @@
 // =========================================================
-// DLOADS - TRANG GAMES (index.html)
-// Cần nạp SAU shared.js (dùng chung: SUPABASE_URL, REST, SB_HEADERS,
-// isVi, escapeHtml, getImageUrl, showToast, showSpinner, hideSpinner,
-// sbFetch, timeAgo, getDebounced, scheduleIdle, ...)
+// DLOADS - DATA LAYER: SUPABASE (Firebase chỉ còn lo Auth)
 // =========================================================
+const SUPABASE_URL = 'https://djcdgqofyzjtgxijzsgq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_5rLqcMcK5xyuJfj4j8MSSw_obYu5sdM';
+
+const REST = `${SUPABASE_URL}/rest/v1`;
+const SB_HEADERS = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    Accept: 'application/json'
+};
 
 // Chỉ lấy cột nhẹ cho trang list -> cắt băng thông tối đa.
 const LIST_COLUMNS = 'id,name,developer,category,platforms,size,price,img,review_img,review_text';
 const LIST_LIMIT = 200;
 
 const urlWebNhiemVu = "https://nhap-code.vercel.app";
+const isVi = (navigator.language || '').toLowerCase().includes('vi');
 
 const META_CACHE_KEY = 'dloads:games-meta:sb1';
 const META_CACHE_TTL = 10 * 60 * 1000;
@@ -26,14 +33,75 @@ const numberFormatter = new Intl.NumberFormat('en-US');
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 const userPage = params.get('user');
+const groupsPage = params.has('groups');
+const groupId = params.get('group');
 
 // =========================================================
-// HELPERS (riêng cho trang Games)
+// HELPERS
 // =========================================================
 function formatPrice(price) {
     if (!price) return '';
     const n = numberFormatter.format(Number(price));
     return isVi ? `${n} VNĐ` : `$${n}`;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function getImageUrl(value, fallback = 'https://via.placeholder.com/300x180') {
+    const url = String(value || '').trim();
+    return url || fallback;
+}
+
+function showSpinner() {
+    const s = document.getElementById('globalSpinner');
+    if (!s) return;
+    s.style.display = 'flex';
+    s.classList.remove('hiding');
+}
+
+function hideSpinner() {
+    const s = document.getElementById('globalSpinner');
+    if (!s) return;
+    s.classList.add('hiding');
+    window.setTimeout(() => { s.style.display = 'none'; }, 250);
+}
+
+// Thông báo nhỏ nổi ở dưới, tự biến mất - thay cho alert()
+function showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.addEventListener('animationend', event => {
+        if (event.animationName === 'toastOut') toast.remove();
+    });
+    container.appendChild(toast);
+}
+
+// Bắt sự kiện load của mọi <img> (kể cả ảnh chèn động) để tắt shimmer khi ảnh vào xong
+document.addEventListener('load', event => {
+    if (event.target.tagName === 'IMG') event.target.classList.add('img-loaded');
+}, true);
+
+function scheduleIdle(callback) {
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(callback, { timeout: 1500 });
+    } else {
+        window.setTimeout(callback, 0);
+    }
 }
 
 function loadUserPreferences() {
@@ -55,6 +123,26 @@ function trackUserPreference(category) {
     try {
         localStorage.setItem('userCategoryPrefs', JSON.stringify(userPrefs));
     } catch {}
+}
+
+// =========================================================
+// SUPABASE FETCH
+// =========================================================
+async function sbFetch(query, timeoutMs = FETCH_TIMEOUT) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const res = await fetch(`${REST}/${query}`, {
+            signal: controller.signal,
+            headers: SB_HEADERS
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } finally {
+        window.clearTimeout(timer);
+    }
 }
 
 // Map snake_case -> shape cũ để phần render không phải sửa.
@@ -209,6 +297,19 @@ function saveCommentLikeState() {
     try { localStorage.setItem('commentLikes', JSON.stringify(commentLikeState)); } catch {}
 }
 
+function timeAgo(dateStr) {
+    const diffMs = Math.max(0, Date.now() - new Date(dateStr).getTime());
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return isVi ? 'Vừa xong' : 'Just now';
+    if (mins < 60) return isVi ? `${mins} phút trước` : `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return isVi ? `${days} ngày trước` : `${days}d ago`;
+    const months = Math.floor(days / 30);
+    return isVi ? `${months} tháng trước` : `${months}mo ago`;
+}
+
 const HEART_ICON = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.1C.3 8.4 2 4.8 5.6 4.2c2-.3 3.9.6 5 2.2.9-1.6 2.9-2.5 4.9-2.2 3.6.6 5.3 4.2 3.6 7.7C19.5 16.4 12 21 12 21z" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 
 function commentAvatarHtml(avatar, size) {
@@ -216,7 +317,7 @@ function commentAvatarHtml(avatar, size) {
     return `<img class="comment-avatar" style="width:${size}px;height:${size}px;" src="${src}" loading="lazy" decoding="async" alt="">`;
 }
 
-// Gọi từ hook auth trong shared.js mỗi khi trạng thái đăng nhập đổi
+// Gọi từ hook auth trong index.html mỗi khi trạng thái đăng nhập đổi
 window.setCommentUser = function (user) {
     currentUser = user;
     const composer = document.getElementById('commentComposer');
@@ -617,6 +718,14 @@ async function initDetail() {
 // =========================================================
 // LIST PAGE
 // =========================================================
+function getDebounced(fn, delay = 120) {
+    let timer = 0;
+    return (...args) => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => fn(...args), delay);
+    };
+}
+
 function createGameCardHtml(item, index, total) {
     const game = item.game;
     const image = escapeHtml(getImageUrl(game.img));
@@ -804,6 +913,11 @@ async function initList(targetUser = null) {
 // =========================================================
 async function init() {
     try {
+        if (groupsPage || groupId) {
+            // Trang Groups / chi tiết Group do groups.js tự khởi tạo riêng.
+            hideSpinner();
+            return;
+        }
         if (id) {
             await initDetail();
         } else {
