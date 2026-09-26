@@ -33,6 +33,8 @@ const numberFormatter = new Intl.NumberFormat('en-US');
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 const userPage = params.get('user');
+const groupsPage = params.has('groups');
+const groupId = params.get('group');
 
 // =========================================================
 // HELPERS
@@ -269,10 +271,15 @@ async function fetchGamesMeta() {
 }
 
 async function fetchGameDetailData(gameId) {
-    const rows = await sbFetch(
-        `games?id=eq.${encodeURIComponent(gameId)}&select=*&limit=1`
-    );
-    return rows && rows[0] ? normalizeGame(rows[0]) : null;
+    try {
+        const rows = await sbFetch(
+            `games?id=eq.${encodeURIComponent(gameId)}&select=*&limit=1`
+        );
+        return rows && rows[0] ? normalizeGame(rows[0]) : null;
+    } catch (error) {
+        console.error('Lỗi tải chi tiết game:', error);
+        return null;
+    }
 }
 
 // =========================================================
@@ -678,15 +685,8 @@ async function initDetail() {
     }
 
     let initialData = baseData;
-    let detailData = null;
 
-    try {
-        detailData = await fetchGameDetailData(id);
-    } catch (error) {
-        console.error('Lỗi tải chi tiết game:', error);
-        // Không có dữ liệu nào sẵn để hiển thị -> đây là tải trang thất bại thật sự (mất mạng/timeout)
-        if (!baseData) throw error;
-    }
+    const detailData = await fetchGameDetailData(id);
 
     if (detailData) {
         initialData = baseData ? { ...baseData, ...detailData } : detailData;
@@ -913,19 +913,19 @@ async function initList(targetUser = null) {
 // =========================================================
 async function init() {
     try {
+        if (groupsPage || groupId) {
+            // Trang Groups / chi tiết Group do groups.js tự khởi tạo riêng.
+            hideSpinner();
+            return;
+        }
         if (id) {
             await initDetail();
         } else {
             await initList(userPage);
         }
-        if (window.markPageLoaded) window.markPageLoaded();
     } catch (error) {
         console.error('Init error:', error);
-        if (window.markPageLoadFailed) {
-            window.markPageLoadFailed();
-        } else {
-            hideSpinner();
-        }
+        hideSpinner();
     }
 }
 
