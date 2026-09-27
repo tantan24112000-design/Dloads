@@ -516,13 +516,15 @@
                 let dAvatar = "basicavtr.png";
                 
                 try {
-                    const res = await fetch(`https://sf2g-bf285-default-rtdb.firebaseio.com/users/${user.uid}.json`);
-                    const data = await res.json();
-                    
-                    if (data && data.avatar) {
-                        dAvatar = data.avatar;
-                    }
-                } catch (e) {}
+                 const res = await fetch(
+                `${SUPABASE_URL}/rest/v1/profiles?uid=eq.${encodeURIComponent(user.uid)}&select=avatar&limit=1`,
+                 { headers: SB_HEADERS }
+             );
+                 const rows = await res.json();
+                 if (rows && rows[0] && rows[0].avatar) {
+                dAvatar = rows[0].avatar;
+                   }
+             } catch (e) {}
 
                 avaImg.src = dAvatar;
 
