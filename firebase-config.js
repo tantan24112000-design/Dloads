@@ -1,14 +1,1 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394",
-    authDomain: "sf2g-bf285.firebaseapp.com",
-    projectId: "sf2g-bf285",
-    databaseURL: "https://sf2g-bf285-default-rtdb.firebaseio.com",
-    storageBucket: "sf2g-bf285.firebasestorage.app",
-    messagingSenderId: "982578480996",
-    appId: "1:982578480996:web:609acf09d1d5b951299c71",
-    measurementId: "G-VD58ECNEPQ"
-};
-
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+const _0x27109d=_0x2dc2;(function(_0x3228f7,_0x30813b){const _0x266a05=_0x2dc2,_0x46e5f4=_0x3228f7();while(!![]){try{const _0x2b2f31=parseInt(_0x266a05(0x8d))/0x1+parseInt(_0x266a05(0x7e))/0x2+-parseInt(_0x266a05(0x86))/0x3*(parseInt(_0x266a05(0x81))/0x4)+parseInt(_0x266a05(0x7f))/0x5*(parseInt(_0x266a05(0x89))/0x6)+-parseInt(_0x266a05(0x7c))/0x7*(-parseInt(_0x266a05(0x82))/0x8)+-parseInt(_0x266a05(0x8a))/0x9+-parseInt(_0x266a05(0x88))/0xa*(parseInt(_0x266a05(0x80))/0xb);if(_0x2b2f31===_0x30813b)break;else _0x46e5f4['push'](_0x46e5f4['shift']());}catch(_0x18f04e){_0x46e5f4['push'](_0x46e5f4['shift']());}}}(_0x4bb2,0x93f91));function _0x2dc2(_0x33c201,_0x1f8ad7){_0x33c201=_0x33c201-0x7c;const _0x4bb298=_0x4bb2();let _0x2dc2e5=_0x4bb298[_0x33c201];return _0x2dc2e5;}const firebaseConfig={'apiKey':_0x27109d(0x7d),'authDomain':_0x27109d(0x8e),'projectId':'sf2g-bf285','databaseURL':_0x27109d(0x8c),'storageBucket':_0x27109d(0x85),'messagingSenderId':'982578480996','appId':_0x27109d(0x8b),'measurementId':_0x27109d(0x84)};!firebase['apps'][_0x27109d(0x87)]&&firebase[_0x27109d(0x83)](firebaseConfig);function _0x4bb2(){const _0x54b325=['48Egowfs','length','370wHOQKf','165216jjoYEv','3828627sIToRc','1:982578480996:web:609acf09d1d5b951299c71','https://sf2g-bf285-default-rtdb.firebaseio.com','927246iEuRMI','sf2g-bf285.firebaseapp.com','7HCPSAU','AIzaSyC5LzxgMCOvF01tSMWjoVWt3jjYAnJR394','906848ZpLYDi','130rFLnwB','564487ejVUSR','28632bCtTjO','7585208wSBUWr','initializeApp','G-VD58ECNEPQ','sf2g-bf285.firebasestorage.app'];_0x4bb2=function(){return _0x54b325;};return _0x4bb2();}
