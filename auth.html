@@ -1,64 +1,4 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Dev Login - Dloads</title>
-
-    <style>
-        body {
-            background: #000;
-            color: #fff;
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .auth-box {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 30px;
-            width: 300px;
-            text-align: center;
-        }
-
-        input {
-            width: 90%;
-            padding: 10px;
-            margin-bottom: 15px;
-            background: #111;
-            border: 1px solid #333;
-            color: #fff;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #fff;
-            color: #000;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        button:hover {
-            background: #ccc;
-        }
-
-        .switch {
-            font-size: 12px;
-            color: #888;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-    </style>
-
-    <script>
-        // Kiểm tra ngôn ngữ trình duyệt tự động
+<!doctype html><html lang=vi><head><meta charset=UTF-8><title>Dev Login - Dloads</title><style>body{background:#000;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}.auth-box{background:#0a0a0a;border:1px solid #333;padding:30px;width:300px;text-align:center}input{width:90%;padding:10px;margin-bottom:15px;background:#111;border:1px solid #333;color:#fff;box-sizing:border-box}button{width:100%;padding:10px;background:#fff;color:#000;font-weight:700;border:none;cursor:pointer;margin-bottom:10px}button:hover{background:#ccc}.switch{font-size:12px;color:#888;cursor:pointer;text-decoration:underline}</style><script>// Kiểm tra ngôn ngữ trình duyệt tự động
         // vi = Tiếng Việt
         // en = Tiếng Anh
 
@@ -68,11 +8,11 @@
             'en'
         ).toLowerCase().startsWith('vi');
 
-        window.applyLanguage = function () {
+        window.applyLanguage = function() {
             document.querySelectorAll('[data-vi]').forEach(el => {
-                const text = window.isVN
-                    ? el.getAttribute('data-vi')
-                    : el.getAttribute('data-en');
+                const text = window.isVN ?
+                    el.getAttribute('data-vi') :
+                    el.getAttribute('data-en');
 
                 if (
                     el.tagName === 'INPUT' ||
@@ -88,282 +28,208 @@
         window.addEventListener(
             'DOMContentLoaded',
             window.applyLanguage
-        );
-    </script>
-</head>
+        );</script></head><body><div class=auth-box><h2 id=form-title data-vi="ĐĂNG NHẬP DEV" data-en="DEV LOGIN">ĐĂNG NHẬP DEV</h2><input id=username data-vi="Tên hiển thị (Username)" data-en=Username placeholder="Tên hiển thị (Username)" style=display:none> <input type=email id=email data-vi=Email data-en=Email placeholder=Email> <input type=password id=password data-vi="Mật khẩu" data-en=Password placeholder="Mật khẩu"> <button id=actionBtn onclick=handleAuth() data-vi="ĐĂNG NHẬP" data-en=LOGIN>ĐĂNG NHẬP</button><div class=switch onclick=toggleMode() data-vi="Chưa có tài khoản? Đăng ký ngay" data-en="No account? Register now">Chưa có tài khoản? Đăng ký ngay</div></div><script src=https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js></script><script src=https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js></script><script src=firebase-config.js></script><script>let isLogin = true;
 
-<body>
+        function toggleMode() {
+            isLogin = !isLogin;
 
-<div class="auth-box">
+            const titleEl = document.getElementById('form-title');
+            const btnEl = document.getElementById('actionBtn');
+            const switchEl = document.querySelector('.switch');
+            const userEl = document.getElementById('username');
 
-    <h2
-        id="form-title"
-        data-vi="ĐĂNG NHẬP DEV"
-        data-en="DEV LOGIN"
-    >
-        ĐĂNG NHẬP DEV
-    </h2>
+            if (window.isVN) {
+                titleEl.innerText = isLogin ?
+                    "ĐĂNG NHẬP" :
+                    "ĐĂNG KÝ";
 
-    <input
-        type="text"
-        id="username"
-        data-vi="Tên hiển thị (Username)"
-        data-en="Username"
-        placeholder="Tên hiển thị (Username)"
-        style="display: none;"
-    >
+                btnEl.innerText = isLogin ?
+                    "ĐĂNG NHẬP" :
+                    "ĐĂNG KÝ";
 
-    <input
-        type="email"
-        id="email"
-        data-vi="Email"
-        data-en="Email"
-        placeholder="Email"
-    >
+                switchEl.innerText = isLogin ?
+                    "Chưa có tài khoản? Đăng ký ngay" :
+                    "Đã có tài khoản? Đăng nhập";
+            } else {
+                titleEl.innerText = isLogin ?
+                    "LOGIN" :
+                    "REGISTER";
 
-    <input
-        type="password"
-        id="password"
-        data-vi="Mật khẩu"
-        data-en="Password"
-        placeholder="Mật khẩu"
-    >
+                btnEl.innerText = isLogin ?
+                    "LOGIN" :
+                    "REGISTER";
 
-    <button
-        id="actionBtn"
-        onclick="handleAuth()"
-        data-vi="ĐĂNG NHẬP"
-        data-en="LOGIN"
-    >
-        ĐĂNG NHẬP
-    </button>
-
-    <div
-        class="switch"
-        onclick="toggleMode()"
-        data-vi="Chưa có tài khoản? Đăng ký ngay"
-        data-en="No account? Register now"
-    >
-        Chưa có tài khoản? Đăng ký ngay
-    </div>
-
-</div>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-<!-- Firebase config tách riêng -->
-<script src="firebase-config.js"></script>
-
-<script>
-    let isLogin = true;
-
-    function toggleMode() {
-        isLogin = !isLogin;
-
-        const titleEl = document.getElementById('form-title');
-        const btnEl = document.getElementById('actionBtn');
-        const switchEl = document.querySelector('.switch');
-        const userEl = document.getElementById('username');
-
-        if (window.isVN) {
-            titleEl.innerText = isLogin
-                ? "ĐĂNG NHẬP"
-                : "ĐĂNG KÝ";
-
-            btnEl.innerText = isLogin
-                ? "ĐĂNG NHẬP"
-                : "ĐĂNG KÝ";
-
-            switchEl.innerText = isLogin
-                ? "Chưa có tài khoản? Đăng ký ngay"
-                : "Đã có tài khoản? Đăng nhập";
-        } else {
-            titleEl.innerText = isLogin
-                ? "LOGIN"
-                : "REGISTER";
-
-            btnEl.innerText = isLogin
-                ? "LOGIN"
-                : "REGISTER";
-
-            switchEl.innerText = isLogin
-                ? "No account? Register now"
-                : "Have an account? Login";
-        }
-
-        userEl.style.display = isLogin
-            ? "none"
-            : "block";
-    }
-
-
-    // Map lỗi Firebase -> message thân thiện
-    // Không hiển thị raw JSON hoặc lỗi kỹ thuật cho người dùng
-
-    function getFriendlyAuthError(err, mode) {
-        const code = String(
-            err && err.code || ''
-        );
-
-        const raw = String(
-            err && err.message || ''
-        );
-
-        // Firebase mới có thể trả:
-        // INVALID_LOGIN_CREDENTIALS
-        // trong khi SDK v8.10.1 không map được
-
-        const isBadCredentials =
-            code === 'auth/wrong-password' ||
-            code === 'auth/user-not-found' ||
-            code === 'auth/invalid-credential' ||
-            code === 'auth/invalid-login-credentials' ||
-            raw.includes('INVALID_LOGIN_CREDENTIALS');
-
-        if (isBadCredentials) {
-            return window.isVN
-                ? 'Email hoặc mật khẩu không đúng.'
-                : 'Incorrect email or password.';
-        }
-
-        if (code === 'auth/invalid-email') {
-            return window.isVN
-                ? 'Email không hợp lệ.'
-                : 'Invalid email address.';
-        }
-
-        if (code === 'auth/too-many-requests') {
-            return window.isVN
-                ? 'Bạn thử sai quá nhiều lần. Vui lòng thử lại sau.'
-                : 'Too many attempts. Please try again later.';
-        }
-
-        if (code === 'auth/email-already-in-use') {
-            return window.isVN
-                ? 'Email này đã được đăng ký.'
-                : 'This email is already registered.';
-        }
-
-        if (code === 'auth/weak-password') {
-            return window.isVN
-                ? 'Mật khẩu quá yếu (tối thiểu 6 ký tự).'
-                : 'Password is too weak (minimum 6 characters).';
-        }
-
-        // Fallback chung
-        // Không bao giờ hiện raw err.message
-
-        if (mode === 'login') {
-            return window.isVN
-                ? 'Không đăng nhập được. Vui lòng kiểm tra lại email/mật khẩu.'
-                : 'Could not log in. Please check your email and password.';
-        }
-
-        return window.isVN
-            ? 'Không đăng ký được. Vui lòng thử lại.'
-            : 'Could not register. Please try again.';
-    }
-
-
-    function handleAuth() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
-        const username = document.getElementById('username').value;
-
-
-        // =========================
-        // ĐĂNG NHẬP
-        // =========================
-
-        if (isLogin) {
-            firebase.auth()
-                .signInWithEmailAndPassword(email, pass)
-
-                .then(user => {
-                    alert(
-                        window.isVN
-                            ? "Đăng nhập thành công!"
-                            : "Login successful!"
-                    );
-
-                    window.location.href = "upload.html";
-                })
-
-                .catch(err => {
-                    console.error(
-                        'Login error:',
-                        err
-                    );
-
-                    alert(
-                        getFriendlyAuthError(
-                            err,
-                            'login'
-                        )
-                    );
-                });
-
-        }
-
-        // =========================
-        // ĐĂNG KÝ
-        // =========================
-
-        else {
-
-            if (!username) {
-                return alert(
-                    window.isVN
-                        ? "Bạn phải nhập Username!"
-                        : "You must enter a Username!"
-                );
+                switchEl.innerText = isLogin ?
+                    "No account? Register now" :
+                    "Have an account? Login";
             }
 
-            firebase.auth()
-                .createUserWithEmailAndPassword(
-                    email,
-                    pass
-                )
-
-                .then(cred => {
-
-                    return cred.user
-                        .updateProfile({
-                            displayName: username
-                        })
-
-                        .then(() => {
-
-                            alert(
-                                window.isVN
-                                    ? "Đăng ký thành công!"
-                                    : "Register successful!"
-                            );
-
-                            window.location.href =
-                                "upload.html";
-                        });
-                })
-
-                .catch(err => {
-
-                    console.error(
-                        'Register error:',
-                        err
-                    );
-
-                    alert(
-                        getFriendlyAuthError(
-                            err,
-                            'register'
-                        )
-                    );
-                });
+            userEl.style.display = isLogin ?
+                "none" :
+                "block";
         }
-    }
-</script>
 
-</body>
-</html>
+
+        // Map lỗi Firebase -> message thân thiện
+        // Không hiển thị raw JSON hoặc lỗi kỹ thuật cho người dùng
+
+        function getFriendlyAuthError(err, mode) {
+            const code = String(
+                err && err.code || ''
+            );
+
+            const raw = String(
+                err && err.message || ''
+            );
+
+            // Firebase mới có thể trả:
+            // INVALID_LOGIN_CREDENTIALS
+            // trong khi SDK v8.10.1 không map được
+
+            const isBadCredentials =
+                code === 'auth/wrong-password' ||
+                code === 'auth/user-not-found' ||
+                code === 'auth/invalid-credential' ||
+                code === 'auth/invalid-login-credentials' ||
+                raw.includes('INVALID_LOGIN_CREDENTIALS');
+
+            if (isBadCredentials) {
+                return window.isVN ?
+                    'Email hoặc mật khẩu không đúng.' :
+                    'Incorrect email or password.';
+            }
+
+            if (code === 'auth/invalid-email') {
+                return window.isVN ?
+                    'Email không hợp lệ.' :
+                    'Invalid email address.';
+            }
+
+            if (code === 'auth/too-many-requests') {
+                return window.isVN ?
+                    'Bạn thử sai quá nhiều lần. Vui lòng thử lại sau.' :
+                    'Too many attempts. Please try again later.';
+            }
+
+            if (code === 'auth/email-already-in-use') {
+                return window.isVN ?
+                    'Email này đã được đăng ký.' :
+                    'This email is already registered.';
+            }
+
+            if (code === 'auth/weak-password') {
+                return window.isVN ?
+                    'Mật khẩu quá yếu (tối thiểu 6 ký tự).' :
+                    'Password is too weak (minimum 6 characters).';
+            }
+
+            // Fallback chung
+            // Không bao giờ hiện raw err.message
+
+            if (mode === 'login') {
+                return window.isVN ?
+                    'Không đăng nhập được. Vui lòng kiểm tra lại email/mật khẩu.' :
+                    'Could not log in. Please check your email and password.';
+            }
+
+            return window.isVN ?
+                'Không đăng ký được. Vui lòng thử lại.' :
+                'Could not register. Please try again.';
+        }
+
+
+        function handleAuth() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+
+
+            // =========================
+            // ĐĂNG NHẬP
+            // =========================
+
+            if (isLogin) {
+                firebase.auth()
+                    .signInWithEmailAndPassword(email, pass)
+
+                    .then(user => {
+                        alert(
+                            window.isVN ?
+                            "Đăng nhập thành công!" :
+                            "Login successful!"
+                        );
+
+                        window.location.href = "upload.html";
+                    })
+
+                    .catch(err => {
+                        console.error(
+                            'Login error:',
+                            err
+                        );
+
+                        alert(
+                            getFriendlyAuthError(
+                                err,
+                                'login'
+                            )
+                        );
+                    });
+
+            }
+
+            // =========================
+            // ĐĂNG KÝ
+            // =========================
+            else {
+
+                if (!username) {
+                    return alert(
+                        window.isVN ?
+                        "Bạn phải nhập Username!" :
+                        "You must enter a Username!"
+                    );
+                }
+
+                firebase.auth()
+                    .createUserWithEmailAndPassword(
+                        email,
+                        pass
+                    )
+
+                    .then(cred => {
+
+                        return cred.user
+                            .updateProfile({
+                                displayName: username
+                            })
+
+                            .then(() => {
+
+                                alert(
+                                    window.isVN ?
+                                    "Đăng ký thành công!" :
+                                    "Register successful!"
+                                );
+
+                                window.location.href =
+                                    "upload.html";
+                            });
+                    })
+
+                    .catch(err => {
+
+                        console.error(
+                            'Register error:',
+                            err
+                        );
+
+                        alert(
+                            getFriendlyAuthError(
+                                err,
+                                'register'
+                            )
+                        );
+                    });
+            }
+        }</script></body></html>
